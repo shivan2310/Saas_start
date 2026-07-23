@@ -11,6 +11,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+const missingFirebaseEnvVars = Object.entries({
+  NEXT_PUBLIC_FIREBASE_API_KEY: firebaseConfig.apiKey,
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: firebaseConfig.authDomain,
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: firebaseConfig.projectId,
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: firebaseConfig.storageBucket,
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: firebaseConfig.messagingSenderId,
+  NEXT_PUBLIC_FIREBASE_APP_ID: firebaseConfig.appId,
+}).filter(([, value]) => !value);
+
+if (typeof window !== "undefined" && missingFirebaseEnvVars.length > 0) {
+  console.error(
+    "Missing Firebase environment variables:",
+    missingFirebaseEnvVars.map(([name]) => name).join(", ")
+  );
+}
+
 // Initialize Firebase for SSR and Client-side safety
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);

@@ -12,6 +12,36 @@ import {
 import { userService } from "./userService";
 import { UserProfile } from "@/types";
 
+type FirebaseAuthError = {
+  code?: string;
+};
+
+async function sendVerificationEmailWithFallback(user: User): Promise<void> {
+  try {
+    await sendEmailVerification(user, getActionCodeSettings("/dashboard"));
+  } catch (error) {
+    const code = (error as FirebaseAuthError).code;
+    if (code === "auth/unauthorized-continue-uri" || code === "auth/invalid-continue-uri") {
+      await sendEmailVerification(user);
+      return;
+    }
+    throw error;
+  }
+}
+
+async function sendPasswordResetWithFallback(email: string): Promise<void> {
+  try {
+    await sendPasswordResetEmail(auth, email, getActionCodeSettings("/login"));
+  } catch (error) {
+    const code = (error as FirebaseAuthError).code;
+    if (code === "auth/unauthorized-continue-uri" || code === "auth/invalid-continue-uri") {
+      await sendPasswordResetEmail(auth, email);
+      return;
+    }
+    throw error;
+  }
+}
+
 export const authService = {
   /**
    * Register a new user with email, password, and display name
@@ -22,11 +52,23 @@ export const authService = {
 
     await updateProfile(user, { displayName: name });
 
-    const profile = await userService.createUserProfile(user.uid, email, name);
+    await sendVerificationEmailWithFallback(user);
 
-    await sendEmailVerification(user, getActionCodeSettings("/dashboard"));
-
-    return profile;
+    try {
+      return await userService.createUserProfile(user.uid, email, name);
+    } catch (error) {
+      console.error("Failed to create Firestore profile after signup:", error);
+      return {
+        uid: user.uid,
+        email,
+        displayName: name,
+        photoURL: null,
+        role: "user",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        emailVerified: false,
+      };
+    }
   },
 
   /**
@@ -48,13 +90,13 @@ export const authService = {
    * Send password reset email
    */
   async resetPassword(email: string): Promise<void> {
-    await sendPasswordResetEmail(auth, email, getActionCodeSettings("/login"));
+    await sendPasswordResetWithFallback(email);
   },
 
   /**
    * Resend email verification
    */
   async sendVerificationEmail(user: User): Promise<void> {
-    await sendEmailVerification(user, getActionCodeSettings("/dashboard"));
+    await sendVerificationEmailWithFallback(user);
   },
 };

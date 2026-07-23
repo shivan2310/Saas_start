@@ -30,10 +30,10 @@ export default function SignupPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated && !isSubmitting) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, isSubmitting, router]);
 
   const onSubmit = async (data: SignupInput) => {
     setIsSubmitting(true);
@@ -42,11 +42,16 @@ export default function SignupPage() {
       toast({
         type: "success",
         title: "Account Created",
-        description: "A verification email has been sent. Welcome aboard!",
+        description: "A verification email has been sent. Check your inbox and spam folder.",
       });
       router.push("/dashboard");
     } catch (error) {
       console.error("Signup failed:", error);
+      try {
+        await authService.logout();
+      } catch (logoutError) {
+        console.error("Failed to clean up partial signup:", logoutError);
+      }
       toast({
         type: "error",
         title: "Registration Error",
