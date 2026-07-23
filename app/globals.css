@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --surface: 0 0% 97%;
+    --border: 0 0% 90%;
+    --muted: 0 0% 40%;
+  }
+
+  * {
+    border-color: #E5E5E5;
+  }
+
+  body {
+    background-color: #FFFFFF;
+    color: #000000;
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #000000;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer utilities {
+  .border-standard {
+    border: 1px solid #E5E5E5;
+  }
+  .bg-surface {
+    background-color: #F8F8F8;
+  }
+}
