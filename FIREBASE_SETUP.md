@@ -59,6 +59,11 @@ service cloud.firestore {
       allow update: if request.auth != null && request.auth.uid == userId;
       allow delete: if false;
     }
+    match /todos/{todoId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
     match /{document=**} {
       allow read, write: if false;
     }
@@ -67,3 +72,43 @@ service cloud.firestore {
 ```
 
 7. Click **Publish**.
+
+---
+
+## 5. Email Verification (Required for Production / Vercel)
+
+Firebase sends verification emails when a user signs up. For your **deployed Vercel site** to send and handle these emails correctly:
+
+### A. Add your Vercel domain to Authorized Domains
+
+1. Copy your live site URL (e.g. `https://your-app.vercel.app`).
+2. Go to **Firebase Console** → **Authentication** → **Settings** → **Authorized domains**.
+3. Click **Add domain** and add:
+   - `your-app.vercel.app` (your Vercel production domain)
+   - Any custom domain you use (e.g. `yourdomain.com`)
+4. Click **Save**.
+
+Without this step, verification emails may fail with an unauthorized domain error.
+
+### B. Set environment variables on Vercel
+
+In **Vercel** → your project → **Settings** → **Environment Variables**, add all Firebase keys from `.env.example`, including:
+
+```env
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+```
+
+Redeploy after adding or changing environment variables.
+
+### C. Check your inbox
+
+- Verification emails come from `noreply@YOUR_PROJECT_ID.firebaseapp.com`.
+- Check **Spam**, **Promotions**, and **Junk** folders.
+- Use **Resend Email** on the dashboard if needed.
+
+### D. Customize the email template (optional)
+
+1. Go to **Authentication** → **Templates** → **Email address verification**.
+2. Confirm the template is enabled and the sender name looks correct.
+
+---

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
+import { getAuthErrorMessage } from "@/lib/firebase/authErrors";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
@@ -29,7 +30,10 @@ export default function DashboardPage() {
       toast({
         type: "error",
         title: "Error",
-        description: "Could not send verification email. Try again later.",
+        description: getAuthErrorMessage(
+          error,
+          "Could not send verification email. Try again later."
+        ),
       });
     } finally {
       setSendingVerification(false);

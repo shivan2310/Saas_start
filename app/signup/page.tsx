@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, SignupInput } from "@/lib/validations/auth";
 import { authService } from "@/services/authService";
+import { getAuthErrorMessage } from "@/lib/firebase/authErrors";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -44,12 +45,13 @@ export default function SignupPage() {
         description: "A verification email has been sent. Welcome aboard!",
       });
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Signup failed:", error);
-      let message = "Failed to create account. Please try again.";
-      if (error.code === "auth/email-already-in-use") message = "An account already exists with this email.";
-      if (error.code === "auth/weak-password") message = "Password should be at least 8 characters.";
-      toast({ type: "error", title: "Registration Error", description: message });
+      toast({
+        type: "error",
+        title: "Registration Error",
+        description: getAuthErrorMessage(error, "Failed to create account. Please try again."),
+      });
     } finally {
       setIsSubmitting(false);
     }

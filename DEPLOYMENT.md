@@ -51,6 +51,20 @@ After deploying to Vercel, add your Vercel URL to Firebase Authorized Domains fo
 3. Click **Add domain**.
 4. Paste `your-app.vercel.app` and click **Save**.
 
+If you use a custom domain, add that domain here too.
+
+---
+
+## ✉️ Verification Emails Not Arriving?
+
+If signup works but no verification email appears:
+
+1. **Authorized domains** — Add your exact Vercel URL (`your-app.vercel.app`) in Firebase → Authentication → Settings → Authorized domains.
+2. **Vercel env vars** — Confirm all `NEXT_PUBLIC_FIREBASE_*` values and `NEXT_PUBLIC_APP_URL` match your live site URL, then redeploy.
+3. **Spam folder** — Search for mail from `noreply@YOUR_PROJECT_ID.firebaseapp.com`.
+4. **Firebase user created?** — Check Authentication → Users in Firebase Console. If the user exists, click **Resend Email** on your dashboard.
+5. **Signup error toast** — If you see *"This site domain is not authorized in Firebase"*, add the domain from step 1.
+
 ---
 
 ## 🛠 Testing Production Build Locally

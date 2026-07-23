@@ -8,7 +8,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   serverTimestamp,
 } from "firebase/firestore";
 import { TodoItem, Priority } from "@/types";
@@ -19,20 +18,22 @@ export const todoService = {
    */
   async getUserTodos(userId: string): Promise<TodoItem[]> {
     const todosRef = collection(db, "todos");
-    const q = query(todosRef, where("userId", "==", userId), orderBy("createdAt", "desc"));
+    const q = query(todosRef, where("userId", "==", userId));
     const snap = await getDocs(q);
 
-    return snap.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        userId: data.userId,
-        text: data.text,
-        done: data.done ?? false,
-        priority: data.priority ?? "medium",
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-      };
-    });
+    return snap.docs
+      .map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          userId: data.userId,
+          text: data.text,
+          done: data.done ?? false,
+          priority: data.priority ?? "medium",
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+        };
+      })
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   },
 
   /**

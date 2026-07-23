@@ -1,4 +1,5 @@
 import { auth } from "@/firebase/config";
+import { getActionCodeSettings } from "@/firebase/actionCodeSettings";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -19,14 +20,12 @@ export const authService = {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Update Firebase Auth profile
     await updateProfile(user, { displayName: name });
 
-    // Send verification email
-    await sendEmailVerification(user);
-
-    // Sync user data in Firestore
     const profile = await userService.createUserProfile(user.uid, email, name);
+
+    await sendEmailVerification(user, getActionCodeSettings("/dashboard"));
+
     return profile;
   },
 
@@ -49,13 +48,13 @@ export const authService = {
    * Send password reset email
    */
   async resetPassword(email: string): Promise<void> {
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(auth, email, getActionCodeSettings("/login"));
   },
 
   /**
    * Resend email verification
    */
   async sendVerificationEmail(user: User): Promise<void> {
-    await sendEmailVerification(user);
+    await sendEmailVerification(user, getActionCodeSettings("/dashboard"));
   },
 };
