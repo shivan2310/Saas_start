@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
 import { Button } from "@/components/ui/Button";
-import { Menu, X, ArrowRight, SunMoon } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -28,7 +29,7 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-white/95 backdrop-blur-none">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-none">
       <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-black tracking-tight">
@@ -53,14 +54,7 @@ export const Navbar: React.FC = () => {
 
         {/* Right CTA / Auth Status */}
         <div className="hidden md:flex items-center gap-3">
-          {/* Theme slot prepared for future expansion */}
-          <button
-            aria-label="Theme options"
-            className="p-2 rounded text-muted hover:text-black hover:bg-surface transition-colors"
-            title="Theme switch prepared"
-          >
-            <SunMoon className="h-4 w-4" />
-          </button>
+          <ThemeToggle />
 
           {loading ? (
             <div className="h-9 w-20 bg-surface rounded animate-pulse" />
@@ -103,7 +97,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-white px-4 py-6 flex flex-col gap-4 animate-in slide-in-from-top-2">
+        <div className="md:hidden border-b border-border bg-background px-4 py-6 flex flex-col gap-4 animate-in slide-in-from-top-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -115,6 +109,10 @@ export const Navbar: React.FC = () => {
             </Link>
           ))}
           <div className="flex flex-col gap-2 pt-2">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-xs font-medium text-muted">Theme</span>
+              <ThemeToggle />
+            </div>
             {isAuthenticated ? (
               <>
                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>

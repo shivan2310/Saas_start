@@ -9,13 +9,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#FFFFFF",
-        surface: "#F8F8F8",
-        foreground: "#000000",
-        border: "#E5E5E5",
-        hover: "#111111",
-        muted: "#666666",
-        "muted-light": "#888888",
+        background: "hsl(var(--background) / <alpha-value>)",
+        surface: "hsl(var(--surface) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
+        border: "hsl(var(--border) / <alpha-value>)",
+        hover: "hsl(var(--hover) / <alpha-value>)",
+        muted: "hsl(var(--muted) / <alpha-value>)",
+        "muted-light": "hsl(var(--muted-light) / <alpha-value>)",
       },
       borderRadius: {
         DEFAULT: "8px",

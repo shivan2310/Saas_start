@@ -9,22 +9,34 @@
     --surface: 0 0% 97%;
     --border: 0 0% 90%;
     --muted: 0 0% 40%;
+    --hover: 0 0% 7%;
+    --accent-contrast: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 97%;
+    --surface: 0 0% 12%;
+    --border: 0 0% 24%;
+    --muted: 0 0% 68%;
+    --hover: 0 0% 90%;
+    --accent-contrast: 0 0% 7%;
   }
 
   * {
-    border-color: #E5E5E5;
+    border-color: hsl(var(--border));
   }
 
   body {
-    background-color: #FFFFFF;
-    color: #000000;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    color: #000000;
+    color: hsl(var(--foreground));
     font-weight: 600;
     letter-spacing: -0.025em;
   }
@@ -32,9 +44,39 @@
 
 @layer utilities {
   .border-standard {
-    border: 1px solid #E5E5E5;
+    border: 1px solid hsl(var(--border));
   }
   .bg-surface {
-    background-color: #F8F8F8;
+    background-color: hsl(var(--surface));
   }
+}
+
+/* Preserve the existing black-and-white component design in dark mode. */
+.dark .bg-white,
+.dark .bg-white\/95 {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .text-black {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .text-white {
+  color: hsl(var(--accent-contrast)) !important;
+}
+
+.dark .bg-black {
+  background-color: hsl(var(--foreground)) !important;
+}
+
+.dark .border-black {
+  border-color: hsl(var(--foreground)) !important;
+}
+
+.dark .hover\:text-black:hover {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .hover\:bg-surface:hover {
+  background-color: hsl(var(--surface)) !important;
 }
