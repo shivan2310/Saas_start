@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings, LogOut, Menu, X } from "lucide-react";
 import { authService } from "@/services/authService";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -78,28 +79,46 @@ export const Sidebar: React.FC = () => {
         </div>
       </aside>
 
-      <nav
-        aria-label="Mobile dashboard navigation"
-        className="md:hidden flex gap-1 overflow-x-auto border-b border-border bg-white px-3 py-2"
-      >
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded px-3 py-2 text-[11px] font-medium",
-                isActive ? "bg-black text-white" : "text-muted hover:bg-surface hover:text-black"
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="relative md:hidden border-b border-border bg-white">
+        <button
+          type="button"
+          aria-label={mobileMenuOpen ? "Close dashboard menu" : "Open dashboard menu"}
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-black"
+        >
+          <span>DAYBOOK MENU</span>
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+
+        {mobileMenuOpen && (
+          <nav
+            aria-label="Mobile dashboard navigation"
+            className="absolute left-0 right-0 top-full z-20 border-b border-border bg-white p-3 shadow-lg"
+          >
+            <div className="space-y-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded px-3 py-3 text-sm font-medium",
+                      isActive ? "bg-black text-white" : "text-muted hover:bg-surface hover:text-black"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        )}
+      </div>
     </>
   );
 };
