@@ -75,6 +75,7 @@ export default function SettingsPage() {
             <Input
               label="Full Name"
               type="text"
+              maxLength={100}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               leftIcon={<User className="h-4 w-4" />}

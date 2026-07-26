@@ -43,8 +43,6 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error("Login failed:", error);
       let message = "Invalid email or password.";
-      if (error.code === "auth/user-not-found") message = "No account found with this email.";
-      if (error.code === "auth/wrong-password") message = "Incorrect password.";
       if (error.code === "auth/too-many-requests") message = "Too many failed attempts. Try again later.";
       toast({ type: "error", title: "Authentication Error", description: message });
     } finally {

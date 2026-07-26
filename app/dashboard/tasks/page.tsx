@@ -151,6 +151,7 @@ export default function TasksPage() {
             <div className="flex-1 w-full">
               <Input
                 placeholder="Add a new task..."
+                maxLength={500}
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
               />
@@ -172,13 +173,13 @@ export default function TasksPage() {
       </Card>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-border pb-3">
+      <div className="flex w-full items-center gap-2 overflow-x-auto border-b border-border pb-3">
         {(["all", "active", "completed"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={cn(
-              "px-3 py-1.5 rounded text-xs font-medium capitalize transition-colors",
+              "shrink-0 px-3 py-1.5 rounded text-xs font-medium capitalize transition-colors",
               filter === f
                 ? "bg-black text-white"
                 : "text-muted hover:text-black hover:bg-surface"

@@ -28,8 +28,9 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 border-r border-border bg-white flex flex-col justify-between hidden md:flex shrink-0 min-h-screen">
-      <div>
+    <>
+      <aside className="w-64 border-r border-border bg-white flex flex-col justify-between hidden md:flex shrink-0 min-h-screen">
+        <div>
         {/* Brand */}
         <div className="h-16 px-6 border-b border-border flex items-center gap-2 font-bold text-base tracking-tight text-black">
           <div className="w-5 h-5 bg-black rounded flex items-center justify-center text-white text-[10px] font-mono">
@@ -63,18 +64,42 @@ export const Sidebar: React.FC = () => {
             );
           })}
         </nav>
-      </div>
+        </div>
 
-      {/* Footer / Account */}
-      <div className="p-4 border-t border-border">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-xs font-medium text-muted hover:text-black hover:bg-surface transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Sign Out</span>
-        </button>
-      </div>
-    </aside>
+        {/* Footer / Account */}
+        <div className="p-4 border-t border-border">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-xs font-medium text-muted hover:text-black hover:bg-surface transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      <nav
+        aria-label="Mobile dashboard navigation"
+        className="md:hidden flex gap-1 overflow-x-auto border-b border-border bg-white px-3 py-2"
+      >
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded px-3 py-2 text-[11px] font-medium",
+                isActive ? "bg-black text-white" : "text-muted hover:bg-surface hover:text-black"
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 };

@@ -90,6 +90,7 @@ export default function SignupPage() {
               <Input
                 label="Full Name"
                 type="text"
+                maxLength={100}
                 placeholder="John Doe"
                 leftIcon={<User className="h-4 w-4" />}
                 error={errors.name?.message}
@@ -108,6 +109,7 @@ export default function SignupPage() {
               <Input
                 label="Password"
                 type="password"
+                maxLength={128}
                 placeholder="••••••••"
                 helperText="Must be 8+ chars with 1 uppercase & 1 number"
                 leftIcon={<Lock className="h-4 w-4" />}

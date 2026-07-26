@@ -21,10 +21,10 @@ export function getAuthErrorMessage(
     case "auth/too-many-requests":
       return "Too many requests. Wait a few minutes, then try again.";
     case "auth/user-not-found":
-      return "No account found with this email.";
+      return "Invalid email or password.";
     case "auth/wrong-password":
-      return "Incorrect password.";
+      return "Invalid email or password.";
     default:
-      return authError.message || fallback;
+      return fallback;
   }
 }
