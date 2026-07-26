@@ -10,17 +10,17 @@ export const Hero: React.FC = () => {
         {/* Top Announcement Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-black mb-8">
           <span className="h-1.5 w-1.5 rounded-full bg-black" />
-          <span>PRODUCTION-READY NEXT.JS STARTER</span>
+          <span>A CALMER WAY TO MANAGE EVERYDAY LIFE</span>
         </div>
 
         {/* Hero Title */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-black max-w-4xl mx-auto leading-[1.08]">
-          The Minimal Full-Stack SaaS Template
+          Everything important in your life, in one place.
         </h1>
 
         {/* Subtitle */}
         <p className="mt-6 text-base sm:text-xl text-muted max-w-2xl mx-auto font-normal leading-relaxed">
-          Clean architecture, Firebase Authentication, Firestore database, strict TypeScript, and Next.js App Router. Built for rapid, scalable deployment.
+          Daybook helps you stay on top of what you need to do, what you spend, the dates you cannot forget, and the thoughts you want to keep.
         </p>
 
         {/* Call to Actions */}
@@ -32,7 +32,7 @@ export const Hero: React.FC = () => {
           </Link>
           <Link href="/login" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Sign In to Dashboard
+              Open your Daybook
             </Button>
           </Link>
         </div>
@@ -41,15 +41,15 @@ export const Hero: React.FC = () => {
         <div className="mt-16 pt-8 border-t border-border/60 flex flex-wrap items-center justify-center gap-8 text-xs font-medium text-muted uppercase tracking-wider">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-black" />
-            <span>Firebase Auth & Firestore</span>
+            <span>Private by design</span>
           </div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-black" />
-            <span>Strict Type Safety</span>
+            <span>Simple to use</span>
           </div>
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-black" />
-            <span>Vercel Optimized</span>
+            <span>Always with you</span>
           </div>
         </div>
       </div>

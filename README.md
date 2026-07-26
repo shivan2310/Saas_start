@@ -1,6 +1,6 @@
-# Minimal Full-Stack SaaS Starter Template
+# Daybook
 
-A production-ready, clean-architecture SaaS template built with **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, and **Firebase (Auth & Firestore)**. Designed with pure black & white minimalism for maximum elegance, performance, maintainability, and instant reusability across multiple projects.
+Daybook is a private personal organizer for keeping your to-dos, expenses, important dates, and diary entries together. It is built with **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, and **Firebase (Auth & Firestore)**.
 
 ---
 

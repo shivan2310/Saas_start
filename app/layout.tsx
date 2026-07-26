@@ -13,22 +13,22 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Minimal SaaS Template — Production Next.js Starter",
-    template: "%s | Minimal SaaS",
+    default: "Daybook — Your personal life, organized",
+    template: "%s | Daybook",
   },
-  description: "A clean, scalable, production-ready SaaS starter built with Next.js, TypeScript, TailwindCSS, and Firebase.",
+  description: "Keep your tasks, spending, important dates, and daily thoughts together in one private space.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   openGraph: {
-    title: "Minimal SaaS Template",
-    description: "Production-ready starter template for modern web applications.",
+    title: "Daybook — Your personal life, organized",
+    description: "Tasks, expenses, important dates, and diary entries in one private space.",
     type: "website",
     locale: "en_US",
-    siteName: "Minimal SaaS",
+    siteName: "Daybook",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Minimal SaaS Template",
-    description: "Production-ready starter template for modern web applications.",
+    title: "Daybook — Your personal life, organized",
+    description: "Tasks, expenses, important dates, and diary entries in one private space.",
   },
   robots: {
     index: true,

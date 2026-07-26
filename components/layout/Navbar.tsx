@@ -36,7 +36,7 @@ export const Navbar: React.FC = () => {
           <div className="w-6 h-6 bg-black rounded flex items-center justify-center text-white text-xs font-mono">
             S
           </div>
-          <span>SAAS_STARTER</span>
+            <span>DAYBOOK</span>
         </Link>
 
         {/* Desktop Links */}

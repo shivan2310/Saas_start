@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings, LogOut } from "lucide-react";
 import { authService } from "@/services/authService";
 
 export const Sidebar: React.FC = () => {
@@ -20,7 +20,10 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Tasks & Todos", href: "/dashboard/tasks", icon: CheckSquare },
+    { label: "To-dos", href: "/dashboard/tasks", icon: CheckSquare },
+    { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
+    { label: "Important Dates", href: "/dashboard/dates", icon: CalendarDays },
+    { label: "Diary", href: "/dashboard/diary", icon: BookOpen },
     { label: "Settings & Profile", href: "/dashboard/settings", icon: Settings },
   ];
 
@@ -32,7 +35,7 @@ export const Sidebar: React.FC = () => {
           <div className="w-5 h-5 bg-black rounded flex items-center justify-center text-white text-[10px] font-mono">
             S
           </div>
-          <span>SAAS_APP</span>
+          <span>DAYBOOK</span>
         </div>
 
         {/* Navigation */}

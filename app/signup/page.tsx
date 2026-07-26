@@ -83,7 +83,7 @@ export default function SignupPage() {
         <Card className="border-border">
           <CardHeader className="text-center space-y-1">
             <CardTitle className="text-xl">Create your account</CardTitle>
-            <CardDescription>Get started with your free SaaS starter template</CardDescription>
+            <CardDescription>Create your private space for everyday life</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

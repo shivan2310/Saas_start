@@ -72,7 +72,7 @@ export default function DashboardPage() {
           Welcome back, {profile?.displayName || "User"}
         </h2>
         <p className="text-xs text-muted mt-1">
-          Here is an overview of your account status and system metrics.
+          Keep your day, money, memories, and important dates close at hand.
         </p>
       </div>
 
@@ -81,20 +81,20 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 mb-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Account Role
+              Your space
             </CardTitle>
             <Shield className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-black capitalize">{profile?.role || "User"}</div>
-            <p className="text-[11px] text-muted mt-1">Access Level Permissions</p>
+            <p className="text-[11px] text-muted mt-1">Private to your account</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 mb-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Email Status
+              Your Daybook
             </CardTitle>
             <MailCheck className="h-4 w-4 text-black" />
           </CardHeader>
@@ -102,14 +102,14 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold text-black">
               {isEmailVerified ? "Verified" : "Unverified"}
             </div>
-            <p className="text-[11px] text-muted mt-1">Firebase Auth Persistence</p>
+            <p className="text-[11px] text-muted mt-1">Ready for today</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 mb-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Member Since
+              Important dates
             </CardTitle>
             <Calendar className="h-4 w-4 text-black" />
           </CardHeader>
@@ -117,7 +117,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold text-black">
               {profile?.createdAt ? formatDate(profile.createdAt) : "Today"}
             </div>
-            <p className="text-[11px] text-muted mt-1">Registration Timestamp</p>
+            <p className="text-[11px] text-muted mt-1">Never miss what matters</p>
           </CardContent>
         </Card>
       </div>

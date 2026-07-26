@@ -21,7 +21,7 @@ export const TopNavbar: React.FC = () => {
   return (
     <header className="h-16 border-b border-border bg-background px-4 sm:px-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <h1 className="text-sm font-semibold text-black tracking-tight">Dashboard</h1>
+        <h1 className="text-sm font-semibold text-black tracking-tight">My Daybook</h1>
       </div>
 
       <div className="flex items-center gap-4">

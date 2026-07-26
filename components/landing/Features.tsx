@@ -1,37 +1,37 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { Lock, Database, Code2, ShieldAlert, Cpu, Rocket } from "lucide-react";
+import { CheckSquare, Wallet, CalendarDays, BookOpen, Lock, Search } from "lucide-react";
 
 const features = [
   {
+    icon: CheckSquare,
+    title: "To-dos that move with you",
+    description: "Capture everyday tasks, set priorities, and see what needs your attention without the clutter.",
+  },
+  {
+    icon: Wallet,
+    title: "A clearer view of your money",
+    description: "Record expenses as they happen and understand where your money is going over time.",
+  },
+  {
+    icon: CalendarDays,
+    title: "Important dates remembered",
+    description: "Keep birthdays, anniversaries, appointments, and other dates close at hand.",
+  },
+  {
+    icon: BookOpen,
+    title: "Your personal diary",
+    description: "Write private entries, reflect on your days, and build a record of the moments that matter.",
+  },
+  {
     icon: Lock,
-    title: "Firebase Authentication",
-    description: "Email & Password login, registration, email verification, session persistence, and protected routes out of the box.",
+    title: "Private by design",
+    description: "Your personal information is tied to your account and kept separate from everyone else’s.",
   },
   {
-    icon: Database,
-    title: "Firestore Integration",
-    description: "Pre-configured user profile sync with strict security rules and typed schema collection helpers.",
-  },
-  {
-    icon: Code2,
-    title: "Strict TypeScript",
-    description: "End-to-end type safety with zero any types, reusable components, and strict compiler settings.",
-  },
-  {
-    icon: ShieldAlert,
-    title: "Security Hardened",
-    description: "Input validation via Zod, rate limiting strategies, security headers, and safe environment configuration.",
-  },
-  {
-    icon: Cpu,
-    title: "React Hook Form & Zod",
-    description: "Performant client and server form validation with meaningful error messages and accessibility labels.",
-  },
-  {
-    icon: Rocket,
-    title: "Vercel Ready",
-    description: "Optimized Next.js App Router architecture ready to deploy instantly with zero runtime configuration.",
+    icon: Search,
+    title: "One place to find things",
+    description: "Stop searching across scattered notes and apps. Your everyday life has one home.",
   },
 ];
 
@@ -40,12 +40,12 @@ export const Features: React.FC = () => {
     <section id="features" className="w-full py-24 bg-surface border-b border-border">
       <div className="container mx-auto max-w-6xl px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">Architecture</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">One place for your life</h2>
           <p className="text-3xl sm:text-4xl font-bold tracking-tight text-black">
-            Built for Scalability & Clean Code
+            Less to remember. More time to live.
           </p>
           <p className="text-sm text-muted">
-            Everything you need to launch a modern SaaS product without boilerplate clutter.
+            Daybook brings the practical and personal parts of your life together in a calm, focused workspace.
           </p>
         </div>
 
