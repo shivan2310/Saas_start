@@ -1,14 +1,27 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
-import { User, CheckCircle2, AlertTriangle, LogOut } from "lucide-react";
+import { User, CheckCircle2, AlertTriangle, LogOut, Menu, X, LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const TopNavbar: React.FC = () => {
   const { profile, user, isEmailVerified } = useAuth();
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+    { label: "To-dos", href: "/dashboard/tasks", icon: CheckSquare },
+    { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
+    { label: "Important Dates", href: "/dashboard/dates", icon: CalendarDays },
+    { label: "Diary", href: "/dashboard/diary", icon: BookOpen },
+    { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -19,12 +32,27 @@ export const TopNavbar: React.FC = () => {
   };
 
   return (
-    <header className="h-16 border-b border-border bg-background px-4 sm:px-6 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <h1 className="text-sm font-semibold text-black tracking-tight">My Daybook</h1>
+    <header className="border-b border-border bg-background">
+      <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded bg-black text-white text-[10px] font-mono font-bold">
+            S
+          </div>
+          <h1 className="text-sm font-semibold text-black tracking-tight">DAYBOOK</h1>
+        </div>
+
+        <button
+          type="button"
+          aria-label={mobileMenuOpen ? "Close dashboard menu" : "Open dashboard menu"}
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          className="md:hidden rounded p-2 text-black hover:bg-surface"
+        >
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="hidden md:flex items-center justify-end gap-4 px-4 pb-3 sm:px-6">
         <ThemeToggle />
 
         {/* Email Verification status badge */}
@@ -68,6 +96,32 @@ export const TopNavbar: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {mobileMenuOpen && (
+        <nav
+          aria-label="Mobile dashboard navigation"
+          className="md:hidden flex w-full gap-2 overflow-x-auto border-t border-border bg-white px-3 py-3"
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded px-3 py-2 text-[11px] font-medium",
+                  isActive ? "bg-black text-white" : "text-muted hover:bg-surface hover:text-black"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </header>
   );
 };
