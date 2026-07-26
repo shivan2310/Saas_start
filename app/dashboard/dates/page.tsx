@@ -1,17 +1,15 @@
+"use client";
+import { FormEvent, useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { personalService } from "@/services/personalService";
+import { ImportantDate } from "@/types";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { CalendarDays } from "lucide-react";
 
 export default function DatesPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-black">Important dates</h2>
-        <p className="text-xs text-muted mt-1">Remember the moments and appointments that matter.</p>
-      </div>
-      <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><CalendarDays className="h-4 w-4" /> Your calendar</CardTitle></CardHeader>
-        <CardContent><p className="text-sm text-muted">Important date tracking is ready to be added here.</p></CardContent>
-      </Card>
-    </div>
-  );
+  const { user } = useAuth(); const [items, setItems] = useState<ImportantDate[]>([]); const [title, setTitle] = useState(""); const [date, setDate] = useState(""); const [notes, setNotes] = useState("");
+  useEffect(() => { if (user) personalService.getDates(user.uid).then(setItems); }, [user]);
+  const submit = async (e: FormEvent) => { e.preventDefault(); if (!user || !title.trim() || !date) return; const item = await personalService.addDate(user.uid, title.trim(), date, notes.trim()); setItems((v) => [...v, item].sort((a, b) => a.date.localeCompare(b.date))); setTitle(""); setDate(""); setNotes(""); };
+  return <div className="space-y-6"><div><h2 className="text-2xl font-bold">Important dates</h2><p className="text-xs text-muted mt-1">Remember the moments and appointments that matter.</p></div><Card><CardHeader><CardTitle>Add an important date</CardTitle></CardHeader><CardContent><form onSubmit={submit} className="grid gap-3 sm:grid-cols-4"><Input label="What is it?" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Birthday, appointment..." required /><Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required /><Input label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional" /><Button type="submit" className="self-end">Save date</Button></form></CardContent></Card><Card><CardHeader><CardTitle>Your dates</CardTitle></CardHeader><CardContent>{items.length ? items.map((item) => <div key={item.id} className="flex justify-between border-b border-border py-3 text-sm"><span><strong>{item.title}</strong>{item.notes && <span className="ml-2 text-xs text-muted">{item.notes}</span>}</span><span className="font-semibold">{item.date}</span></div>) : <p className="text-sm text-muted">No important dates yet.</p>}</CardContent></Card></div>;
 }
