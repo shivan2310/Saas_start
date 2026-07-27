@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
+import { getAuthErrorMessage } from "@/lib/authErrors";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
 
 export default function LoginPage() {
@@ -42,8 +43,7 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (error: any) {
       console.error("Login failed:", error);
-      let message = "Invalid email or password.";
-      if (error.code === "auth/too-many-requests") message = "Too many failed attempts. Try again later.";
+      const message = getAuthErrorMessage(error, "Invalid email or password.");
       toast({ type: "error", title: "Authentication Error", description: message });
     } finally {
       setIsSubmitting(false);

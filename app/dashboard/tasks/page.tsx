@@ -101,7 +101,7 @@ export default function TasksPage() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-black">Tasks & Todo List</h2>
         <p className="text-xs text-muted mt-1">
-          Manage your personal tasks stored securely in your Firestore database.
+          Manage your personal tasks stored securely in your Supabase database.
         </p>
       </div>
 

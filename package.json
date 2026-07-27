@@ -11,9 +11,9 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@next/swc-wasm-nodejs": "^16.2.11",
+    "@supabase/supabase-js": "^2.110.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "firebase": "^10.13.0",
     "lucide-react": "^0.439.0",
     "next": "^14.2.8",
     "react": "^18.3.1",

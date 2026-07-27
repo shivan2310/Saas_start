@@ -1,78 +1,23 @@
-import { db } from "@/firebase/config";
-import {
-  collection,
-  doc,
-  addDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  serverTimestamp,
-} from "firebase/firestore";
+import { supabase } from "@/supabase/client";
 import { TodoItem, Priority } from "@/types";
 
 export const todoService = {
-  /**
-   * Fetch all todos for a specific user
-   */
   async getUserTodos(userId: string): Promise<TodoItem[]> {
-    const todosRef = collection(db, "todos");
-    const q = query(todosRef, where("userId", "==", userId));
-    const snap = await getDocs(q);
-
-    return snap.docs
-      .map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          userId: data.userId,
-          text: data.text,
-          done: data.done ?? false,
-          priority: data.priority ?? "medium",
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-        };
-      })
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const { data, error } = await supabase.from("todos").select("*").eq("userId", userId).order("createdAt", { ascending: false });
+    if (error) throw error;
+    return (data || []) as TodoItem[];
   },
-
-  /**
-   * Add a new todo for the user
-   */
   async addTodo(userId: string, text: string, priority: Priority = "medium"): Promise<TodoItem> {
-    const todosRef = collection(db, "todos");
-    const now = new Date().toISOString();
-    const docRef = await addDoc(todosRef, {
-      userId,
-      text,
-      done: false,
-      priority,
-      createdAt: serverTimestamp(),
-    });
-
-    return {
-      id: docRef.id,
-      userId,
-      text,
-      done: false,
-      priority,
-      createdAt: now,
-    };
+    const { data, error } = await supabase.from("todos").insert({ userId, text, done: false, priority }).select().single();
+    if (error) throw error;
+    return data as TodoItem;
   },
-
-  /**
-   * Toggle completion status
-   */
   async toggleTodo(todoId: string, done: boolean): Promise<void> {
-    const docRef = doc(db, "todos", todoId);
-    await updateDoc(docRef, { done });
+    const { error } = await supabase.from("todos").update({ done }).eq("id", todoId);
+    if (error) throw error;
   },
-
-  /**
-   * Delete a todo item
-   */
   async deleteTodo(todoId: string): Promise<void> {
-    const docRef = doc(db, "todos", todoId);
-    await deleteDoc(docRef);
+    const { error } = await supabase.from("todos").delete().eq("id", todoId);
+    if (error) throw error;
   },
 };

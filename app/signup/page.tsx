@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, SignupInput } from "@/lib/validations/auth";
 import { authService } from "@/services/authService";
-import { getAuthErrorMessage } from "@/lib/firebase/authErrors";
+import { getAuthErrorMessage } from "@/lib/authErrors";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";

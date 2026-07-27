@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
-import { getAuthErrorMessage } from "@/lib/firebase/authErrors";
+import { getAuthErrorMessage } from "@/lib/authErrors";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";

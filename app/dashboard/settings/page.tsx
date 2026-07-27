@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { userService } from "@/services/userService";
 import { authService } from "@/services/authService";
-import { updateProfile } from "firebase/auth";
-import { auth } from "@/firebase/config";
+import { supabase } from "@/supabase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -25,9 +24,8 @@ export default function SettingsPage() {
     if (!user) return;
     setIsSaving(true);
     try {
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { displayName });
-      }
+      const { error } = await supabase.auth.updateUser({ data: { display_name: displayName } });
+      if (error) throw error;
       await userService.updateUserProfile(user.uid, { displayName });
       await refreshProfile();
       toast({ type: "success", title: "Profile Updated", description: "Your display name has been saved." });
