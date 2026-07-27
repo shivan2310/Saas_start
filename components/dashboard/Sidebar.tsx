@@ -36,7 +36,7 @@ export const Sidebar: React.FC = () => {
           <div className="w-5 h-5 bg-black rounded flex items-center justify-center text-white text-[10px] font-mono">
             S
           </div>
-          <span>DAYBOOK</span>
+          <span>NIVIO</span>
         </div>
 
         {/* Navigation */}

@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
               <div className="w-5 h-5 bg-black rounded flex items-center justify-center text-white text-[10px] font-mono">
                 S
               </div>
-              <span>DAYBOOK</span>
+              <span>NIVIO</span>
             </div>
             <p className="text-xs text-muted leading-relaxed">
               A private home for your tasks, expenses, important dates, and daily thoughts.
@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted">
-          <p>© {new Date().getFullYear()} Daybook. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Nivio. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-mono">
               <span className="w-2 h-2 rounded-full bg-black" /> System Operational

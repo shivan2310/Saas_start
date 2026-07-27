@@ -20,7 +20,7 @@ export const Hero: React.FC = () => {
 
         {/* Subtitle */}
         <p className="mt-6 text-base sm:text-xl text-muted max-w-2xl mx-auto font-normal leading-relaxed">
-          Daybook helps you stay on top of what you need to do, what you spend, the dates you cannot forget, and the thoughts you want to keep.
+          Nivio helps you stay on top of what you need to do, what you spend, the dates you cannot forget, and the thoughts you want to keep.
         </p>
 
         {/* Call to Actions */}
@@ -32,7 +32,7 @@ export const Hero: React.FC = () => {
           </Link>
           <Link href="/login" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Open your Daybook
+              Open your Nivio
             </Button>
           </Link>
         </div>

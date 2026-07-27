@@ -45,7 +45,7 @@ export const Features: React.FC = () => {
             Less to remember. More time to live.
           </p>
           <p className="text-sm text-muted">
-            Daybook brings the practical and personal parts of your life together in a calm, focused workspace.
+            Nivio brings the practical and personal parts of your life together in a calm, focused workspace.
           </p>
         </div>
 

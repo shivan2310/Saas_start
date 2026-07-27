@@ -38,7 +38,7 @@ export const TopNavbar: React.FC = () => {
           <div className="flex h-7 w-7 items-center justify-center rounded bg-black text-white text-[10px] font-mono font-bold">
             S
           </div>
-          <h1 className="text-sm font-semibold text-black tracking-tight">DAYBOOK</h1>
+          <h1 className="text-sm font-semibold text-black tracking-tight">NIVIO</h1>
         </div>
 
         <button

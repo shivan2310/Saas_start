@@ -13,21 +13,21 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Daybook — Your personal life, organized",
-    template: "%s | Daybook",
+    default: "Nivio — Your personal life, organized",
+    template: "%s | Nivio",
   },
   description: "Keep your tasks, spending, important dates, and daily thoughts together in one private space.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   openGraph: {
-    title: "Daybook — Your personal life, organized",
+    title: "Nivio — Your personal life, organized",
     description: "Tasks, expenses, important dates, and diary entries in one private space.",
     type: "website",
     locale: "en_US",
-    siteName: "Daybook",
+    siteName: "Nivio",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Daybook — Your personal life, organized",
+    title: "Nivio — Your personal life, organized",
     description: "Tasks, expenses, important dates, and diary entries in one private space.",
   },
   robots: {

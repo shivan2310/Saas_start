@@ -1,6 +1,6 @@
-# Daybook
+# Nivio
 
-Daybook is a private personal organizer built with Next.js, TypeScript, Tailwind CSS, Supabase Auth, and Supabase Postgres.
+Nivio is a private personal organizer built with Next.js, TypeScript, Tailwind CSS, Supabase Auth, and Supabase Postgres.
 
 ## Local setup
 
@@ -17,4 +17,4 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 Run `npm run dev` to start the app.
 
-All application tables use Row Level Security. Each row is tied to `auth.uid()`, so users can only access their own profile and Daybook data.
+All application tables use Row Level Security. Each row is tied to `auth.uid()`, so users can only access their own profile and Nivio data.

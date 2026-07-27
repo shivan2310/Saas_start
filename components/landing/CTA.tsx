@@ -12,12 +12,12 @@ export const CTA: React.FC = () => {
             Make space for what matters.
           </h2>
           <p className="text-sm text-neutral-400 max-w-xl mx-auto font-normal">
-            Create your private Daybook and start bringing your everyday life into focus.
+            Create your private Nivio and start bringing your everyday life into focus.
           </p>
           <div className="pt-2 flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/signup">
               <Button size="lg" variant="secondary" className="w-full sm:w-auto" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                Start your Daybook
+                Start your Nivio
               </Button>
             </Link>
           </div>

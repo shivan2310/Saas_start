@@ -94,7 +94,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 mb-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Your Daybook
+              Your Nivio
             </CardTitle>
             <MailCheck className="h-4 w-4 text-black" />
           </CardHeader>
