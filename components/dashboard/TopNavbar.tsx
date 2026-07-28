@@ -34,13 +34,6 @@ export const TopNavbar: React.FC = () => {
   return (
     <header className="border-b border-border bg-background">
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded bg-black text-white text-[10px] font-mono font-bold">
-            S
-          </div>
-          <h1 className="text-sm font-semibold text-black tracking-tight">NIVIO</h1>
-        </div>
-
         <button
           type="button"
           aria-label={mobileMenuOpen ? "Close dashboard menu" : "Open dashboard menu"}
