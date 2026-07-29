@@ -155,7 +155,7 @@ export function NivioLanding() {
               </a>
             ))}
           </nav>
-          <Link href="/signup" className="rounded-full border border-[#191919]/15 bg-white px-4 py-2 text-[12px] font-medium text-[#191919] transition-colors duration-200 hover:bg-[#f4f3f3]">
+          <Link href="/signup" className="rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-white transition-colors duration-200 hover:bg-[#3a3a3a]">
             Start Free
           </Link>
         </div>
@@ -169,7 +169,7 @@ export function NivioLanding() {
           <p className="mt-8 max-w-md text-[15px] leading-7 text-[#191919]/70 sm:text-[16px]">
             A private space where your journal, tasks, reminders, expenses, memories, and everyday life come together. AI quietly organizes everything for you while your personal data remains completely yours.
           </p>
-          <Link href="/signup" className="mt-8 inline-flex items-center rounded-full border border-[#191919]/15 bg-white px-5 py-3 text-[13px] font-medium text-[#191919] transition-colors duration-200 hover:bg-[#f4f3f3]">
+          <Link href="/signup" className="mt-8 inline-flex items-center rounded-full bg-[#191919] px-5 py-3 text-[13px] font-medium text-white transition-colors duration-200 hover:bg-[#3a3a3a]">
             Start Free
           </Link>
         </div>
@@ -182,7 +182,7 @@ export function NivioLanding() {
               <p className="text-[10px] font-medium tracking-[0.16em] text-[#191919]/55">YOUR DIGITAL DIARY</p>
               <h2 className="mt-3 font-serif text-[clamp(1.8rem,2.8vw,2.7rem)] leading-[0.98] tracking-[-0.045em]">Designed for<br />everyday life.</h2>
             </div>
-            <p className="max-w-xl self-end text-[13px] leading-6 text-[#191919]/70 sm:text-[14px]">
+            <p className="max-w-xl self-end text-[13px] leading-6 text-[#191919] sm:text-[14px]">
               Capture your thoughts, organize your day, remember meaningful moments, track expenses, manage tasks, and let AI connect everything naturally—without compromising your privacy.
             </p>
           </div>
