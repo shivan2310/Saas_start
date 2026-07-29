@@ -130,9 +130,9 @@ function CinematicMemory() {
 }
 
 const features = [
-  ["01", "Journal"],
-  ["02", "Organize"],
-  ["03", "Remember"],
+  ["01", "Journal", "/dashboard/diary"],
+  ["02", "Organize", "/dashboard"],
+  ["03", "Remember", "/dashboard/tasks"],
 ];
 
 export function NivioLanding() {
@@ -155,7 +155,7 @@ export function NivioLanding() {
               </a>
             ))}
           </nav>
-          <Link href="/signup" className="rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-white transition-colors duration-200 hover:bg-[#3a3a3a]">
+          <Link href="/signup" className="rounded-full border border-[#191919]/15 bg-white px-4 py-2 text-[12px] font-medium text-[#191919] transition-colors duration-200 hover:bg-[#f4f3f3]">
             Start Free
           </Link>
         </div>
@@ -169,7 +169,7 @@ export function NivioLanding() {
           <p className="mt-8 max-w-md text-[15px] leading-7 text-[#191919]/70 sm:text-[16px]">
             A private space where your journal, tasks, reminders, expenses, memories, and everyday life come together. AI quietly organizes everything for you while your personal data remains completely yours.
           </p>
-          <Link href="/signup" className="mt-8 inline-flex items-center rounded-full bg-[#191919] px-5 py-3 text-[13px] font-medium text-white transition-colors duration-200 hover:bg-[#3a3a3a]">
+          <Link href="/signup" className="mt-8 inline-flex items-center rounded-full border border-[#191919]/15 bg-white px-5 py-3 text-[13px] font-medium text-[#191919] transition-colors duration-200 hover:bg-[#f4f3f3]">
             Start Free
           </Link>
         </div>
@@ -188,14 +188,14 @@ export function NivioLanding() {
           </div>
           <div className="h-px bg-[#191919]/10" />
           <div className="grid grid-cols-3 gap-2 py-3 sm:gap-3 sm:py-4">
-            {features.map(([number, title]) => (
-              <a key={title} href={`#${title.toLowerCase()}`} className="group flex min-w-0 items-center justify-between bg-[#f4f3f3] px-3 py-3 transition-colors duration-200 hover:bg-[#e9e8e8] sm:px-5 sm:py-4">
+            {features.map(([number, title, href]) => (
+              <Link key={title} href={href} className="group flex min-w-0 items-center justify-between bg-[#f4f3f3] px-3 py-3 transition-colors duration-200 hover:bg-[#e9e8e8] sm:px-5 sm:py-4">
                 <span className="flex min-w-0 items-baseline gap-2 sm:gap-3">
                   <span className="text-[10px] text-[#191919]/50">{number}</span>
                   <span className="truncate text-[12px] font-medium sm:text-[13px]">{title}</span>
                 </span>
                 <ArrowRight className="ml-2 h-4 w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={1.5} />
-              </a>
+              </Link>
             ))}
           </div>
         </div>

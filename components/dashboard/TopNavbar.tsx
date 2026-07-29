@@ -19,7 +19,7 @@ export const TopNavbar: React.FC = () => {
     { label: "To-dos", href: "/dashboard/tasks", icon: CheckSquare },
     { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
     { label: "Important Dates", href: "/dashboard/dates", icon: CalendarDays },
-    { label: "Diary", href: "/dashboard/diary", icon: BookOpen },
+    { label: "Journal", href: "/dashboard/diary", icon: BookOpen },
     { label: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
