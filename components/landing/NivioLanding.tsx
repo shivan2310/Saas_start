@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const VIDEO_SOURCE =
-  "https://videos.pexels.com/video-files/853889/853889-hd_1920_1080_30fps.mp4";
+  "/Hand_writing_in_open_journal_202607292151.mp4";
 
 type FrameCanvas = HTMLCanvasElement | OffscreenCanvas;
 
