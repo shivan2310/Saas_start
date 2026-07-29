@@ -120,13 +120,12 @@ function CinematicMemory() {
         muted
         playsInline
         preload="auto"
-        crossOrigin="anonymous"
       />
       <canvas
         ref={canvasRef}
         className={`absolute left-0 top-0 h-full w-full scale-[1.15] object-cover object-top ${hasFinished ? "block" : "hidden"}`}
       />
-      <div className="absolute inset-0 bg-white/72" />
+      <div className="absolute inset-0 bg-white/50" />
     </div>
   );
 }
