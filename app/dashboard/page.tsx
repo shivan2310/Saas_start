@@ -1,19 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
+import { personalService } from "@/services/personalService";
 import { getAuthErrorMessage } from "@/lib/authErrors";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { Expense } from "@/types";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { formatDate } from "@/lib/utils";
-import { Users, Shield, Calendar, MailCheck, AlertCircle } from "lucide-react";
+import { Shield, Calendar, MailCheck, AlertCircle } from "lucide-react";
+import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 
 export default function DashboardPage() {
   const { user, profile, isEmailVerified } = useAuth();
   const { toast } = useToast();
   const [sendingVerification, setSendingVerification] = useState(false);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      personalService.getExpenses(user.uid).then(setExpenses).catch(console.error);
+    }
+  }, [user]);
 
   const handleResendVerification = async () => {
     if (!user) return;
@@ -121,6 +131,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Graphical Expenses Analytics & Insights Card (Clickable to /dashboard/expenses) */}
+      <ExpenseChart expenses={expenses} interactive={true} />
     </div>
   );
 }
