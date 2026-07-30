@@ -155,7 +155,7 @@ export function NivioLanding() {
               </a>
             ))}
           </nav>
-          <Link href="/signup" className="rounded-full bg-white px-4 py-2 text-[12px] font-medium text-[#191919] transition-colors duration-200 hover:bg-gray-100 shadow-sm border border-[#191919]/10">
+          <Link href="/signup" className="rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-[#fff] transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
             Start Free
           </Link>
         </div>
@@ -170,7 +170,7 @@ export function NivioLanding() {
           <p className="mt-5 sm:mt-8 max-w-md text-xs sm:text-[15px] leading-relaxed sm:leading-7 text-[#191919]/75 font-normal">
             A private space where your journal, tasks, reminders, expenses, memories, and everyday life come together. AI quietly organizes everything for you while your personal data remains completely yours.
           </p>
-          <Link href="/signup" className="mt-5 sm:mt-8 inline-flex items-center rounded-full bg-white px-5 py-2.5 sm:py-3 text-xs sm:text-[13px] font-medium text-[#191919] transition-colors duration-200 hover:bg-gray-100 shadow-sm border border-[#191919]/10">
+          <Link href="/signup" className="mt-5 sm:mt-8 inline-flex items-center rounded-full bg-[#191919] px-5 py-2.5 sm:py-3 text-xs sm:text-[13px] font-medium text-[#fff] transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
             Start Free
           </Link>
         </div>
