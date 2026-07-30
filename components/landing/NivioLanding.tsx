@@ -137,7 +137,7 @@ const features = [
 
 export function NivioLanding() {
   return (
-    <main className="relative min-h-[100dvh] overflow-x-hidden bg-white text-[#191919]">
+    <main className="relative min-h-[100dvh] overflow-x-hidden text-[#191919]" style={{ backgroundColor: "#ffffff" }}>
       <CinematicMemory />
 
       <header className="fixed inset-x-0 top-0 z-30">
@@ -177,28 +177,28 @@ export function NivioLanding() {
       </section>
 
       {/* Bottom Section */}
-      <section className="absolute inset-x-0 bottom-0 z-20 border-t border-[#191919]/10 bg-white/95 backdrop-blur-md">
+      <section className="absolute inset-x-0 bottom-0 z-20 border-t border-[#191919]/10 shadow-lg" style={{ backgroundColor: "#ffffff" }}>
         <div className="mx-auto max-w-[1440px] px-4 sm:px-10 lg:px-14">
           <div className="grid gap-3 sm:gap-8 py-4 sm:py-7 md:grid-cols-[1fr_1.1fr] md:gap-16 md:py-8">
             <div>
-              <p className="text-[9px] sm:text-[10px] font-medium tracking-[0.16em] text-[#191919]/60">YOUR DIGITAL DIARY</p>
-              <h2 className="mt-1.5 sm:mt-3 font-serif text-[clamp(1.35rem,2.8vw,2.7rem)] leading-[1.05] sm:leading-[0.98] tracking-[-0.045em] text-[#191919]">
+              <p className="text-[9px] sm:text-[10px] font-medium tracking-[0.16em]" style={{ color: "rgba(25, 25, 25, 0.6)" }}>YOUR DIGITAL DIARY</p>
+              <h2 className="mt-1.5 sm:mt-3 font-serif text-[clamp(1.35rem,2.8vw,2.7rem)] leading-[1.05] sm:leading-[0.98] tracking-[-0.045em]" style={{ color: "#191919" }}>
                 Designed for<br className="hidden sm:inline" /> everyday life.
               </h2>
             </div>
-            <p className="max-w-xl self-end text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed sm:leading-6 text-[#191919]/80">
+            <p className="max-w-xl self-end text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed sm:leading-6" style={{ color: "#191919" }}>
               Capture your thoughts, organize your day, remember meaningful moments, track expenses, manage tasks, and let AI connect everything naturally—without compromising your privacy.
             </p>
           </div>
-          <div className="h-px bg-[#191919]/10" />
+          <div className="h-px" style={{ backgroundColor: "rgba(25, 25, 25, 0.1)" }} />
           <div className="grid grid-cols-3 gap-1.5 sm:gap-3 py-2.5 sm:py-4">
             {features.map(([number, title, href]) => (
-              <Link key={title} href={href} className="group flex min-w-0 items-center justify-between bg-[#f4f3f3] px-2.5 sm:px-5 py-2.5 sm:py-4 rounded-sm sm:rounded-none transition-colors duration-200 hover:bg-[#e9e8e8]">
+              <Link key={title} href={href} className="group flex min-w-0 items-center justify-between px-2.5 sm:px-5 py-2.5 sm:py-4 rounded-sm sm:rounded-none transition-colors duration-200 hover:opacity-90" style={{ backgroundColor: "#f4f3f3" }}>
                 <span className="flex min-w-0 items-baseline gap-1.5 sm:gap-3">
-                  <span className="text-[9px] sm:text-[10px] text-[#191919]/50">{number}</span>
-                  <span className="truncate text-[11px] sm:text-[13px] font-medium text-[#191919]">{title}</span>
+                  <span className="text-[9px] sm:text-[10px]" style={{ color: "rgba(25, 25, 25, 0.5)" }}>{number}</span>
+                  <span className="truncate text-[11px] sm:text-[13px] font-medium" style={{ color: "#191919" }}>{title}</span>
                 </span>
-                <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-[#191919] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={1.5} />
+                <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1" style={{ color: "#191919" }} strokeWidth={1.5} />
               </Link>
             ))}
           </div>
