@@ -140,7 +140,7 @@ export function NivioLanding() {
     <main className="relative min-h-[100dvh] overflow-x-hidden bg-white text-[#191919]">
       <CinematicMemory />
 
-      <header className="fixed inset-x-0 top-0 z-30 bg-white/40 backdrop-blur-md md:bg-transparent md:backdrop-blur-none">
+      <header className="fixed inset-x-0 top-0 z-30">
         <div className="mx-auto flex h-16 sm:h-20 max-w-[1440px] items-center justify-between px-4 sm:px-10 lg:px-14">
           <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.03em] text-[#191919]">
             <span className="relative block h-[17px] w-[17px] rounded-[5px] border border-[#191919]">
@@ -155,7 +155,7 @@ export function NivioLanding() {
               </a>
             ))}
           </nav>
-          <Link href="/signup" className="rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-white transition-colors duration-200 hover:bg-[#3a3a3a]">
+          <Link href="/signup" className="rounded-full bg-white px-4 py-2 text-[12px] font-medium text-[#191919] transition-colors duration-200 hover:bg-gray-100 shadow-sm border border-[#191919]/10">
             Start Free
           </Link>
         </div>
@@ -170,7 +170,7 @@ export function NivioLanding() {
           <p className="mt-5 sm:mt-8 max-w-md text-xs sm:text-[15px] leading-relaxed sm:leading-7 text-[#191919]/75 font-normal">
             A private space where your journal, tasks, reminders, expenses, memories, and everyday life come together. AI quietly organizes everything for you while your personal data remains completely yours.
           </p>
-          <Link href="/signup" className="mt-5 sm:mt-8 inline-flex items-center rounded-full bg-[#191919] px-5 py-2.5 sm:py-3 text-xs sm:text-[13px] font-medium text-white transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
+          <Link href="/signup" className="mt-5 sm:mt-8 inline-flex items-center rounded-full bg-white px-5 py-2.5 sm:py-3 text-xs sm:text-[13px] font-medium text-[#191919] transition-colors duration-200 hover:bg-gray-100 shadow-sm border border-[#191919]/10">
             Start Free
           </Link>
         </div>
