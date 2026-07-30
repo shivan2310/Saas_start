@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Expense } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { TrendingUp, ArrowUpRight, PieChart as PieIcon, Wallet, Tag } from "lucide-react";
+import { TrendingUp, ArrowUpRight, BarChart3, Wallet, Tag } from "lucide-react";
 
 interface ExpenseChartProps {
   expenses: Expense[];
@@ -24,19 +24,22 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
   }, {});
 
   const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+  const maxCategoryAmount = sortedCategories.length > 0 ? sortedCategories[0][1] : 1;
   const topCategory = sortedCategories[0];
   const avgExpense = expenses.length > 0 ? total / expenses.length : 0;
+
+  const displayCategories = sortedCategories.slice(0, 6);
 
   const content = (
     <Card className={`transition-all duration-200 ${interactive ? "hover:border-black/50 hover:shadow-md cursor-pointer group" : ""}`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle className="flex items-center gap-2 text-base font-bold text-black">
-            <PieIcon className="h-4 w-4" />
-            Expense Analytics & Insights
+            <BarChart3 className="h-4 w-4" />
+            Expense Bar Chart & Insights
           </CardTitle>
           <CardDescription className="text-xs text-muted mt-0.5">
-            Graphical breakdown of your spending habits
+            Visual breakdown of spending by category
           </CardDescription>
         </div>
         {interactive && (
@@ -73,48 +76,74 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
           </div>
         </div>
 
-        {/* Graphical Bar Chart */}
+        {/* Vertical Bar Graph Visual */}
         {expenses.length > 0 ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs font-semibold text-muted uppercase tracking-wider">
-              <span>Category Breakdown</span>
-              <span>Amount (% of Total)</span>
+              <span>Category Bar Graph</span>
+              <span>Max: ₹{maxCategoryAmount.toFixed(0)}</span>
             </div>
 
-            <div className="space-y-2.5">
-              {sortedCategories.slice(0, 5).map(([cat, amount], idx) => {
-                const percentage = total > 0 ? Math.round((amount / total) * 100) : 0;
-                const opacityClasses = [
-                  "bg-black",
-                  "bg-neutral-800",
-                  "bg-neutral-600",
-                  "bg-neutral-500",
-                  "bg-neutral-400",
-                ];
-                const barColor = opacityClasses[idx % opacityClasses.length];
+            {/* Vertical Bar Chart Container */}
+            <div className="relative pt-6 pb-2 border-b border-border">
+              {/* Y-Axis Grid Guidelines */}
+              <div className="absolute inset-x-0 top-6 border-b border-dashed border-border/50" />
+              <div className="absolute inset-x-0 top-1/2 border-b border-dashed border-border/30" />
 
-                return (
-                  <div key={cat} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-black">{cat}</span>
-                      <span className="text-black font-semibold">
-                        ₹{amount.toFixed(2)} <span className="text-muted text-[11px]">({percentage}%)</span>
+              {/* Bars Row */}
+              <div className="relative z-10 flex items-end justify-around h-44 sm:h-52 gap-2 px-2">
+                {displayCategories.map(([cat, amount], idx) => {
+                  const barHeightPercent = maxCategoryAmount > 0
+                    ? Math.max(Math.round((amount / maxCategoryAmount) * 100), 8)
+                    : 8;
+                  const percentageOfTotal = total > 0 ? Math.round((amount / total) * 100) : 0;
+
+                  // Bar color gradient styles (black/dark accents)
+                  const barColors = [
+                    "bg-black hover:bg-neutral-800",
+                    "bg-neutral-800 hover:bg-neutral-700",
+                    "bg-neutral-700 hover:bg-neutral-600",
+                    "bg-neutral-600 hover:bg-neutral-500",
+                    "bg-neutral-500 hover:bg-neutral-400",
+                    "bg-neutral-400 hover:bg-neutral-300",
+                  ];
+                  const barBg = barColors[idx % barColors.length];
+
+                  return (
+                    <div
+                      key={cat}
+                      className="flex flex-col items-center flex-1 h-full justify-end group/bar max-w-[72px]"
+                    >
+                      {/* Floating Amount Label above bar */}
+                      <span className="text-[10px] sm:text-xs font-semibold text-black mb-1 opacity-90 transition-opacity">
+                        ₹{amount >= 1000 ? `${(amount / 1000).toFixed(1)}k` : amount.toFixed(0)}
+                      </span>
+
+                      {/* Vertical Bar Pill */}
+                      <div className="w-full bg-surface rounded-t border-x border-t border-border/40 overflow-hidden flex flex-col justify-end h-full">
+                        <div
+                          className={`w-full rounded-t transition-all duration-500 ${barBg}`}
+                          style={{ height: `${barHeightPercent}%` }}
+                          title={`${cat}: ₹${amount.toFixed(2)} (${percentageOfTotal}% of total)`}
+                        />
+                      </div>
+
+                      {/* Category Label below bar */}
+                      <span className="mt-2 text-[10px] sm:text-xs font-medium text-black truncate w-full text-center">
+                        {cat}
+                      </span>
+                      <span className="text-[9px] text-muted font-normal">
+                        {percentageOfTotal}%
                       </span>
                     </div>
-                    <div className="h-2.5 w-full rounded-full bg-surface overflow-hidden border border-border/50">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-                        style={{ width: `${Math.max(percentage, 3)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
-            {sortedCategories.length > 5 && (
+            {sortedCategories.length > 6 && (
               <p className="text-[11px] text-muted text-right">
-                +{sortedCategories.length - 5} more categories
+                +{sortedCategories.length - 6} more categories
               </p>
             )}
 
@@ -129,10 +158,10 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
             </div>
           </div>
         ) : (
-          <div className="py-8 text-center border border-dashed border-border rounded">
-            <p className="text-sm text-muted">No expenses recorded yet.</p>
+          <div className="py-12 text-center border border-dashed border-border rounded">
+            <p className="text-sm font-medium text-black">No expenses recorded yet</p>
             <p className="text-xs text-muted mt-1">
-              Add your first expense to see graphical insights.
+              Add your first expense to see your vertical bar graph.
             </p>
           </div>
         )}
