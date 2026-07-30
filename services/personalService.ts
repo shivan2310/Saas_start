@@ -8,6 +8,11 @@ export const personalService = {
   async addDate(userId: string, title: string, date: string, notes: string): Promise<ImportantDate> { return add<ImportantDate>("importantDates", { userId, title, date, notes }); },
   async getDiary(userId: string): Promise<DiaryEntry[]> { return getCollection<DiaryEntry>("diary", userId); },
   async addDiaryEntry(userId: string, title: string, content: string): Promise<DiaryEntry> { return add<DiaryEntry>("diary", { userId, title, content }); },
+  async updateDiaryEntry(id: string, title: string, content: string): Promise<DiaryEntry> {
+    const { data, error } = await supabase.from("diary").update({ title, content }).eq("id", id).select().single();
+    if (error) throw error;
+    return data as DiaryEntry;
+  },
   async remove(collectionName: string, id: string) { const { error } = await supabase.from(collectionName).delete().eq("id", id); if (error) throw error; },
 };
 
