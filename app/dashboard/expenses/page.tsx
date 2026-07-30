@@ -119,44 +119,47 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Graphical Expense Analytics Chart */}
-      <ExpenseChart expenses={items} interactive={false} />
+      {/* Side-by-Side Section: Bar Chart & Recent Expenses */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Graphical Expense Analytics Chart */}
+        <ExpenseChart expenses={items} interactive={false} />
 
-      {/* Recent Expenses List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent expenses</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {items.length ? (
-            items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between border-b border-border py-3 text-sm last:border-0"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-black">{item.description}</span>
-                  <span className="rounded bg-surface px-2 py-0.5 text-xs text-muted">
-                    {item.category}
+        {/* Recent Expenses List */}
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle>Recent expenses</CardTitle>
+          </CardHeader>
+          <CardContent className="max-h-[520px] overflow-y-auto">
+            {items.length ? (
+              items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between border-b border-border py-3 text-sm last:border-0"
+                >
+                  <div className="flex items-center gap-2 min-w-0 pr-2">
+                    <span className="font-medium text-black truncate">{item.description}</span>
+                    <span className="rounded bg-surface px-2 py-0.5 text-xs text-muted shrink-0">
+                      {item.category}
+                    </span>
+                  </div>
+                  <span className="flex items-center gap-3 font-semibold text-black shrink-0">
+                    ₹{item.amount.toFixed(2)}
+                    <button
+                      onClick={() => remove(item.id)}
+                      aria-label="Delete expense"
+                      className="text-muted hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </span>
                 </div>
-                <span className="flex items-center gap-3 font-semibold text-black">
-                  ₹{item.amount.toFixed(2)}
-                  <button
-                    onClick={() => remove(item.id)}
-                    aria-label="Delete expense"
-                    className="text-muted hover:text-red-600 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-muted">No expenses yet.</p>
-          )}
-        </CardContent>
-      </Card>
+              ))
+            ) : (
+              <p className="text-sm text-muted">No expenses yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
