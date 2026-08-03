@@ -56,7 +56,7 @@ export default function ExpensesPage() {
           <CardTitle>Add an expense</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="grid gap-3 sm:grid-cols-4">
+          <form onSubmit={submit} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Input
               label="What was it?"
               value={description}
@@ -120,7 +120,7 @@ export default function ExpensesPage() {
       </Card>
 
       {/* Side-by-Side Section: Bar Chart & Recent Expenses */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
         {/* Graphical Expense Analytics Chart */}
         <ExpenseChart expenses={items} interactive={false} />
 

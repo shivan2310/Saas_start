@@ -34,66 +34,77 @@ export const TopNavbar: React.FC = () => {
   return (
     <header className="border-b border-border bg-background">
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
-        <button
-          type="button"
-          aria-label={mobileMenuOpen ? "Close dashboard menu" : "Open dashboard menu"}
-          aria-expanded={mobileMenuOpen}
-          onClick={() => setMobileMenuOpen((open) => !open)}
-          className="md:hidden rounded p-2 text-black hover:bg-surface"
-        >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
-
-      <div className="hidden md:flex items-center justify-end gap-4 px-4 pb-3 sm:px-6">
-        <ThemeToggle />
-
-        {/* Email Verification status badge */}
-        {!isEmailVerified ? (
-          <div
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface border border-border text-[11px] font-medium text-black"
-            title="Email not verified"
-          >
-            <AlertTriangle className="h-3.5 w-3.5 text-black" />
-            <span>Unverified Email</span>
-          </div>
-        ) : (
-          <div
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface border border-border text-[11px] font-medium text-black"
-            title="Email verified"
-          >
-            <CheckCircle2 className="h-3.5 w-3.5 text-black" />
-            <span>Verified</span>
-          </div>
-        )}
-
-        {/* User Pill */}
-        <div className="flex items-center gap-2 pl-3 border-l border-border">
-          <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-black font-semibold text-xs">
-            {profile?.displayName ? profile.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
-          </div>
-          <div className="hidden md:flex flex-col text-left">
-            <span className="text-xs font-semibold text-black leading-none">
-              {profile?.displayName || "User"}
-            </span>
-            <span className="text-[10px] text-muted leading-tight mt-0.5">
-              {user?.email}
-            </span>
-          </div>
+        {/* Left side on mobile */}
+        <div className="flex items-center gap-2 xl:hidden">
           <button
-            onClick={handleLogout}
-            className="md:hidden p-1.5 text-muted hover:text-black"
-            aria-label="Log out"
+            type="button"
+            aria-label={mobileMenuOpen ? "Close dashboard menu" : "Open dashboard menu"}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="rounded p-2 text-black hover:bg-surface"
           >
-            <LogOut className="h-4 w-4" />
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
+          
+          <div className="font-bold text-sm tracking-tight text-black flex items-center gap-1.5 ml-1">
+            <div className="w-4 h-4 bg-black rounded flex items-center justify-center text-white text-[9px] font-mono">
+              S
+            </div>
+            <span>NIVIO</span>
+          </div>
+        </div>
+
+        {/* Right side icons & info - visible on both mobile and desktop */}
+        <div className="flex items-center justify-end gap-3 sm:gap-4 ml-auto">
+          <ThemeToggle />
+
+          {/* Email Verification status badge */}
+          {!isEmailVerified ? (
+            <div
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface border border-border text-[11px] font-medium text-black"
+              title="Email not verified"
+            >
+              <AlertTriangle className="h-3.5 w-3.5 text-black" />
+              <span>Unverified</span>
+            </div>
+          ) : (
+            <div
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface border border-border text-[11px] font-medium text-black"
+              title="Email verified"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5 text-black" />
+              <span>Verified</span>
+            </div>
+          )}
+
+          {/* User Pill */}
+          <div className="flex items-center gap-2 pl-3 border-l border-border">
+            <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-black font-semibold text-xs shrink-0">
+              {profile?.displayName ? profile.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+            </div>
+            <div className="hidden xl:flex flex-col text-left">
+              <span className="text-xs font-semibold text-black leading-none truncate max-w-[100px]">
+                {profile?.displayName || "User"}
+              </span>
+              <span className="text-[10px] text-muted leading-tight mt-0.5 truncate max-w-[120px]">
+                {user?.email}
+              </span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="xl:hidden p-1.5 text-muted hover:text-black rounded-md hover:bg-surface transition-colors"
+              aria-label="Log out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
       {mobileMenuOpen && (
         <nav
           aria-label="Mobile dashboard navigation"
-          className="md:hidden flex w-full gap-2 overflow-x-auto border-t border-border bg-white px-3 py-3"
+          className="xl:hidden flex w-full flex-col gap-1 border-t border-border bg-white px-3 py-3"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -104,11 +115,11 @@ export const TopNavbar: React.FC = () => {
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded px-3 py-2 text-[11px] font-medium",
+                  "flex items-center gap-3 rounded px-3 py-2.5 text-[13px] font-medium transition-colors",
                   isActive ? "bg-black text-white" : "text-muted hover:bg-surface hover:text-black"
                 )}
               >
-                <Icon className="h-3.5 w-3.5" />
+                <Icon className="h-4 w-4" />
                 <span>{item.label}</span>
               </Link>
             );

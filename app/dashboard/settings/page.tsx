@@ -103,7 +103,7 @@ export default function SettingsPage() {
           <CardDescription>Request password updates and view session details.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded border border-border bg-surface">
+          <div className="flex flex-col items-start gap-3 rounded border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h4 className="text-xs font-semibold text-black">Password Reset</h4>
               <p className="text-xs text-muted">Receive a secure link to update your account password.</p>
@@ -113,6 +113,7 @@ export default function SettingsPage() {
               size="sm"
               onClick={handlePasswordReset}
               isLoading={sendingReset}
+              className="w-full sm:w-auto"
               leftIcon={<Key className="h-3.5 w-3.5" />}
             >
               Reset Password

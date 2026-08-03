@@ -38,7 +38,7 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 transition-opacity animate-in fade-in"
@@ -48,7 +48,7 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative z-50 w-full max-w-lg rounded border border-border bg-white p-6 shadow-lg animate-in zoom-in-95",
+          "relative z-50 max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded border border-border bg-white p-4 shadow-lg animate-in zoom-in-95 sm:max-h-[calc(100dvh-2rem)] sm:p-6",
           className
         )}
         role="dialog"

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const VIDEO_SOURCE =
@@ -136,11 +136,13 @@ const features = [
 ];
 
 export function NivioLanding() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <main className="relative min-h-[100dvh] overflow-x-hidden text-[#191919]" style={{ backgroundColor: "#ffffff" }}>
       <CinematicMemory />
 
-      <header className="fixed inset-x-0 top-0 z-30">
+      <header className="fixed inset-x-0 top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#191919]/5">
         <div className="mx-auto flex h-16 sm:h-20 max-w-[1440px] items-center justify-between px-4 sm:px-10 lg:px-14">
           <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.03em] text-[#191919]">
             <span className="relative block h-[17px] w-[17px] rounded-[5px] border border-[#191919]">
@@ -155,10 +157,43 @@ export function NivioLanding() {
               </a>
             ))}
           </nav>
-          <Link href="/signup" className="rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-[#fff] transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
-            Start Free
-          </Link>
+          
+          <div className="flex items-center gap-3">
+            <Link href="/signup" className="hidden md:inline-flex rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-[#fff] transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
+              Start Free
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-[#191919] -mr-2"
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="landing-mobile-navigation"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
+        
+        {mobileMenuOpen && (
+          <nav id="landing-mobile-navigation" className="absolute left-0 flex max-h-[calc(100dvh-4rem)] w-full flex-col gap-4 overflow-y-auto border-t border-[#191919]/10 bg-white px-4 py-5 shadow-lg md:hidden sm:max-h-[calc(100dvh-5rem)]">
+            {["Features", "Privacy", "AI", "Pricing"].map((item) => (
+              <a 
+                key={item} 
+                href={`#${item.toLowerCase()}`} 
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-[14px] font-medium text-[#191919]"
+              >
+                {item}
+              </a>
+            ))}
+            <Link 
+              href="/signup" 
+              className="mt-2 w-full text-center rounded-full bg-[#191919] px-4 py-3 text-[13px] font-medium text-[#fff]"
+            >
+              Start Free
+            </Link>
+          </nav>
+        )}
       </header>
 
       {/* Hero Section */}
