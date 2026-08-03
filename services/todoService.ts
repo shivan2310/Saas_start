@@ -7,8 +7,8 @@ export const todoService = {
     if (error) throw error;
     return (data || []) as TodoItem[];
   },
-  async addTodo(userId: string, text: string, priority: Priority = "medium"): Promise<TodoItem> {
-    const { data, error } = await supabase.from("todos").insert({ userId, text, done: false, priority }).select().single();
+  async addTodo(userId: string, text: string, priority: Priority = "medium", dueDate?: string): Promise<TodoItem> {
+    const { data, error } = await supabase.from("todos").insert({ userId, text, done: false, priority, dueDate: dueDate || null }).select().single();
     if (error) throw error;
     return data as TodoItem;
   },

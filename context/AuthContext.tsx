@@ -18,7 +18,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (uid: string) => setProfile(await userService.getUserProfile(uid));
   const handleSession = async (session: Session | null) => {
-    const nextUser = session?.user ? authService.mapUser(session.user) : null;
+    let nextUser = null;
+
+    if (session?.user) {
+      try {
+        // A cached session can contain the user record from before an email was
+        // confirmed. Fetching it from Supabase keeps the verification badge current.
+        nextUser = await authService.getCurrentUser();
+      } catch (error) {
+        console.error("Failed to refresh authenticated user:", error);
+        nextUser = authService.mapUser(session.user);
+      }
+    }
+
     setUser(nextUser);
     if (nextUser) await fetchProfile(nextUser.uid); else setProfile(null);
     setLoading(false);

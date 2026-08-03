@@ -11,7 +11,7 @@ create table public.users (
 
 create table public.todos (
   id uuid primary key default gen_random_uuid(), "userId" uuid not null references auth.users(id) on delete cascade,
-  text text not null, done boolean not null default false, priority text not null default 'medium' check (priority in ('low','medium','high')), "createdAt" timestamptz not null default now()
+  text text not null, done boolean not null default false, priority text not null default 'medium' check (priority in ('low','medium','high')), "dueDate" date, "createdAt" timestamptz not null default now()
 );
 create table public.expenses (
   id uuid primary key default gen_random_uuid(), "userId" uuid not null references auth.users(id) on delete cascade,
@@ -42,7 +42,11 @@ create or replace function public.handle_new_user() returns trigger language plp
 begin
   insert into public.users (uid, email, "displayName", "emailVerified")
   values (new.id, new.email, new.raw_user_meta_data->>'display_name', new.email_confirmed_at is not null)
-  on conflict (uid) do update set email = excluded.email, "displayName" = coalesce(excluded."displayName", public.users."displayName");
+  on conflict (uid) do update set
+    email = excluded.email,
+    "displayName" = coalesce(excluded."displayName", public.users."displayName"),
+    "emailVerified" = excluded."emailVerified",
+    "updatedAt" = now();
   return new;
 end;
 $$;

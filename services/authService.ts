@@ -44,6 +44,12 @@ export const authService = {
     return mapUser(data.user);
   },
 
+  async getCurrentUser(): Promise<AuthUser | null> {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return data.user ? mapUser(data.user) : null;
+  },
+
   async logout(): Promise<void> {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

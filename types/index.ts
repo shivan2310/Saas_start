@@ -19,6 +19,7 @@ export interface TodoItem {
   text: string;
   done: boolean;
   priority: Priority;
+  dueDate: string | null;
   createdAt: string;
 }
 

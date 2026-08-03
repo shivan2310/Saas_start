@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
-import { Plus, Trash2, CheckCircle2, Circle, Clock, CheckSquare } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, Circle, Clock, CheckSquare, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function TasksPage() {
@@ -19,6 +19,7 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [newText, setNewText] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
+  const [dueDate, setDueDate] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [isAdding, setIsAdding] = useState(false);
 
@@ -47,9 +48,10 @@ export default function TasksPage() {
 
     setIsAdding(true);
     try {
-      const created = await todoService.addTodo(user.uid, newText.trim(), priority);
+      const created = await todoService.addTodo(user.uid, newText.trim(), priority, dueDate);
       setTodos((prev) => [created, ...prev]);
       setNewText("");
+      setDueDate("");
       toast({ type: "success", title: "Task Added", description: "Task saved to database." });
     } catch (error) {
       console.error("Failed to add task:", error);
@@ -165,6 +167,14 @@ export default function TasksPage() {
               <option value="medium">Medium Priority</option>
               <option value="high">High Priority</option>
             </select>
+            <Input
+              aria-label="Due date"
+              title="Due date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full sm:w-auto"
+            />
             <Button type="submit" isLoading={isAdding} className="w-full sm:w-auto shrink-0">
               <Plus className="h-4 w-4 mr-1" /> Add Task
             </Button>
@@ -247,6 +257,12 @@ export default function TasksPage() {
                 >
                   {todo.priority}
                 </span>
+                {todo.dueDate && (
+                  <span className="flex items-center gap-1 text-xs text-muted shrink-0">
+                    <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+                    {new Date(`${todo.dueDate}T00:00:00`).toLocaleDateString()}
+                  </span>
+                )}
               </div>
 
               <button
