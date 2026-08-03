@@ -12,13 +12,15 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isEmailVerified, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.replace("/login");
+    } else if (!loading && !isEmailVerified) {
+      router.replace("/verify-email");
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, isEmailVerified, loading, router]);
 
   if (loading) {
     return (
@@ -29,7 +31,7 @@ export default function DashboardLayout({
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !isEmailVerified) {
     return null;
   }
 
