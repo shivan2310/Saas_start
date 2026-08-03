@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
@@ -10,6 +10,19 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 
+const DEFAULT_CATEGORIES = [
+  "Food",
+  "Transport",
+  "Shopping",
+  "Bills",
+  "Health",
+  "Entertainment",
+  "Education",
+  "Travel",
+  "Home",
+  "Salary",
+];
+
 export default function ExpensesPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<Expense[]>([]);
@@ -17,6 +30,17 @@ export default function ExpensesPage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Food");
   const [customCategory, setCustomCategory] = useState("");
+
+  const categories = useMemo(() => {
+    const uniqueCategories = new Map<string, string>();
+
+    [...DEFAULT_CATEGORIES, ...items.map((item) => item.category)].forEach((name) => {
+      const trimmedName = name.trim();
+      if (trimmedName) uniqueCategories.set(trimmedName.toLocaleLowerCase(), trimmedName);
+    });
+
+    return [...uniqueCategories.values()];
+  }, [items]);
 
   useEffect(() => {
     if (user) personalService.getExpenses(user.uid).then(setItems);
@@ -34,6 +58,7 @@ export default function ExpensesPage() {
     setDescription("");
     setAmount("");
     setCustomCategory("");
+    setCategory(finalCategory);
   };
 
   const remove = async (id: string) => {
@@ -86,19 +111,17 @@ export default function ExpensesPage() {
               <select
                 id="expense-category"
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  if (e.target.value !== "Custom") setCustomCategory("");
+                }}
                 className="flex h-10 w-full rounded border border-border bg-white px-3 py-2 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black"
               >
-                <option>Food</option>
-                <option>Transport</option>
-                <option>Shopping</option>
-                <option>Bills</option>
-                <option>Health</option>
-                <option>Entertainment</option>
-                <option>Education</option>
-                <option>Travel</option>
-                <option>Home</option>
-                <option>Salary</option>
+                {categories.map((categoryName) => (
+                  <option key={categoryName} value={categoryName}>
+                    {categoryName}
+                  </option>
+                ))}
                 <option>Custom</option>
               </select>
             </div>
