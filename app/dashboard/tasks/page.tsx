@@ -156,6 +156,7 @@ export default function TasksPage() {
                 maxLength={500}
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
+                className="text-base"
               />
             </div>
             <select
@@ -240,7 +241,7 @@ export default function TasksPage() {
 
                 <span
                   className={cn(
-                    "text-sm text-black font-medium break-all",
+                    "text-base text-black font-medium break-all",
                     todo.done && "line-through text-muted"
                   )}
                 >
