@@ -8,7 +8,17 @@ export const todoService = {
     return (data || []) as TodoItem[];
   },
   async addTodo(userId: string, text: string, priority: Priority = "medium", dueDate?: string): Promise<TodoItem> {
-    const { data, error } = await supabase.from("todos").insert({ userId, text, done: false, priority, dueDate: dueDate || null }).select().single();
+    // Keep task creation compatible with databases that have not yet applied
+    // the optional due-date migration. Sending an unknown column causes
+    // Supabase to reject even tasks without a due date.
+    const todo = {
+      userId,
+      text,
+      done: false,
+      priority,
+      ...(dueDate ? { dueDate } : {}),
+    };
+    const { data, error } = await supabase.from("todos").insert(todo).select().single();
     if (error) throw error;
     return data as TodoItem;
   },
