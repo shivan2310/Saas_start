@@ -6,6 +6,7 @@ import { todoService } from "@/services/todoService";
 import { TodoItem, Priority } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
 import { Plus, Trash2, CheckCircle2, Circle, Clock, CheckSquare, CalendarDays } from "lucide-react";
@@ -149,36 +150,38 @@ export default function TasksPage() {
       {/* Add Task Input Card */}
       <Card>
         <CardContent className="pt-6">
-          <form onSubmit={handleAddTodo} className="flex flex-col sm:flex-row gap-3 items-center">
-            <div className="flex-1 w-full">
-              <Input
+          <form onSubmit={handleAddTodo} className="flex flex-col gap-4 w-full">
+            <div className="w-full">
+              <Textarea
                 placeholder="Add a new task..."
                 maxLength={500}
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
-                className="text-base"
+                className="text-base min-h-[100px]"
               />
             </div>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as Priority)}
-              className="h-10 px-3 rounded border border-border bg-white text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black w-full sm:w-auto"
-            >
-              <option value="low">Low Priority</option>
-              <option value="medium">Medium Priority</option>
-              <option value="high">High Priority</option>
-            </select>
-            <Input
-              aria-label="Due date"
-              title="Due date"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full sm:w-auto"
-            />
-            <Button type="submit" isLoading={isAdding} className="w-full sm:w-auto shrink-0">
-              <Plus className="h-4 w-4 mr-1" /> Add Task
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end items-center">
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as Priority)}
+                className="h-10 px-3 rounded border border-border bg-white text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black w-full sm:w-auto"
+              >
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+              <Input
+                aria-label="Due date"
+                title="Due date"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full sm:w-auto"
+              />
+              <Button type="submit" isLoading={isAdding} className="w-full sm:w-auto shrink-0">
+                <Plus className="h-4 w-4 mr-1" /> Add Task
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
