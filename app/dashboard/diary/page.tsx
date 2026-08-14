@@ -3,8 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Trash2, Edit3, Calendar, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { authService } from "@/services/authService";
 import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
+import { hasUnlockedJournalKey } from "@/lib/journalCrypto";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -15,6 +17,7 @@ export default function DiaryPage() {
   const [items, setItems] = useState<DiaryEntry[]>([]);
   const [isLoadingJournal, setIsLoadingJournal] = useState(true);
   const [journalError, setJournalError] = useState("");
+  const [needsFreshLogin, setNeedsFreshLogin] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -30,13 +33,20 @@ export default function DiaryPage() {
     const loadJournal = async () => {
       setIsLoadingJournal(true);
       setJournalError("");
+      setNeedsFreshLogin(false);
       try {
+        const isUnlocked = hasUnlockedJournalKey(user.uid);
         const entries = await personalService.getDiary(user.uid);
-        await personalService.encryptPlainDiaryEntries(user.uid);
         setItems(entries);
+        if (isUnlocked) {
+          await personalService.encryptPlainDiaryEntries(user.uid);
+        } else {
+          setNeedsFreshLogin(true);
+        }
       } catch (error) {
         console.error("Failed to load encrypted journal:", error);
-        setJournalError("Could not open your encrypted journal on this browser.");
+        setNeedsFreshLogin(true);
+        setJournalError("Your encrypted journal key is locked for this session. Please sign in again to unlock it.");
       } finally {
         setIsLoadingJournal(false);
       }
@@ -50,21 +60,32 @@ export default function DiaryPage() {
 
     setIsLoadingJournal(true);
     setJournalError("");
+    setNeedsFreshLogin(false);
     try {
+      const isUnlocked = hasUnlockedJournalKey(user.uid);
       const entries = await personalService.getDiary(user.uid);
-      await personalService.encryptPlainDiaryEntries(user.uid);
       setItems(entries);
+      if (isUnlocked) {
+        await personalService.encryptPlainDiaryEntries(user.uid);
+      } else {
+        setNeedsFreshLogin(true);
+      }
     } catch (error) {
       console.error("Failed to load encrypted journal:", error);
-      setJournalError("Could not open your encrypted journal on this browser.");
+      setNeedsFreshLogin(true);
+      setJournalError("Your encrypted journal key is locked for this session. Please sign in again to unlock it.");
     } finally {
       setIsLoadingJournal(false);
     }
   };
 
+  const signInAgain = async () => {
+    await authService.logout();
+  };
+
   const submitNewEntry = async (e: FormEvent) => {
     e.preventDefault();
-    if (!user || !content.trim()) return;
+    if (!user || needsFreshLogin || !content.trim()) return;
     const item = await personalService.addDiaryEntry(
       user.uid,
       title.trim() || "Untitled entry",
@@ -95,7 +116,7 @@ export default function DiaryPage() {
 
   const saveEditedEntry = async (e: FormEvent) => {
     e.preventDefault();
-    if (!user || !selectedEntry || !editContent.trim()) return;
+    if (!user || needsFreshLogin || !selectedEntry || !editContent.trim()) return;
     setIsUpdating(true);
     try {
       const updated = await personalService.updateDiaryEntry(
@@ -131,9 +152,14 @@ export default function DiaryPage() {
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted">{journalError}</p>
-            <Button type="button" className="mt-3" onClick={retryLoadJournal}>
-              Try again
-            </Button>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              <Button type="button" onClick={signInAgain}>
+                Sign in again
+              </Button>
+              <Button type="button" variant="outline" onClick={retryLoadJournal}>
+                Try again
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : isLoadingJournal ? (
@@ -144,6 +170,19 @@ export default function DiaryPage() {
         </Card>
       ) : (
         <>
+          {needsFreshLogin && (
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-sm text-muted">
+                  Sign in again to unlock journal saving and sync encryption for every device.
+                </p>
+                <Button type="button" className="mt-3" onClick={signInAgain}>
+                  Sign in again
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* New Journal Entry Form */}
           <Card>
             <CardHeader>
@@ -167,7 +206,7 @@ export default function DiaryPage() {
                   placeholder="Write whatever is on your mind..."
                   required
                 />
-                <Button type="submit">Save entry</Button>
+                <Button type="submit" disabled={needsFreshLogin}>Save entry</Button>
               </form>
             </CardContent>
           </Card>

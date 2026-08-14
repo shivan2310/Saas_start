@@ -3,6 +3,7 @@ import {
   decryptJournalPayload,
   encryptJournalPayload,
   getJournalEncryptionKeyType,
+  hasUnlockedJournalKey,
   isEncryptedJournalContent,
 } from "@/lib/journalCrypto";
 import { DiaryEntry, Expense, ImportantDate } from "@/types";
@@ -17,6 +18,10 @@ export const personalService = {
     return Promise.all(entries.map((entry) => decryptDiaryEntry(entry, userId)));
   },
   async encryptPlainDiaryEntries(userId: string): Promise<void> {
+    if (!hasUnlockedJournalKey(userId)) {
+      return;
+    }
+
     const entries = await getCollection<DiaryEntry>("diary", userId);
     const entriesToSecure = entries.filter(
       (entry) => getJournalEncryptionKeyType(entry.content) !== "account"
