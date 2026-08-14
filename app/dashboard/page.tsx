@@ -1,16 +1,25 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
 import { personalService } from "@/services/personalService";
+import { todoService } from "@/services/todoService";
 import { getAuthErrorMessage } from "@/lib/authErrors";
-import { Expense } from "@/types";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Expense, ImportantDate, TodoItem } from "@/types";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
-import { formatDate } from "@/lib/utils";
-import { Shield, Calendar, MailCheck, AlertCircle } from "lucide-react";
+import { cn, formatDate } from "@/lib/utils";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  CalendarDays,
+  CheckCircle2,
+  Circle,
+  ListTodo,
+} from "lucide-react";
 import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 
 export default function DashboardPage() {
@@ -18,11 +27,26 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [sendingVerification, setSendingVerification] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [importantDates, setImportantDates] = useState<ImportantDate[]>([]);
+  const [loadingOverview, setLoadingOverview] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      personalService.getExpenses(user.uid).then(setExpenses).catch(console.error);
-    }
+    if (!user) return;
+
+    setLoadingOverview(true);
+    Promise.all([
+      personalService.getExpenses(user.uid),
+      todoService.getUserTodos(user.uid),
+      personalService.getDates(user.uid),
+    ])
+      .then(([expensesData, todosData, datesData]) => {
+        setExpenses(expensesData);
+        setTodos(todosData);
+        setImportantDates(datesData);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingOverview(false));
   }, [user]);
 
   const handleResendVerification = async () => {
@@ -49,6 +73,11 @@ export default function DashboardPage() {
       setSendingVerification(false);
     }
   };
+
+  const previewTodos = todos.slice(0, 6);
+  const previewDates = [...importantDates]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 6);
 
   return (
     <div className="space-y-6">
@@ -86,48 +115,106 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 mb-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Your space
-            </CardTitle>
-            <Shield className="h-4 w-4 text-black" />
+      <div className="flex flex-col gap-4 lg:flex-row">
+        <Card className="flex-1">
+          <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base font-bold">
+                <ListTodo className="h-4 w-4" />
+                To dos
+              </CardTitle>
+              <CardDescription>Latest tasks from your todo list</CardDescription>
+            </div>
+            <Link
+              href="/dashboard/tasks"
+              className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-black hover:underline"
+            >
+              View all <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-black capitalize">{profile?.role || "User"}</div>
-            <p className="text-[11px] text-muted mt-1">Private to your account</p>
+          <CardContent className="space-y-2">
+            {loadingOverview ? (
+              <p className="py-8 text-center text-xs text-muted">Loading todos...</p>
+            ) : previewTodos.length ? (
+              previewTodos.map((todo) => (
+                <div
+                  key={todo.id}
+                  className={cn(
+                    "flex items-center justify-between gap-3 rounded border border-border bg-surface px-3 py-2.5",
+                    todo.done && "opacity-65"
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    {todo.done ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-black" />
+                    ) : (
+                      <Circle className="h-4 w-4 shrink-0 text-muted" />
+                    )}
+                    <Link
+                      href="/dashboard/tasks"
+                      className={cn(
+                        "truncate text-sm font-medium text-black hover:underline",
+                        todo.done && "text-muted line-through"
+                      )}
+                    >
+                      {todo.text}
+                    </Link>
+                  </div>
+                  <span className="shrink-0 rounded border border-border bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-muted">
+                    {todo.priority}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="py-8 text-center text-sm text-muted">No todos yet.</p>
+            )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 mb-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Your Nivio
-            </CardTitle>
-            <MailCheck className="h-4 w-4 text-black" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-black">
-              {isEmailVerified ? "Verified" : "Unverified"}
+        <Card className="flex-1">
+          <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base font-bold">
+                <CalendarDays className="h-4 w-4" />
+                Important dates
+              </CardTitle>
+              <CardDescription>Upcoming moments and appointments</CardDescription>
             </div>
-            <p className="text-[11px] text-muted mt-1">Ready for today</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 mb-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Important dates
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-black" />
+            <Link
+              href="/dashboard/dates"
+              className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-black hover:underline"
+            >
+              View all <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-black">
-              {profile?.createdAt ? formatDate(profile.createdAt) : "Today"}
-            </div>
-            <p className="text-[11px] text-muted mt-1">Never miss what matters</p>
+          <CardContent className="space-y-2">
+            {loadingOverview ? (
+              <p className="py-8 text-center text-xs text-muted">Loading dates...</p>
+            ) : previewDates.length ? (
+              previewDates.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 rounded border border-border bg-surface px-3 py-2.5"
+                >
+                  <div className="min-w-0">
+                    <Link
+                      href="/dashboard/dates"
+                      className="block truncate text-sm font-medium text-black hover:underline"
+                    >
+                      {item.title}
+                    </Link>
+                    {item.notes && (
+                      <p className="truncate text-[11px] text-muted">{item.notes}</p>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-xs font-semibold text-black">
+                    {formatDate(`${item.date}T00:00:00`)}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="py-8 text-center text-sm text-muted">No important dates yet.</p>
+            )}
           </CardContent>
         </Card>
       </div>
