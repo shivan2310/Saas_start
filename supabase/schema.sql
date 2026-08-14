@@ -5,6 +5,7 @@ create table public.users (
   "photoURL" text,
   role text not null default 'user' check (role in ('user', 'admin')),
   "emailVerified" boolean not null default false,
+  "journalKey" text,
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now()
 );

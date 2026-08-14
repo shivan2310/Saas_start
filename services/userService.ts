@@ -16,6 +16,22 @@ export const userService = {
     return data ? normalize(data) : null;
   },
 
+  async setJournalKey(uid: string, journalKey: string, email?: string, displayName?: string): Promise<void> {
+    const now = new Date().toISOString();
+    const values: Record<string, unknown> = {
+      uid,
+      journalKey,
+      updatedAt: now,
+      ...(email ? { email } : {}),
+      ...(displayName ? { displayName } : {}),
+    };
+    const query = email
+      ? supabase.from("users").upsert(values, { onConflict: "uid" })
+      : supabase.from("users").update({ journalKey, updatedAt: now }).eq("uid", uid);
+    const { error } = await query;
+    if (error) throw error;
+  },
+
   async updateUserProfile(uid: string, updates: Partial<Pick<UserProfile, "displayName" | "photoURL">>): Promise<void> {
     const { error } = await supabase.from("users").update({ ...updates, updatedAt: new Date().toISOString() }).eq("uid", uid);
     if (error) throw error;
@@ -23,5 +39,5 @@ export const userService = {
 };
 
 function normalize(data: Record<string, any>): UserProfile {
-  return { uid: data.uid, email: data.email || "", displayName: data.displayName || null, photoURL: data.photoURL || null, role: data.role || "user", createdAt: data.createdAt || new Date().toISOString(), updatedAt: data.updatedAt || new Date().toISOString(), emailVerified: Boolean(data.emailVerified) };
+  return { uid: data.uid, email: data.email || "", displayName: data.displayName || null, photoURL: data.photoURL || null, role: data.role || "user", createdAt: data.createdAt || new Date().toISOString(), updatedAt: data.updatedAt || new Date().toISOString(), emailVerified: Boolean(data.emailVerified), journalKey: data.journalKey || null };
 }

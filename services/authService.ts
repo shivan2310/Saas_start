@@ -2,6 +2,8 @@ import { supabase } from "@/supabase/client";
 import { AuthUser } from "@/types/auth";
 import { UserProfile } from "@/types";
 import { emailSchema } from "@/lib/validations/auth";
+import { clearUnlockedJournalKey, unlockAccountJournalKey } from "@/lib/journalCrypto";
+import { userService } from "@/services/userService";
 
 const appUrl = () =>
   typeof window !== "undefined"
@@ -31,6 +33,12 @@ export const authService = {
     });
     if (error) throw error;
     if (!data.user) throw new Error("Account could not be created.");
+    const wrappedJournalKey = await unlockAccountJournalKey(
+      data.user.id,
+      normalizedEmail,
+      password
+    );
+    await userService.setJournalKey(data.user.id, wrappedJournalKey, normalizedEmail, name);
     // The database trigger in supabase/schema.sql creates the profile atomically.
     return {
       uid: data.user.id, email: normalizedEmail, displayName: name, photoURL: null, role: "user",
@@ -41,7 +49,20 @@ export const authService = {
   async login(email: string, password: string): Promise<AuthUser> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    return mapUser(data.user);
+    const user = mapUser(data.user);
+    const profile = await userService.getUserProfile(user.uid);
+    const wrappedJournalKey = await unlockAccountJournalKey(
+      user.uid,
+      user.email || email,
+      password,
+      profile?.journalKey
+    );
+
+    if (!profile?.journalKey) {
+      await userService.setJournalKey(user.uid, wrappedJournalKey, user.email || email);
+    }
+
+    return user;
   },
 
   async getCurrentUser(): Promise<AuthUser | null> {
@@ -51,6 +72,10 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
+    const currentUser = await this.getCurrentUser().catch(() => null);
+    if (currentUser) {
+      clearUnlockedJournalKey(currentUser.uid);
+    }
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Trash2, Edit3, Calendar } from "lucide-react";
+import { Trash2, Edit3, Calendar, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
@@ -13,6 +13,8 @@ import { Modal } from "@/components/ui/Modal";
 export default function DiaryPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<DiaryEntry[]>([]);
+  const [isLoadingJournal, setIsLoadingJournal] = useState(true);
+  const [journalError, setJournalError] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -23,10 +25,42 @@ export default function DiaryPage() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      personalService.getDiary(user.uid).then(setItems);
-    }
+    if (!user) return;
+
+    const loadJournal = async () => {
+      setIsLoadingJournal(true);
+      setJournalError("");
+      try {
+        const entries = await personalService.getDiary(user.uid);
+        await personalService.encryptPlainDiaryEntries(user.uid);
+        setItems(entries);
+      } catch (error) {
+        console.error("Failed to load encrypted journal:", error);
+        setJournalError("Could not open your encrypted journal on this browser.");
+      } finally {
+        setIsLoadingJournal(false);
+      }
+    };
+
+    void loadJournal();
   }, [user]);
+
+  const retryLoadJournal = async () => {
+    if (!user) return;
+
+    setIsLoadingJournal(true);
+    setJournalError("");
+    try {
+      const entries = await personalService.getDiary(user.uid);
+      await personalService.encryptPlainDiaryEntries(user.uid);
+      setItems(entries);
+    } catch (error) {
+      console.error("Failed to load encrypted journal:", error);
+      setJournalError("Could not open your encrypted journal on this browser.");
+    } finally {
+      setIsLoadingJournal(false);
+    }
+  };
 
   const submitNewEntry = async (e: FormEvent) => {
     e.preventDefault();
@@ -61,11 +95,12 @@ export default function DiaryPage() {
 
   const saveEditedEntry = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedEntry || !editContent.trim()) return;
+    if (!user || !selectedEntry || !editContent.trim()) return;
     setIsUpdating(true);
     try {
       const updated = await personalService.updateDiaryEntry(
         selectedEntry.id,
+        user.uid,
         editTitle.trim() || "Untitled entry",
         editContent.trim()
       );
@@ -83,90 +118,112 @@ export default function DiaryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Journal</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold">Journal</h2>
+          <Lock className="h-4 w-4 text-muted" />
+        </div>
         <p className="mt-1 text-xs text-muted">
-          A private place for your thoughts and daily reflections.
+          Your entries are encrypted before they are saved.
         </p>
       </div>
 
-      {/* New Journal Entry Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Write an entry</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submitNewEntry} className="space-y-3">
-            <Input
-              label="Title"
-              value={title}
-              maxLength={200}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="How was your day?"
-            />
-            <textarea
-              aria-label="Journal entry"
-              maxLength={10000}
-              className="min-h-32 w-full rounded border border-border bg-white p-3 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write whatever is on your mind..."
-              required
-            />
-            <Button type="submit">Save entry</Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Saved Entries List (Titles Only) */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-muted uppercase tracking-wider">
-          Saved Entries
-        </h3>
-        {items.length ? (
-          items.map((item) => (
-            <Card
-              key={item.id}
-              className="group cursor-pointer transition-all hover:border-black/40 hover:shadow-sm"
-              onClick={() => openEditModal(item)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0 pr-4">
-                    <Edit3 className="h-4 w-4 shrink-0 text-muted group-hover:text-black transition-colors" />
-                    <span className="truncate font-semibold text-black text-base group-hover:underline">
-                      {item.title}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="flex items-center gap-1 text-xs text-muted">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(item.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <button
-                      onClick={(e) => removeEntry(e, item.id)}
-                      aria-label="Delete journal entry"
-                      className="p-1 rounded text-muted hover:text-red-600 transition-colors"
-                      title="Delete entry"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
+      {journalError ? (
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted">{journalError}</p>
+            <Button type="button" className="mt-3" onClick={retryLoadJournal}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : isLoadingJournal ? (
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted">Opening encrypted journal...</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* New Journal Entry Form */}
           <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted">Your journal is empty.</p>
+            <CardHeader>
+              <CardTitle>Write an entry</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={submitNewEntry} className="space-y-3">
+                <Input
+                  label="Title"
+                  value={title}
+                  maxLength={200}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="How was your day?"
+                />
+                <textarea
+                  aria-label="Journal entry"
+                  maxLength={10000}
+                  className="min-h-32 w-full rounded border border-border bg-white p-3 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Write whatever is on your mind..."
+                  required
+                />
+                <Button type="submit">Save entry</Button>
+              </form>
             </CardContent>
           </Card>
-        )}
-      </div>
+
+          {/* Saved Entries List (Titles Only) */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted uppercase tracking-wider">
+              Saved Entries
+            </h3>
+            {items.length ? (
+              items.map((item) => (
+                <Card
+                  key={item.id}
+                  className="group cursor-pointer transition-all hover:border-black/40 hover:shadow-sm"
+                  onClick={() => openEditModal(item)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0 pr-4">
+                        <Edit3 className="h-4 w-4 shrink-0 text-muted group-hover:text-black transition-colors" />
+                        <span className="truncate font-semibold text-black text-base group-hover:underline">
+                          {item.title}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="flex items-center gap-1 text-xs text-muted">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(item.createdAt).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <button
+                          onClick={(e) => removeEntry(e, item.id)}
+                          aria-label="Delete journal entry"
+                          className="p-1 rounded text-muted hover:text-red-600 transition-colors"
+                          title="Delete entry"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted">Your journal is empty.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Edit Entry Pop-up Modal */}
       <Modal

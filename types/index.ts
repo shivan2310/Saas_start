@@ -9,6 +9,7 @@ export interface UserProfile {
   createdAt: string;
   updatedAt: string;
   emailVerified: boolean;
+  journalKey?: string | null;
 }
 
 export type Priority = "low" | "medium" | "high";
