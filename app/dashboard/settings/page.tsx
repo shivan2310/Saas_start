@@ -8,6 +8,7 @@ import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
+import { User } from "lucide-react";
 
 const SECTIONS = [
   "Profile",
@@ -28,8 +29,20 @@ export default function SettingsPage() {
 
   const [activeSection, setActiveSection] = useState<Section>("Profile");
   const [displayName, setDisplayName] = useState(profile?.displayName || "");
+  const [photoURL, setPhotoURL] = useState(profile?.photoURL || "");
   const [isSaving, setIsSaving] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoURL(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +51,9 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase.auth.updateUser({ data: { display_name: displayName } });
       if (error) throw error;
-      await userService.updateUserProfile(user.uid, { displayName });
+      await userService.updateUserProfile(user.uid, { displayName, photoURL });
       await refreshProfile();
-      toast({ type: "success", title: "Profile Updated", description: "Your display name has been saved." });
+      toast({ type: "success", title: "Profile Updated", description: "Your profile has been saved." });
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast({ type: "error", title: "Error", description: "Failed to update profile details." });
@@ -102,6 +115,38 @@ export default function SettingsPage() {
               </div>
 
               <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-16 w-16 rounded-full overflow-hidden bg-dash-card border border-dash-border shrink-0">
+                    {photoURL ? (
+                      <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-dash-text-muted">
+                        <User className="h-8 w-8" />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-[12px] font-medium text-dash-text uppercase tracking-wider block mb-2">Profile Picture</label>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="dash-secondary" size="dash-sm" onClick={() => document.getElementById('avatar-upload')?.click()}>
+                        Upload Image
+                      </Button>
+                      {photoURL && (
+                        <Button type="button" variant="dash-secondary" size="dash-sm" onClick={() => setPhotoURL("")}>
+                          Remove
+                        </Button>
+                      )}
+                      <input 
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-dash-text uppercase tracking-wider">Display Name</label>
                   <input

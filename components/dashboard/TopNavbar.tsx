@@ -76,8 +76,14 @@ export const TopNavbar: React.FC = () => {
 
           {/* User Pill */}
           <div className="flex items-center gap-2 pl-3 border-l border-dash-border">
-            <div className="w-8 h-8 rounded-full bg-dash-card border border-dash-border flex items-center justify-center text-dash-text font-semibold text-xs shrink-0">
-              {profile?.displayName ? profile.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+            <div className="w-8 h-8 rounded-full bg-dash-card border border-dash-border flex items-center justify-center text-dash-text font-semibold text-xs shrink-0 overflow-hidden">
+              {profile?.photoURL ? (
+                <img src={profile.photoURL} alt="User" className="w-full h-full object-cover" />
+              ) : profile?.displayName ? (
+                profile.displayName.charAt(0).toUpperCase()
+              ) : (
+                <User className="h-4 w-4" />
+              )}
             </div>
             <div className="hidden xl:flex flex-col text-left">
               <span className="text-xs font-semibold text-dash-text leading-none truncate max-w-[100px]">

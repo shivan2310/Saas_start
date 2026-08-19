@@ -191,13 +191,16 @@ export default function DashboardPage() {
               <span className="text-[13px] font-medium uppercase tracking-wider">Journal</span>
             </div>
             
-            <div className="flex-1 flex flex-col justify-center">
+            <div className="flex-1 flex flex-col justify-center overflow-hidden">
               {loadingOverview ? (
                 <div className="text-[13px] text-dash-text-muted">Loading...</div>
               ) : latestDiary ? (
-                <div>
-                  <div className="text-[13px] text-dash-text-muted mb-1">{formatDate(latestDiary.createdAt)}</div>
-                  <div className="text-[14px] font-medium text-dash-text truncate">{latestDiary.title}</div>
+                <div className="flex flex-col min-h-0">
+                  <div className="text-[13px] text-dash-text-muted mb-1 shrink-0">{formatDate(latestDiary.createdAt)}</div>
+                  <div className="text-[14px] font-medium text-dash-text truncate shrink-0">{latestDiary.title}</div>
+                  <div className="text-[13px] text-dash-text-muted mt-1 line-clamp-3 overflow-hidden">
+                    {latestDiary.content}
+                  </div>
                 </div>
               ) : (
                 <div className="text-[13px] text-dash-text-muted">No entries yet.</div>
