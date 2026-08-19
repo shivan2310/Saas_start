@@ -1,16 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Trash2, Edit3, Calendar, Lock } from "lucide-react";
+import { Trash2, Lock, Plus, Calendar, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
 import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
 import { hasUnlockedJournalKey } from "@/lib/journalCrypto";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Modal } from "@/components/ui/Modal";
+import { cn, formatDate } from "@/lib/utils";
 
 export default function DiaryPage() {
   const { user } = useAuth();
@@ -18,14 +16,12 @@ export default function DiaryPage() {
   const [isLoadingJournal, setIsLoadingJournal] = useState(true);
   const [journalError, setJournalError] = useState("");
   const [needsFreshLogin, setNeedsFreshLogin] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
-  // State for pop-up editing modal
-  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editContent, setEditContent] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -55,257 +51,182 @@ export default function DiaryPage() {
     void loadJournal();
   }, [user]);
 
-  const retryLoadJournal = async () => {
-    if (!user) return;
-
-    setIsLoadingJournal(true);
-    setJournalError("");
-    setNeedsFreshLogin(false);
-    try {
-      const isUnlocked = hasUnlockedJournalKey(user.uid);
-      const entries = await personalService.getDiary(user.uid);
-      setItems(entries);
-      if (isUnlocked) {
-        await personalService.encryptPlainDiaryEntries(user.uid);
-      } else {
-        setNeedsFreshLogin(true);
-      }
-    } catch (error) {
-      console.error("Failed to load encrypted journal:", error);
-      setNeedsFreshLogin(true);
-      setJournalError("Your encrypted journal key is locked for this session. Please sign in again to unlock it.");
-    } finally {
-      setIsLoadingJournal(false);
-    }
-  };
-
   const signInAgain = async () => {
     await authService.logout();
   };
 
-  const submitNewEntry = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!user || needsFreshLogin || !content.trim()) return;
-    const item = await personalService.addDiaryEntry(
-      user.uid,
-      title.trim() || "Untitled entry",
-      content.trim()
-    );
-    setItems((v) => [item, ...v]);
+  const handleNewEntry = () => {
+    setSelectedEntry(null);
     setTitle("");
     setContent("");
+  };
+
+  const handleSelectEntry = (entry: DiaryEntry) => {
+    setSelectedEntry(entry);
+    setTitle(entry.title);
+    setContent(entry.content);
+  };
+
+  const saveEntry = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!user || needsFreshLogin || !content.trim()) return;
+    setIsSaving(true);
+    
+    try {
+      if (selectedEntry) {
+        const updated = await personalService.updateDiaryEntry(
+          selectedEntry.id,
+          user.uid,
+          title.trim() || "Untitled entry",
+          content.trim()
+        );
+        setItems((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+        setSelectedEntry(updated);
+      } else {
+        const item = await personalService.addDiaryEntry(
+          user.uid,
+          title.trim() || "Untitled entry",
+          content.trim()
+        );
+        setItems((v) => [item, ...v]);
+        setSelectedEntry(item);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const removeEntry = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     await personalService.remove("diary", id);
     setItems((v) => v.filter((item) => item.id !== id));
-  };
-
-  const openEditModal = (entry: DiaryEntry) => {
-    setSelectedEntry(entry);
-    setEditTitle(entry.title);
-    setEditContent(entry.content);
-  };
-
-  const closeEditModal = () => {
-    setSelectedEntry(null);
-    setEditTitle("");
-    setEditContent("");
-  };
-
-  const saveEditedEntry = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!user || needsFreshLogin || !selectedEntry || !editContent.trim()) return;
-    setIsUpdating(true);
-    try {
-      const updated = await personalService.updateDiaryEntry(
-        selectedEntry.id,
-        user.uid,
-        editTitle.trim() || "Untitled entry",
-        editContent.trim()
-      );
-      setItems((prev) =>
-        prev.map((item) => (item.id === updated.id ? updated : item))
-      );
-      closeEditModal();
-    } catch (err) {
-      console.error("Failed to update diary entry:", err);
-    } finally {
-      setIsUpdating(false);
+    if (selectedEntry?.id === id) {
+      handleNewEntry();
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold">Journal</h2>
-          <Lock className="h-4 w-4 text-muted" />
-        </div>
-        <p className="mt-1 text-xs text-muted">
-          Your entries are encrypted before they are saved.
+  const filteredItems = items.filter(i => 
+    i.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    i.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (journalError || needsFreshLogin) {
+    return (
+      <div className="max-w-md mt-10 rounded-lg border border-dash-border bg-dash-card p-6">
+        <Lock className="h-6 w-6 text-dash-text-muted mb-4" />
+        <h3 className="text-[16px] font-semibold text-dash-text mb-2">Journal Locked</h3>
+        <p className="text-[13px] text-dash-text-muted mb-6">
+          {journalError || "Sign in again to unlock journal saving and sync encryption for every device."}
         </p>
+        <Button onClick={signInAgain} variant="dash-primary">Sign in again</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-140px)] max-w-6xl">
+      <div className="flex items-end justify-between mb-6 shrink-0">
+        <h2 className="text-[24px] font-semibold tracking-tight text-dash-text">Journal</h2>
       </div>
 
-      {journalError ? (
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-muted">{journalError}</p>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-              <Button type="button" onClick={signInAgain}>
-                Sign in again
-              </Button>
-              <Button type="button" variant="outline" onClick={retryLoadJournal}>
-                Try again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : isLoadingJournal ? (
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-muted">Opening encrypted journal...</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {needsFreshLogin && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted">
-                  Sign in again to unlock journal saving and sync encryption for every device.
-                </p>
-                <Button type="button" className="mt-3" onClick={signInAgain}>
-                  Sign in again
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+      <div className="flex-1 min-h-0 flex gap-8">
+        
+        {/* Left Col: Entries List */}
+        <div className="w-64 shrink-0 flex flex-col border-r border-dash-border pr-6">
+          <Button onClick={handleNewEntry} variant="dash-secondary" className="w-full mb-6 shrink-0 justify-start">
+            <Plus className="h-4 w-4 mr-2" /> New Entry
+          </Button>
 
-          {/* New Journal Entry Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Write an entry</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={submitNewEntry} className="space-y-3">
-                <Input
-                  label="Title"
-                  value={title}
-                  maxLength={200}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="How was your day?"
-                />
-                <textarea
-                  aria-label="Journal entry"
-                  maxLength={10000}
-                  className="min-h-32 w-full rounded border border-border bg-white p-3 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Write whatever is on your mind..."
-                  required
-                />
-                <Button type="submit" disabled={needsFreshLogin}>Save entry</Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Saved Entries List (Titles Only) */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-muted uppercase tracking-wider">
-              Saved Entries
-            </h3>
-            {items.length ? (
-              items.map((item) => (
-                <Card
-                  key={item.id}
-                  className="group cursor-pointer transition-all hover:border-black/40 hover:shadow-sm"
-                  onClick={() => openEditModal(item)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 min-w-0 pr-4">
-                        <Edit3 className="h-4 w-4 shrink-0 text-muted group-hover:text-black transition-colors" />
-                        <span className="truncate font-semibold text-black text-base group-hover:underline">
-                          {item.title}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="flex items-center gap-1 text-xs text-muted">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(item.createdAt).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                        <button
-                          onClick={(e) => removeEntry(e, item.id)}
-                          aria-label="Delete journal entry"
-                          className="p-1 rounded text-muted hover:text-red-600 transition-colors"
-                          title="Delete entry"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-sm text-muted">Your journal is empty.</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Edit Entry Pop-up Modal */}
-      <Modal
-        isOpen={!!selectedEntry}
-        onClose={closeEditModal}
-        title="Journal Entry"
-        description="View or edit your entry below."
-      >
-        <form onSubmit={saveEditedEntry} className="space-y-4 pt-1">
-          <Input
-            label="Title"
-            value={editTitle}
-            maxLength={200}
-            onChange={(e) => setEditTitle(e.target.value)}
-            placeholder="Entry Title"
-          />
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted">Content</label>
-            <textarea
-              aria-label="Edit journal content"
-              maxLength={10000}
-              className="min-h-48 w-full rounded border border-border bg-white p-3 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black"
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              placeholder="Journal thoughts..."
-              required
+          <div className="relative mb-4 shrink-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-dash-text-muted" />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-dash-card border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-text transition-colors"
             />
           </div>
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={closeEditModal}
-              disabled={isUpdating}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isUpdating}>
-              Save Changes
-            </Button>
+
+          <div className="flex-1 overflow-y-auto space-y-1 pr-2">
+            {isLoadingJournal ? (
+              <div className="text-[13px] text-dash-text-muted">Loading...</div>
+            ) : filteredItems.length === 0 ? (
+              <div className="text-[13px] text-dash-text-muted py-4">No entries found.</div>
+            ) : (
+              filteredItems.map(item => {
+                const isSelected = selectedEntry?.id === item.id;
+                return (
+                  <div 
+                    key={item.id}
+                    onClick={() => handleSelectEntry(item)}
+                    className={cn(
+                      "group p-3 rounded-lg cursor-pointer transition-colors border",
+                      isSelected 
+                        ? "bg-dash-card border-dash-border" 
+                        : "border-transparent hover:bg-dash-hover"
+                    )}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="text-[14px] font-medium text-dash-text truncate pr-2">
+                        {item.title}
+                      </div>
+                      <button 
+                        onClick={(e) => removeEntry(e, item.id)}
+                        className="opacity-0 group-hover:opacity-100 text-dash-text-muted hover:text-dash-text transition-opacity p-0.5"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] text-dash-text-muted">
+                      <Calendar className="h-3 w-3" />
+                      {formatDate(item.createdAt)}
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
-        </form>
-      </Modal>
+        </div>
+
+        {/* Right Col: Editor */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <form onSubmit={saveEntry} className="flex-1 flex flex-col h-full bg-dash-background">
+            <div className="flex items-center justify-between border-b border-dash-border pb-4 mb-6 shrink-0">
+              <div className="flex items-center gap-3">
+                <span className="text-[13px] text-dash-text-muted font-medium">
+                  {selectedEntry ? formatDate(selectedEntry.createdAt) : formatDate(new Date().toISOString())}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-dash-accent font-semibold px-2 py-0.5 bg-dash-accent/10 rounded">
+                  {selectedEntry ? "Editing" : "Draft"}
+                </span>
+              </div>
+              <Button type="submit" variant="dash-primary" size="dash-sm" isLoading={isSaving} disabled={!content.trim()}>
+                Save entry
+              </Button>
+            </div>
+
+            <input
+              type="text"
+              placeholder="Entry Title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-transparent border-none text-[28px] font-semibold text-dash-text placeholder:text-dash-text-muted focus:outline-none mb-6 shrink-0 leading-tight"
+            />
+
+            <textarea
+              placeholder="Start writing..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="flex-1 w-full bg-transparent border-none text-[15px] leading-relaxed text-dash-text placeholder:text-dash-text-muted focus:outline-none resize-none"
+              style={{ minHeight: '300px' }}
+            />
+          </form>
+        </div>
+
+      </div>
     </div>
   );
 }

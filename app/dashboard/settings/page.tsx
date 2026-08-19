@@ -5,16 +5,28 @@ import { useAuth } from "@/hooks/useAuth";
 import { userService } from "@/services/userService";
 import { authService } from "@/services/authService";
 import { supabase } from "@/supabase/client";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
-import { User, Mail, Shield, Key } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const SECTIONS = [
+  "Profile",
+  "Account",
+  "Appearance",
+  "Notifications",
+  "Privacy",
+  "AI",
+  "Data",
+  "Security"
+] as const;
+
+type Section = typeof SECTIONS[number];
 
 export default function SettingsPage() {
-  const { user, profile, refreshProfile, isEmailVerified } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
 
+  const [activeSection, setActiveSection] = useState<Section>("Profile");
   const [displayName, setDisplayName] = useState(profile?.displayName || "");
   const [isSaving, setIsSaving] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
@@ -56,71 +68,118 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-black">Profile & Settings</h2>
-        <p className="text-xs text-muted mt-1">Manage your account information and security preferences.</p>
+    <div className="space-y-8 max-w-5xl">
+      <div className="flex items-end justify-between">
+        <h2 className="text-[24px] font-semibold tracking-tight text-dash-text">Settings</h2>
       </div>
 
-      {/* Profile Settings Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>Update your public display name and contact profile.</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSaveProfile}>
-          <CardContent className="space-y-4">
-            <Input
-              label="Full Name"
-              type="text"
-              maxLength={100}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              leftIcon={<User className="h-4 w-4" />}
-            />
-
-            <Input
-              label="Email Address"
-              type="email"
-              value={user?.email || ""}
-              disabled
-              helperText="Email cannot be changed directly."
-              leftIcon={<Mail className="h-4 w-4" />}
-            />
-          </CardContent>
-          <CardFooter className="justify-end border-t border-border mt-6 pt-4">
-            <Button type="submit" isLoading={isSaving}>
-              Save Changes
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-
-      {/* Security & Password */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Security & Authentication</CardTitle>
-          <CardDescription>Request password updates and view session details.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col items-start gap-3 rounded border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h4 className="text-xs font-semibold text-black">Password Reset</h4>
-              <p className="text-xs text-muted">Receive a secure link to update your account password.</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePasswordReset}
-              isLoading={sendingReset}
-              className="w-full sm:w-auto"
-              leftIcon={<Key className="h-3.5 w-3.5" />}
+      <div className="flex flex-col md:flex-row gap-8 items-start">
+        {/* Left Navigation */}
+        <nav className="w-full md:w-48 shrink-0 flex flex-col space-y-1">
+          {SECTIONS.map(section => (
+            <button
+              key={section}
+              onClick={() => setActiveSection(section)}
+              className={cn(
+                "text-left px-3 py-2 rounded-md text-[13px] font-medium transition-colors",
+                activeSection === section 
+                  ? "bg-dash-card text-dash-text" 
+                  : "text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover"
+              )}
             >
-              Reset Password
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              {section}
+            </button>
+          ))}
+        </nav>
+
+        {/* Right Content */}
+        <div className="flex-1 max-w-xl">
+          {activeSection === "Profile" && (
+            <div className="space-y-6">
+              <div className="border-b border-dash-border pb-4">
+                <h3 className="text-[16px] font-medium text-dash-text">Public Profile</h3>
+                <p className="text-[13px] text-dash-text-muted mt-1">This is how others will see you on the platform.</p>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-medium text-dash-text uppercase tracking-wider">Display Name</label>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full bg-dash-card border border-dash-border rounded-md px-3 py-2 text-[14px] text-dash-text focus:outline-none focus:border-dash-text transition-colors"
+                  />
+                </div>
+                <Button type="submit" variant="dash-primary" size="dash-sm" isLoading={isSaving}>
+                  Save profile
+                </Button>
+              </form>
+            </div>
+          )}
+
+          {activeSection === "Account" && (
+            <div className="space-y-6">
+              <div className="border-b border-dash-border pb-4">
+                <h3 className="text-[16px] font-medium text-dash-text">Account Settings</h3>
+                <p className="text-[13px] text-dash-text-muted mt-1">Manage your account credentials and personal data.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-medium text-dash-text uppercase tracking-wider">Email Address</label>
+                  <input
+                    type="email"
+                    value={user?.email || ""}
+                    disabled
+                    className="w-full bg-dash-background border border-dash-border rounded-md px-3 py-2 text-[14px] text-dash-text-muted cursor-not-allowed"
+                  />
+                  <p className="text-[11px] text-dash-text-muted">Email cannot be changed directly.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "Security" && (
+            <div className="space-y-6">
+              <div className="border-b border-dash-border pb-4">
+                <h3 className="text-[16px] font-medium text-dash-text">Security</h3>
+                <p className="text-[13px] text-dash-text-muted mt-1">Protect your account and manage authentication methods.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-dash-card border border-dash-border rounded-md gap-4">
+                  <div>
+                    <h4 className="text-[14px] font-medium text-dash-text">Password Reset</h4>
+                    <p className="text-[12px] text-dash-text-muted mt-0.5">Receive a secure link to update your account password.</p>
+                  </div>
+                  <Button
+                    variant="dash-secondary"
+                    size="dash-sm"
+                    onClick={handlePasswordReset}
+                    isLoading={sendingReset}
+                  >
+                    Reset Password
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Placeholder for other sections */}
+          {["Appearance", "Notifications", "Privacy", "AI", "Data"].includes(activeSection) && (
+            <div className="space-y-6">
+              <div className="border-b border-dash-border pb-4">
+                <h3 className="text-[16px] font-medium text-dash-text">{activeSection}</h3>
+                <p className="text-[13px] text-dash-text-muted mt-1">Manage your {activeSection.toLowerCase()} settings.</p>
+              </div>
+              <div className="text-[13px] text-dash-text-muted italic">
+                These settings are currently managed system-wide.
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

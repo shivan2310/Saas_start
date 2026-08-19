@@ -20,6 +20,29 @@ const config: Config = {
         hover: "hsl(var(--hover) / <alpha-value>)",
         muted: "hsl(var(--muted) / <alpha-value>)",
         "muted-light": "hsl(var(--muted-light) / <alpha-value>)",
+        dash: {
+          background: "#0D0F10",
+          sidebar: "#101213",
+          card: "#151718",
+          elevated: "#1A1C1D",
+          hover: "#202223",
+          border: {
+            DEFAULT: "#2A2D2E",
+            secondary: "#222526",
+            divider: "#292C2D",
+          },
+          text: {
+            DEFAULT: "#F2F2F0",
+            secondary: "#A5A8A8",
+            muted: "#737777",
+            disabled: "#555959",
+          },
+          accent: {
+            DEFAULT: "#8FAFA5",
+            hover: "#A5C0B7",
+            bg: "rgba(143,175,165,0.10)",
+          }
+        }
       },
       borderRadius: {
         DEFAULT: "8px",

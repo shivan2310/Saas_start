@@ -24,9 +24,9 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-border border-t-black rounded-full animate-spin mb-3" />
-        <p className="text-xs font-mono text-muted uppercase tracking-wider">Authenticating Session...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-dash-background text-dash-text">
+        <div className="w-8 h-8 border-2 border-dash-border border-t-dash-accent rounded-full animate-spin mb-3" />
+        <p className="text-xs font-mono text-dash-text-muted uppercase tracking-wider">Authenticating Session...</p>
       </div>
     );
   }
@@ -36,7 +36,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-dash-background text-dash-text font-sans selection:bg-dash-accent-bg selection:text-dash-text">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopNavbar />

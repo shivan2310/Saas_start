@@ -13,12 +13,17 @@ const buttonVariants = cva(
         outline: "bg-transparent text-black border border-border hover:bg-surface active:bg-transparent",
         ghost: "bg-transparent text-black hover:bg-surface active:bg-transparent",
         danger: "bg-black text-white border border-black hover:bg-hover",
+        "dash-primary": "bg-dash-elevated text-dash-text hover:bg-dash-hover border border-dash-border",
+        "dash-secondary": "bg-transparent text-dash-text border border-dash-border hover:bg-dash-hover",
+        "dash-ghost": "bg-transparent text-dash-text-secondary hover:bg-dash-hover hover:text-dash-text",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-8 px-3 text-xs",
         lg: "h-12 px-6 text-base",
         icon: "h-10 w-10 p-0",
+        "dash-default": "py-[8px] px-[12px] text-[13px] leading-tight rounded-md",
+        "dash-sm": "py-[6px] px-[10px] text-xs leading-tight rounded-md",
       },
     },
     defaultVariants: {

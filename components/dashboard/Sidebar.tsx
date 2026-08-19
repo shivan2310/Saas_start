@@ -29,11 +29,11 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
-      <aside className="hidden min-h-screen w-64 shrink-0 flex-col justify-between border-r border-border bg-white xl:flex">
+      <aside className="hidden min-h-screen w-[240px] shrink-0 flex-col justify-between border-r border-dash-border bg-dash-sidebar xl:flex">
         <div>
         {/* Brand */}
-        <div className="h-16 px-6 border-b border-border flex items-center gap-2 font-bold text-base tracking-tight text-black">
-          <div className="w-5 h-5 bg-black rounded flex items-center justify-center text-white text-[10px] font-mono">
+        <div className="h-16 px-6 border-b border-dash-border flex items-center gap-2 font-bold text-base tracking-tight text-dash-text">
+          <div className="w-5 h-5 bg-dash-text rounded flex items-center justify-center text-dash-background text-[10px] font-mono">
             S
           </div>
           <span>NIVIO</span>
@@ -41,7 +41,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Navigation */}
         <nav className="p-4 space-y-1">
-          <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-muted mb-2">
+          <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-dash-text-muted mb-2">
             Main Menu
           </p>
           {navItems.map((item) => {
@@ -52,13 +52,13 @@ export const Sidebar: React.FC = () => {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded text-xs font-medium transition-colors",
+                  "flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-colors",
                   isActive
-                    ? "bg-black text-white"
-                    : "text-muted hover:text-black hover:bg-surface"
+                    ? "bg-dash-accent-bg text-dash-text"
+                    : "text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover"
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" strokeWidth={isActive ? 2.5 : 2} />
                 <span>{item.label}</span>
               </Link>
             );
@@ -67,10 +67,10 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Footer / Account */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-dash-border">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-xs font-medium text-muted hover:text-black hover:bg-surface transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover transition-colors"
           >
             <LogOut className="h-4 w-4" />
             <span>Sign Out</span>
