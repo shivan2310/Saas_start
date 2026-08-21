@@ -73,18 +73,22 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const allZero = data.every(d => d.value === 0);
   const minValue = allZero ? 0 : Math.min(...data.filter(d => d.value > 0).map((d) => d.value), 0);
-  const padding = { top: 16, right: 16, bottom: 32, left: 40 };
+  const padding = { top: 16, right: 16, bottom: 36, left: 44 };
   const innerWidth = 100 - padding.left - padding.right;
   const innerHeight = 100 - padding.top - padding.bottom;
-  const barWidth = (innerWidth / data.length) * 0.7;
-  const barGap = (innerWidth / data.length) * 0.3;
+  const barWidth = Math.max((innerWidth / data.length) * 0.65, 1.5);
+  const barGap = Math.max((innerWidth / data.length) * 0.35, 1);
 
-  // Y-axis labels
+  // Y-axis labels - use nice round numbers
   const yTicks = 5;
   const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => {
     const value = maxValue - (i / yTicks) * (maxValue - minValue);
     const y = padding.top + (i / yTicks) * innerHeight;
-    return { value: value >= 1000 ? `${(value / 1000).toFixed(1)}k` : Math.round(value).toString(), y };
+    let displayValue: string;
+    if (value >= 100000) displayValue = `${(value / 100000).toFixed(1)}L`;
+    else if (value >= 1000) displayValue = `${(value / 1000).toFixed(1)}k`;
+    else displayValue = Math.round(value).toString();
+    return { value: displayValue, y };
   });
 
   // X-axis labels - show subset for readability
@@ -99,31 +103,78 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
       <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#8FAFA5" stopOpacity={0.9} />
-            <stop offset="100%" stopColor="#8FAFA5" stopOpacity={0.4} />
+            <stop offset="0%" stopColor="#5BA37D" stopOpacity={1} />
+            <stop offset="100%" stopColor="#3D8B5F" stopOpacity={1} />
+          </linearGradient>
+          <linearGradient id="barGradientHover" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#6CC48F" stopOpacity={1} />
+            <stop offset="100%" stopColor="#4FAF72" stopOpacity={1} />
           </linearGradient>
         </defs>
         
         {/* Y-axis grid lines and labels */}
-        <g stroke="#292C2D" strokeWidth="0.3" opacity="0.4" fontSize="8" fill="#737777">
+        <g fontSize="9" fill="#9AA0A0">
           {yLabels.map((tick, i) => (
             <g key={i}>
-              <line x1={padding.left} y1={tick.y} x2={100 - padding.right} y2={tick.y} />
-              <text x={padding.left - 4} y={tick.y + 2} textAnchor="end" className="text-dash-text-muted" style={{ fontSize: "8px" }}>
+              <line 
+                x1={padding.left} 
+                y1={tick.y} 
+                x2={100 - padding.right} 
+                y2={tick.y} 
+                stroke="#2D3132" 
+                strokeWidth="0.4" 
+                opacity={i === 0 ? 0.6 : 0.25} 
+                strokeDasharray={i === 0 ? "none" : "2 2"}
+              />
+              <text 
+                x={padding.left - 6} 
+                y={tick.y + 3} 
+                textAnchor="end" 
+                className="text-dash-text-secondary" 
+                style={{ fontSize: "9px", fontWeight: 500 }}
+              >
                 {tick.value}
               </text>
             </g>
           ))}
         </g>
 
+        {/* Y-axis line */}
+        <line 
+          x1={padding.left} 
+          y1={padding.top} 
+          x2={padding.left} 
+          y2={100 - padding.bottom} 
+          stroke="#2D3132" 
+          strokeWidth="0.6" 
+          opacity="0.5"
+        />
+
         {/* X-axis labels */}
-        <g fontSize="8" fill="#737777" textAnchor="middle">
+        <g fontSize="9" fill="#9AA0A0" textAnchor="middle">
           {xLabels.map((tick, i) => (
-            <text key={i} x={tick.x} y={100 - padding.bottom + 14} className="text-dash-text-muted" style={{ fontSize: "7px", display: tick.show ? "block" : "none" }}>
+            <text 
+              key={i} 
+              x={tick.x} 
+              y={100 - padding.bottom + 16} 
+              className="text-dash-text-secondary" 
+              style={{ fontSize: "8px", fontWeight: 500, display: tick.show ? "block" : "none" }}
+            >
               {tick.label}
             </text>
           ))}
         </g>
+
+        {/* X-axis line */}
+        <line 
+          x1={padding.left} 
+          y1={100 - padding.bottom} 
+          x2={100 - padding.right} 
+          y2={100 - padding.bottom} 
+          stroke="#2D3132" 
+          strokeWidth="0.6" 
+          opacity="0.5"
+        />
 
         {/* Bars */}
         <g>
@@ -138,22 +189,30 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
                   x={x}
                   y={y}
                   width={barWidth}
-                  height={Math.max(barHeight, 1)}
+                  height={Math.max(barHeight, d.value > 0 ? 2 : 0)}
                   fill="url(#barGradient)"
-                  rx={2}
-                  ry={2}
-                  className="transition-opacity duration-150 hover:opacity-80"
+                  rx={3}
+                  ry={3}
+                  className="transition-all duration-150"
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget;
+                    rect.setAttribute("fill", "url(#barGradientHover)");
+                  }}
+                  onMouseLeave={(e) => {
+                    const rect = e.currentTarget;
+                    rect.setAttribute("fill", "url(#barGradient)");
+                  }}
                 />
-                {/* Value label on top of bar */}
-                {d.value > 0 && (
+                {/* Value label on top of bar - only for significant values */}
+                {d.value > 0 && barHeight > 12 && (
                   <text
                     x={x + barWidth / 2}
-                    y={y - 4}
+                    y={y - 5}
                     textAnchor="middle"
-                    className="text-dash-text-muted"
-                    style={{ fontSize: "7px" }}
+                    className="text-dash-text-secondary"
+                    style={{ fontSize: "8px", fontWeight: 600 }}
                   >
-                    {d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value.toString()}
+                    {d.value >= 100000 ? `${(d.value / 100000).toFixed(1)}L` : d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value.toString()}
                   </text>
                 )}
               </g>
@@ -163,16 +222,16 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
       </svg>
       
       {/* Tooltip */}
-      <div className="absolute bottom-full left-0 right-0 pointer-events-none pb-2">
+      <div className="absolute bottom-full left-0 right-0 pointer-events-none pb-3">
         {data.map((d, i) => (
           <div
             key={i}
             className="absolute transform -translate-x-1/2 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none"
             style={{ left: `${padding.left + i * (barWidth + barGap) + barWidth / 2}%` }}
           >
-            <div className="bg-dash-elevated border border-dash-border rounded-md px-2.5 py-1.5 text-center shadow-lg whitespace-nowrap">
-              <p className="text-[10px] font-medium text-dash-text">{d.label}</p>
-              <p className="text-[12px] font-semibold text-dash-text">₹{d.value.toLocaleString()}</p>
+            <div className="bg-dash-elevated border border-dash-border rounded-md px-3 py-2 text-center shadow-lg whitespace-nowrap">
+              <p className="text-[11px] font-medium text-dash-text-secondary">{d.label}</p>
+              <p className="text-[13px] font-semibold text-dash-text">₹{d.value.toLocaleString()}</p>
             </div>
           </div>
         ))}

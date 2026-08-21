@@ -1,18 +1,18 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Trash2, Lock, Plus, Calendar, Search } from "lucide-react";
+import { Trash2, Lock, Plus, Calendar, Search, Unlock, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
 import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
-import { hasUnlockedJournalKey } from "@/lib/journalCrypto";
+import { hasUnlockedJournalKey, unlockAccountJournalKey } from "@/lib/journalCrypto";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function DiaryPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [items, setItems] = useState<DiaryEntry[]>([]);
   const [isLoadingJournal, setIsLoadingJournal] = useState(true);
   const [journalError, setJournalError] = useState("");
@@ -23,6 +23,12 @@ export default function DiaryPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [unlockPassword, setUnlockPassword] = useState("");
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [unlockError, setUnlockError] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -43,7 +49,7 @@ export default function DiaryPage() {
       } catch (error) {
         console.error("Failed to load encrypted journal:", error);
         setNeedsFreshLogin(true);
-        setJournalError("Your encrypted journal key is locked for this session. Please sign in again to unlock it.");
+        setJournalError("Your encrypted journal key is locked for this session. Please unlock it to continue.");
       } finally {
         setIsLoadingJournal(false);
       }
@@ -52,8 +58,35 @@ export default function DiaryPage() {
     void loadJournal();
   }, [user]);
 
-  const signInAgain = async () => {
-    await authService.logout();
+  const handleUnlock = async () => {
+    if (!user || !profile?.journalKey || !unlockPassword.trim()) return;
+    setIsUnlocking(true);
+    setUnlockError("");
+    try {
+      await unlockAccountJournalKey(user.uid, user.email || "", unlockPassword, profile.journalKey);
+      setShowUnlockModal(false);
+      setUnlockPassword("");
+      setNeedsFreshLogin(false);
+      const entries = await personalService.getDiary(user.uid);
+      setItems(entries);
+      await personalService.encryptPlainDiaryEntries(user.uid);
+    } catch (error) {
+      console.error("Failed to unlock journal:", error);
+      setUnlockError("Incorrect password. Please try again.");
+    } finally {
+      setIsUnlocking(false);
+    }
+  };
+
+  const openUnlockModal = () => {
+    setShowUnlockModal(true);
+    setUnlockError("");
+  };
+
+  const closeUnlockModal = () => {
+    setShowUnlockModal(false);
+    setUnlockPassword("");
+    setUnlockError("");
   };
 
   const handleNewEntry = () => {
@@ -119,9 +152,9 @@ export default function DiaryPage() {
         <Lock className="h-6 w-6 text-dash-text-muted mb-4" />
         <h3 className="text-[16px] font-semibold text-dash-text mb-2">Journal Locked</h3>
         <p className="text-[13px] text-dash-text-muted mb-6">
-          {journalError || "Sign in again to unlock journal saving and sync encryption for every device."}
+          {journalError || "Your encrypted journal key is locked for this session. Enter your password to unlock it."}
         </p>
-        <Button onClick={signInAgain} variant="dash-primary">Sign in again</Button>
+        <Button onClick={openUnlockModal} variant="dash-primary">Unlock Journal</Button>
       </div>
     );
   }
@@ -234,4 +267,51 @@ export default function DiaryPage() {
       </div>
     </div>
   );
+
+  if (showUnlockModal) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="w-full max-w-md bg-dash-card rounded-xl border border-dash-border p-6 animate-in fade-in zoom-in-95">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-[18px] font-semibold text-dash-text">Unlock Journal</h3>
+            <button onClick={closeUnlockModal} className="text-dash-text-muted hover:text-dash-text transition-colors p-1">
+              <RotateCcw className="h-5 w-5" />
+            </button>
+          </div>
+          <p className="text-[13px] text-dash-text-muted mb-6">Enter your password to unlock your encrypted journal for this session.</p>
+          {unlockError && (
+            <div className="mb-4 p-3 bg-dash-accent/10 border border-dash-accent/30 rounded-md text-[13px] text-dash-accent">
+              {unlockError}
+            </div>
+          )}
+          <div className="relative mb-4">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={unlockPassword}
+              onChange={(e) => setUnlockPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
+              autoFocus
+              className="w-full bg-dash-surface border border-dash-border rounded-md pl-3 pr-10 py-2.5 text-[14px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-muted hover:text-dash-text transition-colors"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={closeUnlockModal} variant="dash-secondary" className="flex-1" disabled={isUnlocking}>
+              Cancel
+            </Button>
+            <Button onClick={handleUnlock} variant="dash-primary" className="flex-1" isLoading={isUnlocking} disabled={!unlockPassword.trim()}>
+              Unlock
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
