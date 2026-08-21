@@ -397,7 +397,16 @@ export default function ExpensesPage() {
   const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
   const topCategory = sortedCategories[0];
 
-  const CHART_COLORS = ["#8FAFA5", "#7DB8A8", "#6DB09E", "#5DA894", "#4D9F8A", "#3D9780"];
+  const CHART_COLORS = [
+  "#8FAFA5", // sage (primary)
+  "#E8A87C", // warm sand
+  "#A8D0E6", // muted blue
+  "#D4A5D4", // muted lavender
+  "#F4C47C", // muted gold
+  "#9DD4B8", // muted mint
+  "#E6A8A8", // muted coral
+  "#B8C8E6", // muted periwinkle
+];
 
   const donutData = sortedCategories.slice(0, 6).map(([label, value], i) => ({
     label,
