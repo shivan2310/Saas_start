@@ -67,33 +67,17 @@ function getDateNDaysAgo(days: number): string {
   return d.toISOString().split("T")[0];
 }
 
-function LineChart({ data }: { data: { label: string; value: number; date: string }[] }) {
-  if (data.length < 2) return null;
+function BarChart({ data }: { data: { label: string; value: number; date: string }[] }) {
+  if (data.length < 1) return null;
 
-  // Filter out data points with no value for better scaling
-  const validData = data.filter(d => d.value > 0);
-  const allZero = data.every(d => d.value === 0);
-  
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const minValue = allZero ? 0 : Math.min(...validData.map((d) => d.value), 0);
+  const allZero = data.every(d => d.value === 0);
+  const minValue = allZero ? 0 : Math.min(...data.filter(d => d.value > 0).map((d) => d.value), 0);
   const padding = { top: 16, right: 16, bottom: 32, left: 40 };
   const innerWidth = 100 - padding.left - padding.right;
   const innerHeight = 100 - padding.top - padding.bottom;
-
-  // Create SVG path for smooth line
-  const pathData = data.map((d, i) => {
-    const x = padding.left + (i / (data.length - 1)) * innerWidth;
-    const y = padding.top + innerHeight - ((d.value - minValue) / (maxValue - minValue || 1)) * innerHeight;
-    return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-  }).join(" ");
-
-  // Area path (fill under line)
-  const areaPathData = [
-    `M ${padding.left} ${padding.top + innerHeight}`,
-    pathData,
-    `L ${padding.left + innerWidth} ${padding.top + innerHeight}`,
-    "Z"
-  ].join(" ");
+  const barWidth = (innerWidth / data.length) * 0.7;
+  const barGap = (innerWidth / data.length) * 0.3;
 
   // Y-axis labels
   const yTicks = 5;
@@ -105,7 +89,7 @@ function LineChart({ data }: { data: { label: string; value: number; date: strin
 
   // X-axis labels - show subset for readability
   const xLabels = data.map((d, i) => {
-    const x = padding.left + (i / (data.length - 1)) * innerWidth;
+    const x = padding.left + i * (barWidth + barGap) + barWidth / 2;
     const show = data.length <= 14 || i % Math.ceil(data.length / 10) === 0 || i === data.length - 1;
     return { label: d.label, x, show };
   });
@@ -114,9 +98,9 @@ function LineChart({ data }: { data: { label: string; value: number; date: strin
     <div className="relative h-72 w-full" role="img" aria-label="Spending trend chart">
       <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ overflow: "visible" }}>
         <defs>
-          <linearGradient id="spendingGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#8FAFA5" stopOpacity={0.15} />
-            <stop offset="100%" stopColor="#8FAFA5" stopOpacity={0} />
+          <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#8FAFA5" stopOpacity={0.9} />
+            <stop offset="100%" stopColor="#8FAFA5" stopOpacity={0.4} />
           </linearGradient>
         </defs>
         
@@ -141,28 +125,38 @@ function LineChart({ data }: { data: { label: string; value: number; date: strin
           ))}
         </g>
 
-        {/* Area fill */}
-        <path d={areaPathData} fill="url(#spendingGradient)" />
-
-        {/* Line */}
-        <path d={pathData} fill="none" stroke="#8FAFA5" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-
-        {/* Hover dots */}
+        {/* Bars */}
         <g>
           {data.map((d, i) => {
-            const x = padding.left + (i / (data.length - 1)) * innerWidth;
-            const y = padding.top + innerHeight - ((d.value - minValue) / (maxValue - minValue || 1)) * innerHeight;
+            const x = padding.left + i * (barWidth + barGap);
+            const barHeight = maxValue > 0 ? ((d.value - minValue) / (maxValue - minValue || 1)) * innerHeight : 0;
+            const y = padding.top + innerHeight - barHeight;
+            
             return (
-              <circle
-                key={i}
-                cx={x}
-                cy={y}
-                r="3.5"
-                fill="#8FAFA5"
-                stroke="#0D0F10"
-                strokeWidth="2"
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-crosshair"
-              />
+              <g key={i} className="group cursor-pointer">
+                <rect
+                  x={x}
+                  y={y}
+                  width={barWidth}
+                  height={Math.max(barHeight, 1)}
+                  fill="url(#barGradient)"
+                  rx={2}
+                  ry={2}
+                  className="transition-opacity duration-150 hover:opacity-80"
+                />
+                {/* Value label on top of bar */}
+                {d.value > 0 && (
+                  <text
+                    x={x + barWidth / 2}
+                    y={y - 4}
+                    textAnchor="middle"
+                    className="text-dash-text-muted"
+                    style={{ fontSize: "7px" }}
+                  >
+                    {d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value.toString()}
+                  </text>
+                )}
+              </g>
             );
           })}
         </g>
@@ -174,7 +168,7 @@ function LineChart({ data }: { data: { label: string; value: number; date: strin
           <div
             key={i}
             className="absolute transform -translate-x-1/2 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none"
-            style={{ left: `${padding.left + (i / (data.length - 1)) * innerWidth}%` }}
+            style={{ left: `${padding.left + i * (barWidth + barGap) + barWidth / 2}%` }}
           >
             <div className="bg-dash-elevated border border-dash-border rounded-md px-2.5 py-1.5 text-center shadow-lg whitespace-nowrap">
               <p className="text-[10px] font-medium text-dash-text">{d.label}</p>
@@ -623,7 +617,7 @@ export default function ExpensesPage() {
 
           {periodItems.length > 0 ? (
             <div className="group">
-              <LineChart data={lineChartData} />
+              <BarChart data={lineChartData} />
             </div>
           ) : (
             <div className="py-12 text-center">
