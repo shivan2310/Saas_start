@@ -13,15 +13,6 @@ export const TopNavbar: React.FC = () => {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { label: "To-dos", href: "/dashboard/tasks", icon: CheckSquare },
-    { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
-    { label: "Important Dates", href: "/dashboard/dates", icon: CalendarDays },
-    { label: "Journal", href: "/dashboard/diary", icon: BookOpen },
-    { label: "Settings", href: "/dashboard/settings", icon: Settings },
-  ];
-
   const handleLogout = async () => {
     try {
       await authService.logout();
@@ -31,7 +22,7 @@ export const TopNavbar: React.FC = () => {
   };
 
   return (
-    <header className="border-b border-dash-border bg-dash-background">
+    <header className="border-b border-dash-border bg-dash-background/95 backdrop-blur">
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
         {/* Left side on mobile */}
         <div className="flex items-center gap-2 xl:hidden">
@@ -44,10 +35,10 @@ export const TopNavbar: React.FC = () => {
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          
-          <div className="font-bold text-sm tracking-tight text-dash-text flex items-center gap-1.5 ml-1">
-            <div className="w-4 h-4 bg-dash-text rounded flex items-center justify-center text-dash-background text-[9px] font-mono">
-              S
+
+          <div className="font-semibold text-sm tracking-normal text-dash-text flex items-center gap-1.5 ml-1">
+            <div className="w-4 h-4 bg-dash-accent rounded flex items-center justify-center text-dash-background text-[9px] font-mono">
+              N
             </div>
             <span>NIVIO</span>
           </div>
@@ -78,7 +69,7 @@ export const TopNavbar: React.FC = () => {
           <div className="flex items-center gap-2 pl-3 border-l border-dash-border">
             <div className="w-8 h-8 rounded-full bg-dash-card border border-dash-border flex items-center justify-center text-dash-text font-semibold text-xs shrink-0 overflow-hidden">
               {profile?.photoURL ? (
-                <img src={profile.photoURL} alt="User" className="w-full h-full object-cover" />
+                      <img src={profile.photoURL} alt="User profile" className="w-full h-full object-cover" />
               ) : profile?.displayName ? (
                 profile.displayName.charAt(0).toUpperCase()
               ) : (
@@ -95,7 +86,7 @@ export const TopNavbar: React.FC = () => {
             </div>
             <button
               onClick={handleLogout}
-              className="xl:hidden p-1.5 text-dash-text-secondary hover:text-dash-text rounded-md hover:bg-dash-hover transition-colors"
+              className="xl:hidden p-1.5 text-dash-text-secondary hover:text-dash-text rounded-md hover:bg-dash-hover transition-dash"
               aria-label="Log out"
             >
               <LogOut className="h-4 w-4" />
@@ -109,7 +100,14 @@ export const TopNavbar: React.FC = () => {
           aria-label="Mobile dashboard navigation"
           className="xl:hidden flex w-full flex-col gap-1 border-t border-dash-border bg-dash-background px-3 py-3"
         >
-          {navItems.map((item) => {
+          {[
+            { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+            { label: "To-dos", href: "/dashboard/tasks", icon: CheckSquare },
+            { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
+            { label: "Important Dates", href: "/dashboard/dates", icon: CalendarDays },
+            { label: "Journal", href: "/dashboard/diary", icon: BookOpen },
+            { label: "Settings & Profile", href: "/dashboard/settings", icon: Settings },
+          ].map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
@@ -118,8 +116,8 @@ export const TopNavbar: React.FC = () => {
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded px-3 py-2.5 text-[13px] font-medium transition-colors",
-                  isActive ? "bg-dash-accent-bg text-dash-text" : "text-dash-text-secondary hover:bg-dash-hover hover:text-dash-text"
+                  "flex items-center gap-3 rounded px-3 py-2.5 text-[13px] font-medium transition-dash",
+                  isActive ? "bg-dash-elevated text-dash-text border-l-2 border-dash-accent" : "text-dash-text-secondary hover:bg-dash-hover hover:text-dash-text"
                 )}
               >
                 <Icon className="h-4 w-4" />

@@ -13,12 +13,6 @@ import { User } from "lucide-react";
 const SECTIONS = [
   "Profile",
   "Account",
-  "Appearance",
-  "Notifications",
-  "Privacy",
-  "AI",
-  "Data",
-  "Security"
 ] as const;
 
 type Section = typeof SECTIONS[number];
@@ -81,9 +75,9 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-8">
       <div className="flex items-end justify-between">
-        <h2 className="text-[24px] font-semibold tracking-tight text-dash-text">Settings</h2>
+        <h2 className="text-[28px] font-semibold tracking-tight text-dash-text">Settings & Profile</h2>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -94,7 +88,7 @@ export default function SettingsPage() {
               key={section}
               onClick={() => setActiveSection(section)}
               className={cn(
-                "text-left px-3 py-2 rounded-md text-[13px] font-medium transition-colors",
+                "text-left px-3 py-2 rounded-md text-[13px] font-medium transition-dash",
                 activeSection === section 
                   ? "bg-dash-card text-dash-text" 
                   : "text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover"
@@ -126,7 +120,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                   <div>
-                    <label className="text-[12px] font-medium text-dash-text uppercase tracking-wider block mb-2">Profile Picture</label>
+                    <label className="text-[12px] font-medium text-dash-text-secondary uppercase tracking-wider block mb-2">Profile Picture</label>
                     <div className="flex gap-2">
                       <Button type="button" variant="dash-secondary" size="dash-sm" onClick={() => document.getElementById('avatar-upload')?.click()}>
                         Upload Image
@@ -148,12 +142,12 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-medium text-dash-text uppercase tracking-wider">Display Name</label>
+                  <label className="text-[12px] font-medium text-dash-text-secondary uppercase tracking-wider">Display Name</label>
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full bg-dash-card border border-dash-border rounded-md px-3 py-2 text-[14px] text-dash-text focus:outline-none focus:border-dash-text transition-colors"
+                    className="w-full bg-dash-surface border border-dash-border rounded-md px-3 py-2 text-[14px] text-dash-text focus:outline-none focus:border-dash-accent transition-dash"
                   />
                 </div>
                 <Button type="submit" variant="dash-primary" size="dash-sm" isLoading={isSaving}>
@@ -172,7 +166,7 @@ export default function SettingsPage() {
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-medium text-dash-text uppercase tracking-wider">Email Address</label>
+                  <label className="text-[12px] font-medium text-dash-text-secondary uppercase tracking-wider">Email Address</label>
                   <input
                     type="email"
                     value={user?.email || ""}
@@ -182,17 +176,8 @@ export default function SettingsPage() {
                   <p className="text-[11px] text-dash-text-muted">Email cannot be changed directly.</p>
                 </div>
               </div>
-            </div>
-          )}
 
-          {activeSection === "Security" && (
-            <div className="space-y-6">
-              <div className="border-b border-dash-border pb-4">
-                <h3 className="text-[16px] font-medium text-dash-text">Security</h3>
-                <p className="text-[13px] text-dash-text-muted mt-1">Protect your account and manage authentication methods.</p>
-              </div>
-
-              <div className="space-y-4">
+              <div className="border-t border-dash-border pt-6 mt-6 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-dash-card border border-dash-border rounded-md gap-4">
                   <div>
                     <h4 className="text-[14px] font-medium text-dash-text">Password Reset</h4>
@@ -207,19 +192,6 @@ export default function SettingsPage() {
                     Reset Password
                   </Button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Placeholder for other sections */}
-          {["Appearance", "Notifications", "Privacy", "AI", "Data"].includes(activeSection) && (
-            <div className="space-y-6">
-              <div className="border-b border-dash-border pb-4">
-                <h3 className="text-[16px] font-medium text-dash-text">{activeSection}</h3>
-                <p className="text-[13px] text-dash-text-muted mt-1">Manage your {activeSection.toLowerCase()} settings.</p>
-              </div>
-              <div className="text-[13px] text-dash-text-muted italic">
-                These settings are currently managed system-wide.
               </div>
             </div>
           )}

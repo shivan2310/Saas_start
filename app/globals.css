@@ -9,23 +9,23 @@
   }
 
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-    --surface: 0 0% 97%;
-    --border: 0 0% 90%;
-    --muted: 0 0% 40%;
-    --hover: 0 0% 7%;
-    --accent-contrast: 0 0% 100%;
-  }
-
-  .dark {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 97%;
-    --surface: 0 0% 12%;
-    --border: 0 0% 24%;
-    --muted: 0 0% 68%;
-    --hover: 0 0% 90%;
-    --accent-contrast: 0 0% 7%;
+    --background: 0 0% 5%;
+    --sidebar: 0 0% 6%;
+    --surface: 0 0% 8%;
+    --elevated: 0 0% 10%;
+    --hover: 0 0% 12%;
+    --border: 0 0% 16%;
+    --border-subtle: 0 0% 13%;
+    --foreground: 0 0% 95%;
+    --foreground-secondary: 0 0% 65%;
+    --foreground-muted: 0 0% 45%;
+    --foreground-disabled: 0 0% 33%;
+    --accent: 155 25% 62%;
+    --accent-hover: 155 30% 70%;
+    --accent-bg: 155 25% 62%;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
   }
 
   * {
@@ -58,43 +58,66 @@
   textarea {
     resize: vertical;
   }
+
+  ::selection {
+    background-color: hsl(var(--accent-bg) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--foreground-muted));
+  }
 }
 
 @layer utilities {
-  .border-standard {
-    border: 1px solid hsl(var(--border));
+  .bg-dash-background { background-color: #0D0F10; }
+  .bg-dash-sidebar { background-color: #101213; }
+  .bg-dash-surface { background-color: #151718; }
+  .bg-dash-elevated { background-color: #1A1C1D; }
+  .bg-dash-hover { background-color: #202223; }
+  .bg-dash-card { background-color: #151718; }
+
+  .border-dash-border { border-color: #292C2D; }
+  .border-dash-border-secondary { border-color: #222526; }
+  .border-dash-divider { border-color: #202324; }
+  .border-dash-accent { border-color: #8FAFA5; }
+  .border-dash-accent\/30 { border-color: rgba(143,175,165,0.3); }
+
+  .text-dash-text { color: #F2F2F0; }
+  .text-dash-text-secondary { color: #A5A8A8; }
+  .text-dash-text-muted { color: #737777; }
+  .text-dash-text-disabled { color: #555959; }
+  .text-dash-accent { color: #8FAFA5; }
+  .text-dash-accent-hover { color: #A5C0B7; }
+  .text-dash-background { color: #0D0F10; }
+
+  .bg-dash-accent { background-color: #8FAFA5; }
+  .bg-dash-accent-hover { background-color: #A5C0B7; }
+  .bg-dash-accent-bg { background-color: rgba(143,175,165,0.10); }
+
+  .focus-dash:focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-color: #8FAFA5;
+    ring-offset: 2px;
+    ring-offset-color: #0D0F10;
   }
-  .bg-surface {
-    background-color: hsl(var(--surface));
+
+  .transition-dash {
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
-}
-
-/* Preserve the existing black-and-white component design in dark mode. */
-.dark .bg-white,
-.dark .bg-white\/95 {
-  background-color: hsl(var(--background)) !important;
-}
-
-.dark .text-black {
-  color: hsl(var(--foreground)) !important;
-}
-
-.dark .text-white {
-  color: hsl(var(--accent-contrast)) !important;
-}
-
-.dark .bg-black {
-  background-color: hsl(var(--foreground)) !important;
-}
-
-.dark .border-black {
-  border-color: hsl(var(--foreground)) !important;
-}
-
-.dark .hover\:text-black:hover {
-  color: hsl(var(--foreground)) !important;
-}
-
-.dark .hover\:bg-surface:hover {
-  background-color: hsl(var(--surface)) !important;
 }

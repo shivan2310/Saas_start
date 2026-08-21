@@ -41,27 +41,27 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-black/60 transition-opacity animate-in fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative z-50 max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded border border-border bg-white p-4 shadow-lg animate-in zoom-in-95 sm:max-h-[calc(100dvh-2rem)] sm:p-6",
+          "relative z-50 max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-dash-border bg-dash-card p-4 shadow-lg animate-in zoom-in-95 sm:max-h-[calc(100dvh-2rem)] sm:p-6",
           className
         )}
         role="dialog"
         aria-modal="true"
       >
-        <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
+        <div className="flex items-center justify-between pb-4 border-b border-dash-border mb-4">
           <div>
-            {title && <h2 className="text-base font-semibold text-black">{title}</h2>}
-            {description && <p className="text-xs text-muted mt-0.5">{description}</p>}
+            {title && <h2 className="text-base font-semibold text-dash-text">{title}</h2>}
+            {description && <p className="text-xs text-dash-text-muted mt-0.5">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded text-muted hover:text-black hover:bg-surface transition-colors"
+            className="p-1 rounded text-dash-text-muted hover:text-dash-text hover:bg-dash-hover transition-dash"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />

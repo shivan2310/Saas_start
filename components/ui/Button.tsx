@@ -4,17 +4,17 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-sm rounded select-none cursor-pointer",
+  "inline-flex items-center justify-center font-medium transition-dash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent focus-visible:ring-offset-2 focus-visible:ring-offset-dash-background disabled:pointer-events-none disabled:opacity-50 text-sm rounded-md select-none cursor-pointer",
   {
     variants: {
       variant: {
-        default: "bg-black text-white hover:bg-hover active:bg-black",
-        secondary: "bg-surface text-black border border-border hover:bg-border active:bg-surface",
-        outline: "bg-transparent text-black border border-border hover:bg-surface active:bg-transparent",
-        ghost: "bg-transparent text-black hover:bg-surface active:bg-transparent",
-        danger: "bg-black text-white border border-black hover:bg-hover",
-        "dash-primary": "bg-dash-elevated text-dash-text hover:bg-dash-hover border border-dash-border",
-        "dash-secondary": "bg-transparent text-dash-text border border-dash-border hover:bg-dash-hover",
+        default: "bg-dash-accent text-dash-background hover:bg-dash-accent-hover border border-dash-accent",
+        secondary: "bg-dash-elevated text-dash-text border border-dash-border hover:bg-dash-hover",
+        outline: "bg-transparent text-dash-text border border-dash-border hover:bg-dash-hover",
+        ghost: "bg-transparent text-dash-text-secondary hover:bg-dash-hover hover:text-dash-text",
+        danger: "bg-dash-elevated text-dash-text border border-dash-border hover:bg-dash-hover hover:text-dash-text",
+        "dash-primary": "bg-dash-accent text-dash-background hover:bg-dash-accent-hover border border-dash-accent",
+        "dash-secondary": "bg-dash-elevated text-dash-text border border-dash-border hover:bg-dash-hover",
         "dash-ghost": "bg-transparent text-dash-text-secondary hover:bg-dash-hover hover:text-dash-text",
       },
       size: {

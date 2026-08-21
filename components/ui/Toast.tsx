@@ -48,22 +48,24 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           <div
             key={t.id}
             className={cn(
-              "pointer-events-auto flex items-start gap-3 p-4 rounded border bg-white shadow-card transition-all animate-in slide-in-from-bottom-5",
-              t.type === "error" ? "border-black" : "border-border"
+              "pointer-events-auto flex items-start gap-3 p-4 rounded-lg border bg-dash-card shadow-lg transition-all animate-in slide-in-from-bottom-5",
+              t.type === "success" && "border-dash-accent/30",
+              t.type === "error" && "border-red-500/30",
+              t.type === "info" && "border-dash-border"
             )}
           >
-            <div className="mt-0.5 text-black shrink-0">
-              {t.type === "success" && <CheckCircle2 className="h-4 w-4 text-black" />}
-              {t.type === "error" && <AlertCircle className="h-4 w-4 text-black" />}
-              {t.type === "info" && <Info className="h-4 w-4 text-black" />}
+            <div className="mt-0.5 shrink-0">
+              {t.type === "success" && <CheckCircle2 className="h-4 w-4 text-dash-accent" />}
+              {t.type === "error" && <AlertCircle className="h-4 w-4 text-red-400" />}
+              {t.type === "info" && <Info className="h-4 w-4 text-dash-text-secondary" />}
             </div>
             <div className="flex-1">
-              <h4 className="text-xs font-semibold text-black">{t.title}</h4>
-              {t.description && <p className="text-xs text-muted mt-0.5">{t.description}</p>}
+              <h4 className="text-xs font-semibold text-dash-text">{t.title}</h4>
+              {t.description && <p className="text-xs text-dash-text-muted mt-0.5">{t.description}</p>}
             </div>
             <button
               onClick={() => removeToast(t.id)}
-              className="text-muted hover:text-black transition-colors"
+              className="text-dash-text-muted hover:text-dash-text transition-dash"
             >
               <X className="h-3.5 w-3.5" />
             </button>

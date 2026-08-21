@@ -8,6 +8,7 @@ import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
 import { hasUnlockedJournalKey } from "@/lib/journalCrypto";
 import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function DiaryPage() {
@@ -128,7 +129,7 @@ export default function DiaryPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-6xl">
       <div className="flex items-end justify-between mb-6 shrink-0">
-        <h2 className="text-[24px] font-semibold tracking-tight text-dash-text">Journal</h2>
+        <h2 className="text-[28px] font-semibold tracking-tight text-dash-text">Journal</h2>
       </div>
 
       <div className="flex-1 min-h-0 flex gap-8">
@@ -146,13 +147,17 @@ export default function DiaryPage() {
               placeholder="Search..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-dash-card border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-text transition-colors"
+              className="w-full bg-dash-surface border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
             />
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-1 pr-2">
             {isLoadingJournal ? (
-              <div className="text-[13px] text-dash-text-muted">Loading...</div>
+              <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
             ) : filteredItems.length === 0 ? (
               <div className="text-[13px] text-dash-text-muted py-4">No entries found.</div>
             ) : (
@@ -163,9 +168,9 @@ export default function DiaryPage() {
                     key={item.id}
                     onClick={() => handleSelectEntry(item)}
                     className={cn(
-                      "group p-3 rounded-lg cursor-pointer transition-colors border",
+                      "group p-3 rounded-lg cursor-pointer transition-dash border",
                       isSelected 
-                        ? "bg-dash-card border-dash-border" 
+                        ? "bg-dash-surface border-dash-border" 
                         : "border-transparent hover:bg-dash-hover"
                     )}
                   >
@@ -193,7 +198,7 @@ export default function DiaryPage() {
 
         {/* Right Col: Editor */}
         <div className="flex-1 flex flex-col min-w-0">
-          <form onSubmit={saveEntry} className="flex-1 flex flex-col h-full bg-dash-background">
+          <form onSubmit={saveEntry} className="flex-1 flex flex-col h-full">
             <div className="flex items-center justify-between border-b border-dash-border pb-4 mb-6 shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-[13px] text-dash-text-muted font-medium">

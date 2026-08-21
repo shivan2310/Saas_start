@@ -52,23 +52,23 @@ export default function LoginPage() {
 
   if (authLoading || isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-6 h-6 border-2 border-border border-t-black rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-dash-background">
+        <div className="w-6 h-6 border-2 border-dash-border border-t-dash-accent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center bg-background px-4 py-12">
+    <main className="min-h-screen flex flex-col justify-center items-center bg-dash-background px-4 py-12">
       <Link
         href="/"
-        className="mb-8 inline-flex items-center text-xs font-medium text-muted hover:text-black transition-colors"
+        className="mb-8 inline-flex items-center text-xs font-medium text-dash-text-muted hover:text-dash-text transition-dash"
       >
         <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back to home
       </Link>
 
       <div className="w-full max-w-md">
-        <Card className="border-border">
+        <Card className="border-dash-border">
           <CardHeader className="text-center space-y-1">
             <CardTitle className="text-xl">Sign in to your account</CardTitle>
             <CardDescription>Enter your credentials to access the dashboard</CardDescription>
@@ -99,7 +99,7 @@ export default function LoginPage() {
                 <div className="text-right mt-1.5">
                   <Link
                     href="/forgot-password"
-                    className="text-xs text-muted hover:text-black font-medium transition-colors"
+                    className="text-xs text-dash-text-muted hover:text-dash-text font-medium transition-dash"
                   >
                     Forgot password?
                   </Link>
@@ -111,10 +111,10 @@ export default function LoginPage() {
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="justify-center border-t border-border mt-4 pt-4">
-            <p className="text-xs text-muted">
+          <CardFooter className="justify-center border-t border-dash-border mt-4 pt-4">
+            <p className="text-xs text-dash-text-muted">
               Don't have an account?{" "}
-              <Link href="/signup" className="text-black font-semibold hover:underline">
+              <Link href="/signup" className="text-dash-text font-semibold hover:underline">
                 Sign up
               </Link>
             </p>

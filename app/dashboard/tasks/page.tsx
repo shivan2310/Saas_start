@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { todoService } from "@/services/todoService";
 import { TodoItem, Priority } from "@/types";
 import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { Plus, Trash2, Check, Circle, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -95,16 +96,16 @@ export default function TasksPage() {
   const completedTodos = todos.filter((t) => t.done);
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8">
       <div className="flex items-end justify-between">
-        <h2 className="text-[24px] font-semibold tracking-tight text-dash-text">To-dos</h2>
+        <h2 className="text-[28px] font-semibold tracking-tight text-dash-text">To-dos</h2>
       </div>
 
       {/* Quick Add Toggle */}
       {!showAdd ? (
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 text-[14px] font-medium text-dash-text-secondary hover:text-dash-text transition-colors"
+          className="flex items-center gap-2 text-[14px] font-medium text-dash-text-secondary hover:text-dash-text transition-dash"
         >
           <Plus className="h-4 w-4" /> Add task
         </button>
@@ -123,7 +124,7 @@ export default function TasksPage() {
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
-                className="bg-transparent text-[12px] font-medium text-dash-text-secondary cursor-pointer focus:outline-none"
+                className="bg-dash-surface border border-dash-border rounded-md px-2 py-1 text-[12px] font-medium text-dash-text-secondary cursor-pointer focus:outline-none focus:border-dash-accent"
               >
                 <option value="low">Low Priority</option>
                 <option value="medium">Medium Priority</option>
@@ -133,7 +134,7 @@ export default function TasksPage() {
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="bg-transparent text-[12px] font-medium text-dash-text-secondary cursor-pointer focus:outline-none"
+                className="bg-dash-surface border border-dash-border rounded-md px-2 py-1 text-[12px] font-medium text-dash-text-secondary cursor-pointer focus:outline-none focus:border-dash-accent"
                 title="Due Date"
               />
             </div>
@@ -150,7 +151,11 @@ export default function TasksPage() {
       )}
 
       {loading ? (
-        <div className="text-[13px] text-dash-text-muted">Loading tasks...</div>
+        <div className="space-y-3">
+          <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-8 w-1/4" />
+        </div>
       ) : (
         <div className="space-y-8">
           {/* Today */}
@@ -158,7 +163,7 @@ export default function TasksPage() {
             <div className="space-y-3">
               <h3 className="text-[14px] font-medium text-dash-text-muted border-b border-dash-border pb-2">Today</h3>
               {todayTodos.length === 0 ? (
-                <p className="text-[13px] text-dash-text-muted py-2">No tasks for today.</p>
+                <p className="text-[13px] text-dash-text-muted py-4">No tasks for today.</p>
               ) : (
                 <div className="space-y-1">
                   {todayTodos.map(todo => (
@@ -200,12 +205,12 @@ export default function TasksPage() {
 
 function TaskRow({ todo, onToggle, onDelete }: { todo: TodoItem, onToggle: (id: string, done: boolean) => void, onDelete: (id: string) => void }) {
   return (
-    <div className="group flex items-center justify-between py-2 -mx-2 px-2 rounded-md hover:bg-dash-hover transition-colors">
+    <div className="group flex items-center justify-between py-2 -mx-2 px-2 rounded-md hover:bg-dash-hover transition-dash">
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={() => onToggle(todo.id, todo.done)}
           className={cn(
-            "flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors",
+            "flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-dash",
             todo.done 
               ? "bg-dash-accent border-dash-accent text-dash-background" 
               : "border-dash-border hover:border-dash-text text-transparent"
@@ -214,7 +219,7 @@ function TaskRow({ todo, onToggle, onDelete }: { todo: TodoItem, onToggle: (id: 
           {todo.done && <Check className="h-3 w-3" strokeWidth={3} />}
         </button>
         <span className={cn(
-          "text-[14px] truncate transition-colors",
+          "text-[14px] truncate transition-dash",
           todo.done ? "text-dash-text-muted" : "text-dash-text"
         )}>
           {todo.text}
@@ -225,7 +230,7 @@ function TaskRow({ todo, onToggle, onDelete }: { todo: TodoItem, onToggle: (id: 
         {todo.priority !== "medium" && (
           <span className={cn(
             "text-[11px] font-medium px-1.5 py-0.5 rounded",
-            todo.priority === "high" ? "bg-dash-elevated text-dash-text" : "text-dash-text-muted"
+            todo.priority === "high" ? "bg-dash-accent-bg text-dash-accent" : "text-dash-text-muted"
           )}>
             {todo.priority}
           </span>
@@ -238,7 +243,7 @@ function TaskRow({ todo, onToggle, onDelete }: { todo: TodoItem, onToggle: (id: 
         )}
         <button 
           onClick={() => onDelete(todo.id)}
-          className="text-dash-text-muted hover:text-dash-text transition-colors p-1"
+          className="text-dash-text-muted hover:text-dash-text transition-dash p-1"
         >
           <Trash2 className="h-4 w-4" />
         </button>

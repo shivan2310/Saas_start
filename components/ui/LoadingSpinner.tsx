@@ -22,7 +22,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <div className="flex flex-col items-center justify-center gap-2" role="status">
       <div
         className={cn(
-          "rounded-full border-border border-t-black animate-spin",
+          "rounded-full border-dash-border border-t-dash-accent animate-spin",
           sizeMap[size],
           className
         )}

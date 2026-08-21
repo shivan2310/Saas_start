@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
 import { Expense } from "@/types";
 import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_CATEGORIES = [
@@ -94,14 +95,14 @@ export default function ExpensesPage() {
   const displayCategories = sortedCategories.slice(0, 5);
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-8">
       <div className="flex items-end justify-between">
-        <h2 className="text-[24px] font-semibold tracking-tight text-dash-text">Expenses</h2>
+        <h2 className="text-[28px] font-semibold tracking-tight text-dash-text">Expenses</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Column: Stats & Add */}
-        <div className="md:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-6">
           <div className="space-y-6">
             <div>
               <p className="text-[13px] text-dash-text-muted mb-1 uppercase tracking-wider font-medium">Total spent</p>
@@ -123,7 +124,7 @@ export default function ExpensesPage() {
           {!showAdd ? (
             <button
               onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 text-[14px] font-medium text-dash-text-secondary hover:text-dash-text transition-colors"
+              className="flex items-center gap-2 text-[14px] font-medium text-dash-text-secondary hover:text-dash-text transition-dash"
             >
               <Plus className="h-4 w-4" /> Add expense
             </button>
@@ -136,7 +137,7 @@ export default function ExpensesPage() {
                   value={description}
                   maxLength={100}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-transparent border-b border-dash-border text-[14px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-text focus:outline-none py-1"
+                  className="w-full bg-transparent border-b border-dash-border text-[14px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-accent focus:outline-none py-1"
                   autoFocus
                   required
                 />
@@ -147,7 +148,7 @@ export default function ExpensesPage() {
                   placeholder="Amount (₹)"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-transparent border-b border-dash-border text-[14px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-text focus:outline-none py-1"
+                  className="w-full bg-transparent border-b border-dash-border text-[14px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-accent focus:outline-none py-1"
                   required
                 />
                 <select
@@ -156,7 +157,7 @@ export default function ExpensesPage() {
                     setCategory(e.target.value);
                     if (e.target.value !== "Custom") setCustomCategory("");
                   }}
-                  className="w-full bg-transparent border-b border-dash-border text-[13px] text-dash-text-secondary focus:border-dash-text focus:outline-none py-1 cursor-pointer"
+                  className="w-full bg-dash-surface border border-dash-border rounded-md px-2 py-1 text-[13px] text-dash-text-secondary focus:border-dash-accent focus:outline-none cursor-pointer"
                 >
                   {categories.map((c) => (
                     <option key={c} value={c} className="bg-dash-card">{c}</option>
@@ -169,7 +170,7 @@ export default function ExpensesPage() {
                     placeholder="Custom category"
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
-                    className="w-full bg-transparent border-b border-dash-border text-[14px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-text focus:outline-none py-1"
+                    className="w-full bg-transparent border-b border-dash-border text-[14px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-accent focus:outline-none py-1"
                     required
                   />
                 )}
@@ -187,11 +188,11 @@ export default function ExpensesPage() {
         </div>
 
         {/* Right Column: Chart & List */}
-        <div className="md:col-span-2 space-y-8">
+        <div className="lg:col-span-3 space-y-8">
           
           {/* Minimal Bar Chart */}
           {items.length > 0 && (
-            <div className="space-y-4">
+            <div className="rounded-lg border border-dash-border bg-dash-card p-5 space-y-4">
               <h3 className="text-[14px] font-medium text-dash-text-muted border-b border-dash-border pb-2">Category Breakdown</h3>
               <div className="h-40 flex items-end justify-between gap-2">
                 {displayCategories.map(([cat, amt]) => {
@@ -201,8 +202,8 @@ export default function ExpensesPage() {
                       <span className="absolute -top-6 text-[10px] font-medium text-dash-text opacity-0 group-hover:opacity-100 transition-opacity">
                         ₹{amt >= 1000 ? `${(amt / 1000).toFixed(1)}k` : amt.toFixed(0)}
                       </span>
-                      <div className="w-full max-w-[40px] bg-dash-border rounded-t hover:bg-dash-text transition-colors" style={{ height: `${heightPercent}%` }} />
-                      <span className="mt-2 text-[11px] text-dash-text-muted truncate w-full text-center group-hover:text-dash-text transition-colors">{cat}</span>
+                      <div className="w-full max-w-[40px] bg-dash-border rounded-t hover:bg-dash-accent transition-dash" style={{ height: `${heightPercent}%` }} />
+                      <span className="mt-2 text-[11px] text-dash-text-muted truncate w-full text-center group-hover:text-dash-text transition-dash">{cat}</span>
                     </div>
                   );
                 })}
@@ -211,17 +212,21 @@ export default function ExpensesPage() {
           )}
 
           {/* Recent List */}
-          <div className="space-y-4">
+          <div className="rounded-lg border border-dash-border bg-dash-card p-5 space-y-4">
             <h3 className="text-[14px] font-medium text-dash-text-muted border-b border-dash-border pb-2">Recent Expenses</h3>
             
             {loading ? (
-              <div className="text-[13px] text-dash-text-muted">Loading expenses...</div>
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-8 w-1/2" />
+              </div>
             ) : items.length === 0 ? (
-              <div className="text-[13px] text-dash-text-muted">No expenses yet. Add your first expense to start tracking your spending.</div>
+              <div className="text-[13px] text-dash-text-muted py-4">No expenses yet. Add your first expense to start tracking your spending.</div>
             ) : (
               <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2">
                 {items.map((item) => (
-                  <div key={item.id} className="group flex items-center justify-between py-2.5 px-2 -mx-2 hover:bg-dash-hover rounded-md transition-colors">
+                  <div key={item.id} className="group flex items-center justify-between py-2.5 px-2 -mx-2 hover:bg-dash-hover rounded-md transition-dash">
                     <div className="flex flex-col">
                       <span className="text-[14px] font-medium text-dash-text">{item.description}</span>
                       <span className="text-[11px] text-dash-text-muted">{item.category} • {new Date(item.createdAt).toLocaleDateString()}</span>
@@ -230,7 +235,7 @@ export default function ExpensesPage() {
                       <span className="text-[15px] font-medium text-dash-text">₹{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                       <button 
                         onClick={() => remove(item.id)}
-                        className="text-dash-text-muted hover:text-dash-text opacity-0 group-hover:opacity-100 transition-all"
+                        className="text-dash-text-muted hover:text-dash-text opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

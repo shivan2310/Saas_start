@@ -48,16 +48,16 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center bg-background px-4 py-12">
+    <main className="min-h-screen flex flex-col justify-center items-center bg-dash-background px-4 py-12">
       <Link
         href="/login"
-        className="mb-8 inline-flex items-center text-xs font-medium text-muted hover:text-black transition-colors"
+        className="mb-8 inline-flex items-center text-xs font-medium text-dash-text-muted hover:text-dash-text transition-dash"
       >
         <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back to sign in
       </Link>
 
       <div className="w-full max-w-md">
-        <Card className="border-border">
+        <Card className="border-dash-border">
           <CardHeader className="text-center space-y-1">
             <CardTitle className="text-xl">Reset your password</CardTitle>
             <CardDescription>
@@ -69,13 +69,13 @@ export default function ForgotPasswordPage() {
           <CardContent>
             {isSubmitted ? (
               <div className="text-center py-6 space-y-4">
-                <div className="w-12 h-12 rounded-full bg-surface border border-border text-black flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-full bg-dash-surface border border-dash-border text-dash-text flex items-center justify-center mx-auto">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
-                <p className="text-xs text-muted leading-relaxed">
+                <p className="text-xs text-dash-text-muted leading-relaxed">
                   If an account exists with that email, you will receive instructions to reset your password shortly.
                 </p>
-                <Button variant="outline" className="w-full" onClick={() => setIsSubmitted(false)}>
+                <Button variant="dash-secondary" className="w-full" onClick={() => setIsSubmitted(false)}>
                   Resend Link
                 </Button>
               </div>
@@ -96,10 +96,10 @@ export default function ForgotPasswordPage() {
               </form>
             )}
           </CardContent>
-          <CardFooter className="justify-center border-t border-border mt-4 pt-4">
-            <p className="text-xs text-muted">
+          <CardFooter className="justify-center border-t border-dash-border mt-4 pt-4">
+            <p className="text-xs text-dash-text-muted">
               Remember your password?{" "}
-              <Link href="/login" className="text-black font-semibold hover:underline">
+              <Link href="/login" className="text-dash-text font-semibold hover:underline">
                 Sign in
               </Link>
             </p>
