@@ -138,11 +138,20 @@ const features = [
 export function NivioLanding() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://db.onlinewebfonts.com/c/9d4d074c9335825a23cce178ee03b498?family=P22+Mackinac+W01+Book";
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
   return (
     <main className="relative min-h-[100dvh] overflow-x-hidden text-[#191919]" style={{ backgroundColor: "#ffffff" }}>
       <CinematicMemory />
-
-      <header className="fixed inset-x-0 top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#191919]/5">
+        <header className="fixed inset-x-0 top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#191919]/5">
         <div className="mx-auto flex h-16 sm:h-20 max-w-[1440px] items-center justify-between px-4 sm:px-10 lg:px-14">
           <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.03em] text-[#191919]">
             <span className="relative block h-[17px] w-[17px] rounded-[5px] border border-[#191919]">

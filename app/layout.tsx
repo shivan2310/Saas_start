@@ -6,13 +6,13 @@ import { ToastProvider } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: {
-    default: "Nivio — Your personal life, organized",
+    default: "Nivio - Your personal life, organized",
     template: "%s | Nivio",
   },
   description: "Keep your tasks, spending, important dates, and daily thoughts together in one private space.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   openGraph: {
-    title: "Nivio — Your personal life, organized",
+    title: "Nivio - Your personal life, organized",
     description: "Tasks, expenses, important dates, and diary entries in one private space.",
     type: "website",
     locale: "en_US",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nivio — Your personal life, organized",
+    title: "Nivio - Your personal life, organized",
     description: "Tasks, expenses, important dates, and diary entries in one private space.",
   },
   robots: {
@@ -37,10 +37,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="stylesheet" href="https://db.onlinewebfonts.com/c/9d4d074c9335825a23cce178ee03b498?family=P22+Mackinac+W01+Book" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" />
       </head>
-      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-black selection:text-white">
+      <body className="min-h-screen bg-dash-background text-dash-text antialiased selection:bg-dash-accent-bg selection:text-dash-text">
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>{children}</ToastProvider>
