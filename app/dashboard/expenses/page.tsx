@@ -70,71 +70,117 @@ function getDateNDaysAgo(days: number): string {
 function LineChart({ data }: { data: { label: string; value: number; date: string }[] }) {
   if (data.length < 2) return null;
 
+  // Filter out data points with no value for better scaling
+  const validData = data.filter(d => d.value > 0);
+  const allZero = data.every(d => d.value === 0);
+  
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const minValue = Math.min(...data.map((d) => d.value));
-  const padding = 24;
-  const width = 100 - padding * 2;
-  const height = 100 - padding * 2;
+  const minValue = allZero ? 0 : Math.min(...validData.map((d) => d.value), 0);
+  const padding = { top: 16, right: 16, bottom: 32, left: 40 };
+  const innerWidth = 100 - padding.left - padding.right;
+  const innerHeight = 100 - padding.top - padding.bottom;
 
-  const points = data
-    .map((d, i) => {
-      const x = padding + (i / (data.length - 1)) * width;
-      const y = 100 - padding - ((d.value - minValue) / (maxValue - minValue || 1)) * height;
-      return `${x}% ${y}%`;
-    })
-    .join(" ");
+  // Create SVG path for smooth line
+  const pathData = data.map((d, i) => {
+    const x = padding.left + (i / (data.length - 1)) * innerWidth;
+    const y = padding.top + innerHeight - ((d.value - minValue) / (maxValue - minValue || 1)) * innerHeight;
+    return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+  }).join(" ");
 
-  const areaPoints = [
-    `${padding}% ${100 - padding}%`,
-    ...points.split(" "),
-    `${100 - padding}% ${100 - padding}%`,
+  // Area path (fill under line)
+  const areaPathData = [
+    `M ${padding.left} ${padding.top + innerHeight}`,
+    pathData,
+    `L ${padding.left + innerWidth} ${padding.top + innerHeight}`,
+    "Z"
   ].join(" ");
 
+  // Y-axis labels
+  const yTicks = 5;
+  const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => {
+    const value = maxValue - (i / yTicks) * (maxValue - minValue);
+    const y = padding.top + (i / yTicks) * innerHeight;
+    return { value: value >= 1000 ? `${(value / 1000).toFixed(1)}k` : Math.round(value).toString(), y };
+  });
+
+  // X-axis labels - show subset for readability
+  const xLabels = data.map((d, i) => {
+    const x = padding.left + (i / (data.length - 1)) * innerWidth;
+    const show = data.length <= 14 || i % Math.ceil(data.length / 10) === 0 || i === data.length - 1;
+    return { label: d.label, x, show };
+  });
+
   return (
-    <div className="relative h-64 w-full" role="img" aria-label="Spending trend chart">
-      <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+    <div className="relative h-72 w-full" role="img" aria-label="Spending trend chart">
+      <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id="spendingGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#8FAFA5" stopOpacity={0.18} />
+            <stop offset="0%" stopColor="#8FAFA5" stopOpacity={0.15} />
             <stop offset="100%" stopColor="#8FAFA5" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <g stroke="#292C2D" strokeWidth="0.4" opacity="0.4">
-          {[0, 20, 40, 60, 80, 100].map((y) => (
-            <line key={y} x1="0%" y1={`${y}%`} x2="100%" y2={`${y}%`} />
+        
+        {/* Y-axis grid lines and labels */}
+        <g stroke="#292C2D" strokeWidth="0.3" opacity="0.4" fontSize="8" fill="#737777">
+          {yLabels.map((tick, i) => (
+            <g key={i}>
+              <line x1={padding.left} y1={tick.y} x2={100 - padding.right} y2={tick.y} />
+              <text x={padding.left - 4} y={tick.y + 2} textAnchor="end" className="text-dash-text-muted" style={{ fontSize: "8px" }}>
+                {tick.value}
+              </text>
+            </g>
           ))}
         </g>
-        <polygon points={areaPoints} fill="url(#spendingGradient)" />
-        <polyline
-          points={points}
-          fill="none"
-          stroke="#8FAFA5"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+
+        {/* X-axis labels */}
+        <g fontSize="8" fill="#737777" textAnchor="middle">
+          {xLabels.map((tick, i) => (
+            <text key={i} x={tick.x} y={100 - padding.bottom + 14} className="text-dash-text-muted" style={{ fontSize: "7px", display: tick.show ? "block" : "none" }}>
+              {tick.label}
+            </text>
+          ))}
+        </g>
+
+        {/* Area fill */}
+        <path d={areaPathData} fill="url(#spendingGradient)" />
+
+        {/* Line */}
+        <path d={pathData} fill="none" stroke="#8FAFA5" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Hover dots */}
         <g>
           {data.map((d, i) => {
-            const x = padding + (i / (data.length - 1)) * width;
-            const y = 100 - padding - ((d.value - minValue) / (maxValue - minValue || 1)) * height;
+            const x = padding.left + (i / (data.length - 1)) * innerWidth;
+            const y = padding.top + innerHeight - ((d.value - minValue) / (maxValue - minValue || 1)) * innerHeight;
             return (
               <circle
                 key={i}
-                cx={`${x}%`}
-                cy={`${y}%`}
-                r="3"
+                cx={x}
+                cy={y}
+                r="3.5"
                 fill="#8FAFA5"
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                stroke="#0D0F10"
+                strokeWidth="2"
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-crosshair"
               />
             );
           })}
         </g>
       </svg>
-      <div className="flex justify-between -mx-2 mt-3 text-[10px] text-dash-text-muted">
+      
+      {/* Tooltip */}
+      <div className="absolute bottom-full left-0 right-0 pointer-events-none pb-2">
         {data.map((d, i) => (
-          <span key={i} className="px-2 text-center">
-            {d.label}
-          </span>
+          <div
+            key={i}
+            className="absolute transform -translate-x-1/2 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none"
+            style={{ left: `${padding.left + (i / (data.length - 1)) * innerWidth}%` }}
+          >
+            <div className="bg-dash-elevated border border-dash-border rounded-md px-2.5 py-1.5 text-center shadow-lg whitespace-nowrap">
+              <p className="text-[10px] font-medium text-dash-text">{d.label}</p>
+              <p className="text-[12px] font-semibold text-dash-text">₹{d.value.toLocaleString()}</p>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -415,15 +461,33 @@ export default function ExpensesPage() {
   }));
 
   const lineChartData = useMemo(() => {
-    const days = Array.from({ length: periodDays > 30 ? 12 : periodDays }, (_, i) => {
-      const step = periodDays > 30 ? Math.floor(periodDays / 12) : 1;
+    // Generate all dates in the period
+    const allDates = Array.from({ length: periodDays }, (_, i) => {
       const d = new Date();
-      d.setDate(d.getDate() - (periodDays - 1 - i * step));
+      d.setDate(d.getDate() - (periodDays - 1 - i));
       return d.toISOString().split("T")[0];
     });
-    return days.map((day) => ({
-      label: periodDays > 30 ? new Date(day).toLocaleDateString("en-GB", { month: "short", day: "numeric" }) : new Date(day).toLocaleDateString("en-GB", { weekday: "short" }),
-      value: periodItems.filter((e) => e.createdAt.startsWith(day)).reduce((sum, e) => sum + e.amount, 0),
+
+    // Aggregate spending by date
+    const dailyTotals = new Map<string, number>();
+    periodItems.forEach(item => {
+      const day = item.createdAt.split("T")[0];
+      dailyTotals.set(day, (dailyTotals.get(day) || 0) + item.amount);
+    });
+
+    // For longer periods, sample data points to keep chart readable
+    let sampleDates = allDates;
+    if (periodDays > 30) {
+      const sampleCount = 30; // Show ~30 points max
+      const step = Math.ceil(periodDays / sampleCount);
+      sampleDates = allDates.filter((_, i) => i % step === 0);
+    }
+
+    return sampleDates.map(day => ({
+      label: periodDays > 30 
+        ? new Date(day).toLocaleDateString("en-GB", { month: "short", day: "numeric" })
+        : new Date(day).toLocaleDateString("en-GB", { weekday: "short" }),
+      value: dailyTotals.get(day) || 0,
       date: day,
     }));
   }, [periodItems, periodDays]);
