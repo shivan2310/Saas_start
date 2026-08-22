@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState, useCallback } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { Trash2, Plus, ChevronDown, Search, Calendar, Filter, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
@@ -67,44 +67,67 @@ function getDateNDaysAgo(days: number): string {
   return d.toISOString().split("T")[0];
 }
 
-function BarChart({ data }: { data: { label: string; value: number; date: string }[] }) {
+function BarChart({ data, period }: { data: { label: string; value: number; date: string }[]; period: Period }) {
   if (data.length < 1) return null;
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 280 });
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width } = entry.contentRect;
+        setDimensions((prev) => ({ ...prev, width: Math.max(width, 1) }));
+      }
+    });
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const { width, height } = dimensions;
+
+  if (width < 50) {
+    return (
+      <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart" />
+    );
+  }
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const allZero = data.every(d => d.value === 0);
   const minValue = allZero ? 0 : Math.min(...data.filter(d => d.value > 0).map((d) => d.value), 0);
-  const padding = { top: 8, right: 8, bottom: 28, left: 38 };
-  const innerWidth = 100 - padding.left - padding.right;
-  const innerHeight = 100 - padding.top - padding.bottom;
-  const barWidth = Math.max((innerWidth / data.length) * 0.7, 2);
-  const barGap = Math.max((innerWidth / data.length) * 0.3, 1);
 
-  // Y-axis labels - fewer ticks, cleaner
-  const yTicks = 4;
-  const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => {
-    const value = maxValue - (i / yTicks) * (maxValue - minValue);
-    const y = padding.top + (i / yTicks) * innerHeight;
+  const padding = { top: 16, right: 16, bottom: 50, left: 0 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+
+  if (plotWidth <= 0 || plotHeight <= 0) {
+    return (
+      <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart" />
+    );
+  }
+
+  // Y-axis: generate nice round numbers
+  const yTickCount = 5;
+  const yLabels = Array.from({ length: yTickCount + 1 }, (_, i) => {
+    const value = maxValue - (i / yTickCount) * (maxValue - minValue);
+    const y = padding.top + (i / yTickCount) * plotHeight;
     let displayValue: string;
-    if (value >= 100000) displayValue = `${(value / 100000).toFixed(1)}L`;
-    else if (value >= 1000) displayValue = `${(value / 1000).toFixed(1)}k`;
-    else displayValue = Math.round(value).toString();
+    if (value >= 100000) displayValue = `₹${(value / 100000).toFixed(1)}L`;
+    else if (value >= 1000) displayValue = `₹${(value / 1000).toFixed(1)}K`;
+    else displayValue = `₹${Math.round(value).toLocaleString()}`;
     return { value: displayValue, y };
   });
 
-  // X-axis labels - show all for small datasets, subset for large
-  const xLabels = data.map((d, i) => {
-    const x = padding.left + i * (barWidth + barGap) + barWidth / 2;
-    const show = data.length <= 12 || i % Math.ceil(data.length / 8) === 0 || i === data.length - 1;
-    return { label: d.label, x, show };
-  });
+  // X-axis: proper tick generation per period
+  const xTicks = generateXTicks(data, period, padding, plotWidth);
 
-  const textStyle = { fontFamily: 'inherit', fontSize: '7px', fontWeight: 500 } as React.CSSProperties;
-  const axisTextStyle = { fontFamily: 'inherit', fontSize: '6.5px', fontWeight: 400 } as React.CSSProperties;
-  const valueTextStyle = { fontFamily: 'inherit', fontSize: '6.5px', fontWeight: 600 } as React.CSSProperties;
+  const yAxisWidth = 50; // Fixed space for Y-axis labels
 
   return (
-    <div className="relative w-full min-w-0 overflow-hidden flex-1" role="img" aria-label="Spending trend chart" style={{ minHeight: '200px' }}>
-      <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" style={{ width: '100%', height: '100%', display: 'block' }}>
         <defs>
           <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#5BA37D" stopOpacity={1} />
@@ -115,27 +138,27 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
             <stop offset="100%" stopColor="#4FAF72" stopOpacity={1} />
           </linearGradient>
         </defs>
-        
+
         {/* Y-axis grid lines and labels */}
-        <g fill="#9AA0A0">
+        <g fontSize="13" fill="#9AA0A0" fontFamily="inherit">
           {yLabels.map((tick, i) => (
             <g key={i}>
-              <line 
-                x1={padding.left} 
-                y1={tick.y} 
-                x2={100 - padding.right} 
-                y2={tick.y} 
-                stroke="#2D3132" 
-                strokeWidth="0.3" 
-                opacity={i === 0 ? 0.5 : 0.2} 
-                strokeDasharray={i === 0 ? "none" : "2 2"}
+              <line
+                x1={padding.left + yAxisWidth}
+                y1={tick.y}
+                x2={width - padding.right}
+                y2={tick.y}
+                stroke="#2D3132"
+                strokeWidth="0.5"
+                opacity={i === 0 ? 0.5 : 0.15}
+                strokeDasharray={i === 0 ? "none" : "3 3"}
               />
-              <text 
-                x={padding.left - 4} 
-                y={tick.y + 2.5} 
-                textAnchor="end" 
-                className="text-dash-text-secondary" 
-                style={textStyle}
+              <text
+                x={padding.left + yAxisWidth - 8}
+                y={tick.y + 4.5}
+                textAnchor="end"
+                className="text-dash-text-secondary"
+                style={{ fontSize: '13px', fontWeight: 400, fontFamily: 'inherit' }}
               >
                 {tick.value}
               </text>
@@ -144,25 +167,25 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
         </g>
 
         {/* Y-axis line */}
-        <line 
-          x1={padding.left} 
-          y1={padding.top} 
-          x2={padding.left} 
-          y2={100 - padding.bottom} 
-          stroke="#2D3132" 
-          strokeWidth="0.6" 
-          opacity="0.5"
+        <line
+          x1={padding.left + yAxisWidth}
+          y1={padding.top}
+          x2={padding.left + yAxisWidth}
+          y2={height - padding.bottom}
+          stroke="#2D3132"
+          strokeWidth="0.5"
+          opacity="0.3"
         />
 
         {/* X-axis labels */}
-        <g fill="#9AA0A0" textAnchor="middle">
-          {xLabels.map((tick, i) => (
-            <text 
-              key={i} 
-              x={tick.x} 
-              y={100 - padding.bottom + 12} 
-              className="text-dash-text-secondary" 
-              style={{ ...axisTextStyle, display: tick.show ? "block" : "none" }}
+        <g fill="#9AA0A0" textAnchor="middle" fontFamily="inherit">
+          {xTicks.map((tick, i) => (
+            <text
+              key={i}
+              x={padding.left + yAxisWidth + tick.x}
+              y={height - padding.bottom + 20}
+              className="text-dash-text-secondary"
+              style={{ fontSize: '12px', fontWeight: 400, fontFamily: 'inherit' }}
             >
               {tick.label}
             </text>
@@ -170,27 +193,31 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
         </g>
 
         {/* X-axis line */}
-        <line 
-          x1={padding.left} 
-          y1={100 - padding.bottom} 
-          x2={100 - padding.right} 
-          y2={100 - padding.bottom} 
-          stroke="#2D3132" 
-          strokeWidth="0.4" 
-          opacity="0.4"
+        <line
+          x1={padding.left + yAxisWidth}
+          y1={height - padding.bottom}
+          x2={width - padding.right}
+          y2={height - padding.bottom}
+          stroke="#2D3132"
+          strokeWidth="0.5"
+          opacity="0.3"
         />
 
         {/* Bars */}
         <g>
           {data.map((d, i) => {
-            const x = padding.left + i * (barWidth + barGap);
-            const barHeight = maxValue > 0 ? ((d.value - minValue) / (maxValue - minValue || 1)) * innerHeight : 0;
-            const y = padding.top + innerHeight - barHeight;
-            
+            const tick = xTicks[i];
+            if (!tick) return null;
+
+            const barWidth = Math.max(Math.min(tick.width, 32), 4);
+            const barHeight = maxValue > 0 ? ((d.value - minValue) / (maxValue - minValue || 1)) * plotHeight : 0;
+            const x = tick.x - barWidth / 2;
+            const y = padding.top + plotHeight - barHeight;
+
             return (
               <g key={i} className="group cursor-pointer">
                 <rect
-                  x={x}
+                  x={padding.left + yAxisWidth + x}
                   y={y}
                   width={barWidth}
                   height={Math.max(barHeight, d.value > 0 ? 2 : 0)}
@@ -208,15 +235,15 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
                   }}
                 />
                 {/* Value label on top of bar - only for significant values */}
-                {d.value > 0 && barHeight > 10 && (
+                {d.value > 0 && barHeight > 16 && (
                   <text
-                    x={x + barWidth / 2}
-                    y={y - 3}
+                    x={padding.left + yAxisWidth + tick.x}
+                    y={y - 6}
                     textAnchor="middle"
                     className="text-dash-text-secondary"
-                    style={valueTextStyle}
+                    style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'inherit' }}
                   >
-                    {d.value >= 100000 ? `${(d.value / 100000).toFixed(1)}L` : d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value.toString()}
+                    {d.value >= 100000 ? `${(d.value / 100000).toFixed(1)}L` : d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}K` : d.value.toLocaleString()}
                   </text>
                 )}
               </g>
@@ -226,6 +253,79 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
       </svg>
     </div>
   );
+}
+
+function generateXTicks(
+  data: { label: string; value: number; date: string }[],
+  period: Period,
+  padding: { left: number; right: number; top: number; bottom: number },
+  plotWidth: number
+): { x: number; label: string; width: number }[] {
+  const count = data.length;
+  if (count === 0) return [];
+
+  const stepX = plotWidth / count;
+
+  // For 7D: show all days
+  // For 30D: show ~7-8 labels
+  // For 90D: show ~6 labels (monthly)
+  // For 180D: show ~6 labels (monthly)
+  // For 1Y: show ~12 labels (monthly)
+  let labelInterval = 1;
+  let maxLabels = count;
+
+  switch (period) {
+    case "7d":
+      maxLabels = 7;
+      break;
+    case "30d":
+      maxLabels = 7;
+      break;
+    case "90d":
+      maxLabels = 6;
+      break;
+    case "180d":
+      maxLabels = 6;
+      break;
+    case "1y":
+      maxLabels = 12;
+      break;
+  }
+
+  labelInterval = Math.max(1, Math.ceil(count / maxLabels));
+
+  return data.map((d, i) => ({
+    x: (i + 0.5) * stepX,
+    label: shouldShowLabel(i, count, labelInterval, period, data) ? formatXLabel(d.date, period) : "",
+    width: stepX,
+  }));
+}
+
+function shouldShowLabel(index: number, count: number, interval: number, period: Period, data: { label: string; value: number; date: string }[]): boolean {
+  if (count <= 7) return true;
+  if (period === "1y") {
+    // For 1Y, show month boundaries
+    const date = new Date(data[index].date);
+    return date.getDate() === 1 || index === 0 || index === count - 1;
+  }
+  return index % interval === 0 || index === 0 || index === count - 1;
+}
+
+function formatXLabel(dateStr: string, period: Period): string {
+  const date = new Date(dateStr + "T00:00:00");
+  switch (period) {
+    case "7d":
+      return date.toLocaleDateString("en-GB", { weekday: "short" });
+    case "30d":
+      return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    case "90d":
+    case "180d":
+      return date.toLocaleDateString("en-GB", { month: "short" });
+    case "1y":
+      return date.toLocaleDateString("en-GB", { month: "short" });
+    default:
+      return date.toLocaleDateString("en-GB", { weekday: "short" });
+  }
 }
 
 function DonutChart({
@@ -664,7 +764,7 @@ export default function ExpensesPage() {
 
           {periodItems.length > 0 ? (
             <div className="group min-w-0 overflow-hidden flex-1">
-              <BarChart data={lineChartData} />
+              <BarChart data={lineChartData} period={period} />
             </div>
           ) : (
             <div className="py-12 text-center">
