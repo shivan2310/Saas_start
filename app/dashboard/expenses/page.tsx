@@ -97,7 +97,7 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const allZero = data.every(d => d.value === 0);
-  const minValue = allZero ? 0 : Math.min(...data.filter(d => d.value > 0).map((d) => d.value), 0);
+  const minValue = 0; // Expense data is never negative - force zero baseline
 
   const padding = { top: 16, right: 16, bottom: 50, left: 0 };
   const plotWidth = width - padding.left - padding.right;
@@ -338,24 +338,13 @@ function generateLinePath(
     y: scaleY(d.value),
   }));
 
-  // Generate smooth curve using Catmull-Rom spline
+  // Generate linear (straight) line - no overshoot, no negative values
   let linePath = `M ${points[0].x} ${points[0].y}`;
   let areaPath = `M ${points[0].x} ${padding.top + plotHeight} L ${points[0].x} ${points[0].y}`;
 
-  for (let i = 0; i < count - 1; i++) {
-    const p0 = i > 0 ? points[i - 1] : points[0];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = i + 2 < count ? points[i + 2] : points[count - 1];
-
-    // Catmull-Rom to Bezier conversion
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-
-    linePath += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-    areaPath += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  for (let i = 1; i < count; i++) {
+    linePath += ` L ${points[i].x} ${points[i].y}`;
+    areaPath += ` L ${points[i].x} ${points[i].y}`;
   }
 
   areaPath += ` L ${points[count - 1].x} ${padding.top + plotHeight} Z`;
@@ -908,7 +897,7 @@ export default function ExpensesPage() {
         />
         <MetricCard
           label="Average / day"
-          value={formatCurrency(avgPerDay)}
+          value={formatCurrencyPrecise(avgPerDay)}
         />
         <MetricCard
           label="Transactions"
