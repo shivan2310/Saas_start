@@ -73,14 +73,14 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const allZero = data.every(d => d.value === 0);
   const minValue = allZero ? 0 : Math.min(...data.filter(d => d.value > 0).map((d) => d.value), 0);
-  const padding = { top: 16, right: 16, bottom: 36, left: 44 };
+  const padding = { top: 8, right: 8, bottom: 28, left: 38 };
   const innerWidth = 100 - padding.left - padding.right;
   const innerHeight = 100 - padding.top - padding.bottom;
-  const barWidth = Math.max((innerWidth / data.length) * 0.65, 1.5);
-  const barGap = Math.max((innerWidth / data.length) * 0.35, 1);
+  const barWidth = Math.max((innerWidth / data.length) * 0.7, 2);
+  const barGap = Math.max((innerWidth / data.length) * 0.3, 1);
 
-  // Y-axis labels - use nice round numbers
-  const yTicks = 5;
+  // Y-axis labels - fewer ticks, cleaner
+  const yTicks = 4;
   const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => {
     const value = maxValue - (i / yTicks) * (maxValue - minValue);
     const y = padding.top + (i / yTicks) * innerHeight;
@@ -91,19 +91,19 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
     return { value: displayValue, y };
   });
 
-  // X-axis labels - show subset for readability
+  // X-axis labels - show all for small datasets, subset for large
   const xLabels = data.map((d, i) => {
     const x = padding.left + i * (barWidth + barGap) + barWidth / 2;
-    const show = data.length <= 14 || i % Math.ceil(data.length / 10) === 0 || i === data.length - 1;
+    const show = data.length <= 12 || i % Math.ceil(data.length / 8) === 0 || i === data.length - 1;
     return { label: d.label, x, show };
   });
 
-  const textStyle = { fontFamily: 'inherit', fontSize: '9px', fontWeight: 500 } as React.CSSProperties;
-  const axisTextStyle = { fontFamily: 'inherit', fontSize: '8px', fontWeight: 500 } as React.CSSProperties;
-  const valueTextStyle = { fontFamily: 'inherit', fontSize: '8px', fontWeight: 600 } as React.CSSProperties;
+  const textStyle = { fontFamily: 'inherit', fontSize: '7px', fontWeight: 500 } as React.CSSProperties;
+  const axisTextStyle = { fontFamily: 'inherit', fontSize: '6.5px', fontWeight: 400 } as React.CSSProperties;
+  const valueTextStyle = { fontFamily: 'inherit', fontSize: '6.5px', fontWeight: 600 } as React.CSSProperties;
 
   return (
-    <div className="relative h-72 w-full min-w-0 overflow-hidden" role="img" aria-label="Spending trend chart">
+    <div className="relative w-full min-w-0 overflow-hidden flex-1" role="img" aria-label="Spending trend chart" style={{ minHeight: '200px' }}>
       <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
         <defs>
           <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -117,7 +117,7 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
         </defs>
         
         {/* Y-axis grid lines and labels */}
-        <g fontSize="9" fill="#9AA0A0">
+        <g fill="#9AA0A0">
           {yLabels.map((tick, i) => (
             <g key={i}>
               <line 
@@ -126,13 +126,13 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
                 x2={100 - padding.right} 
                 y2={tick.y} 
                 stroke="#2D3132" 
-                strokeWidth="0.4" 
-                opacity={i === 0 ? 0.6 : 0.25} 
+                strokeWidth="0.3" 
+                opacity={i === 0 ? 0.5 : 0.2} 
                 strokeDasharray={i === 0 ? "none" : "2 2"}
               />
               <text 
-                x={padding.left - 6} 
-                y={tick.y + 3} 
+                x={padding.left - 4} 
+                y={tick.y + 2.5} 
                 textAnchor="end" 
                 className="text-dash-text-secondary" 
                 style={textStyle}
@@ -155,12 +155,12 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
         />
 
         {/* X-axis labels */}
-        <g fontSize="9" fill="#9AA0A0" textAnchor="middle">
+        <g fill="#9AA0A0" textAnchor="middle">
           {xLabels.map((tick, i) => (
             <text 
               key={i} 
               x={tick.x} 
-              y={100 - padding.bottom + 16} 
+              y={100 - padding.bottom + 12} 
               className="text-dash-text-secondary" 
               style={{ ...axisTextStyle, display: tick.show ? "block" : "none" }}
             >
@@ -176,8 +176,8 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
           x2={100 - padding.right} 
           y2={100 - padding.bottom} 
           stroke="#2D3132" 
-          strokeWidth="0.6" 
-          opacity="0.5"
+          strokeWidth="0.4" 
+          opacity="0.4"
         />
 
         {/* Bars */}
@@ -195,8 +195,8 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
                   width={barWidth}
                   height={Math.max(barHeight, d.value > 0 ? 2 : 0)}
                   fill="url(#barGradient)"
-                  rx={3}
-                  ry={3}
+                  rx={2}
+                  ry={2}
                   className="transition-all duration-150"
                   onMouseEnter={(e) => {
                     const rect = e.currentTarget;
@@ -208,10 +208,10 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
                   }}
                 />
                 {/* Value label on top of bar - only for significant values */}
-                {d.value > 0 && barHeight > 12 && (
+                {d.value > 0 && barHeight > 10 && (
                   <text
                     x={x + barWidth / 2}
-                    y={y - 5}
+                    y={y - 3}
                     textAnchor="middle"
                     className="text-dash-text-secondary"
                     style={valueTextStyle}
@@ -224,22 +224,6 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
           })}
         </g>
       </svg>
-      
-      {/* Tooltip */}
-      <div className="absolute bottom-full left-0 right-0 pointer-events-none pb-3">
-        {data.map((d, i) => (
-          <div
-            key={i}
-            className="absolute transform -translate-x-1/2 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none"
-            style={{ left: `${padding.left + i * (barWidth + barGap) + barWidth / 2}%` }}
-          >
-            <div className="bg-dash-elevated border border-dash-border rounded-md px-3 py-2 text-center shadow-lg whitespace-nowrap">
-              <p className="text-[11px] font-medium text-dash-text-secondary">{d.label}</p>
-              <p className="text-[13px] font-semibold text-dash-text">₹{d.value.toLocaleString()}</p>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -669,7 +653,7 @@ export default function ExpensesPage() {
       {/* Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5">
         {/* Spending Overview */}
-        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5 min-w-0">
+        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5 min-w-0 flex flex-col">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="text-[15px] font-semibold text-dash-text">Spending overview</h2>
@@ -679,7 +663,7 @@ export default function ExpensesPage() {
           </div>
 
           {periodItems.length > 0 ? (
-            <div className="group min-w-0 overflow-hidden">
+            <div className="group min-w-0 overflow-hidden flex-1">
               <BarChart data={lineChartData} />
             </div>
           ) : (
