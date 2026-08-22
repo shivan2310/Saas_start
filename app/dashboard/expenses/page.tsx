@@ -99,7 +99,7 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
   const allZero = data.every(d => d.value === 0);
   const minValue = 0; // Expense data is never negative - force zero baseline
 
-  const padding = { top: 16, right: 16, bottom: 50, left: 0 };
+  const padding = { top: 16, right: 24, bottom: 50, left: 0 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 
@@ -122,7 +122,7 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
   });
 
   // X-axis: proper tick generation per period
-  const xTicks = generateXTicks(data, period, padding, plotWidth);
+  const xTicks = generateXTicks(data, period, padding, plotWidth, width);
   const yAxisWidth = 50;
 
   // Generate smooth line path
@@ -159,11 +159,11 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
   };
 
   return (
-    <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart">
+    <div ref={containerRef} className="relative w-full min-w-0 overflow-hidden" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart">
       <svg 
         viewBox={`0 0 ${width} ${height}`} 
         className="w-full h-full" 
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        style={{ width: '100%', height: '100%', display: 'block', maxWidth: '100%' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
@@ -377,42 +377,58 @@ function generateXTicks(
   data: { label: string; value: number; date: string }[],
   period: Period,
   padding: { left: number; right: number; top: number; bottom: number },
-  plotWidth: number
+  plotWidth: number,
+  fullWidth: number
 ): { x: number; label: string; width: number }[] {
   const count = data.length;
   if (count === 0) return [];
 
   const stepX = plotWidth / count;
 
-  // Label density per period
-  let labelInterval = 1;
+  // Label density per period - responsive based on container width
   let maxLabels = count;
+  const isNarrow = fullWidth < 600;
+  const isMedium = fullWidth < 900;
 
   switch (period) {
     case "7d":
       maxLabels = 7;
       break;
     case "30d":
-      maxLabels = 7;
+      maxLabels = isNarrow ? 4 : isMedium ? 5 : 7;
       break;
     case "90d":
-      maxLabels = 6;
+      maxLabels = isNarrow ? 3 : isMedium ? 4 : 6;
       break;
     case "180d":
-      maxLabels = 6;
+      maxLabels = isNarrow ? 4 : isMedium ? 5 : 6;
       break;
     case "1y":
-      maxLabels = 12;
+      maxLabels = isNarrow ? 4 : isMedium ? 8 : 12;
       break;
   }
 
-  labelInterval = Math.max(1, Math.ceil(count / maxLabels));
+  maxLabels = Math.min(maxLabels, count);
+  const labelInterval = Math.max(1, Math.ceil(count / maxLabels));
 
-  return data.map((d, i) => ({
-    x: (i + 0.5) * stepX,
-    label: shouldShowLabel(i, count, labelInterval, period, data) ? formatXLabel(d.date, period) : "",
-    width: stepX,
-  }));
+  return data.map((d, i) => {
+    const show = shouldShowLabel(i, count, labelInterval, period, data);
+    let label = "";
+    if (show) {
+      if (period === "30d") {
+        // Compact labels for 30D: just day number
+        const date = new Date(d.date + "T00:00:00");
+        label = date.getDate().toString();
+      } else {
+        label = formatXLabel(d.date, period);
+      }
+    }
+    return {
+      x: (i + 0.5) * stepX,
+      label,
+      width: stepX,
+    };
+  });
 }
 
 function shouldShowLabel(index: number, count: number, interval: number, period: Period, data: { label: string; value: number; date: string }[]): boolean {
