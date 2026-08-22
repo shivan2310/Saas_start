@@ -103,8 +103,8 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
   const valueTextStyle = { fontFamily: 'inherit', fontSize: '8px', fontWeight: 600 } as React.CSSProperties;
 
   return (
-    <div className="relative h-72 w-full min-w-0" role="img" aria-label="Spending trend chart">
-      <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ overflow: "visible", width: '100%', height: '100%' }}>
+    <div className="relative h-72 w-full min-w-0 overflow-hidden" role="img" aria-label="Spending trend chart">
+      <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
         <defs>
           <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#5BA37D" stopOpacity={1} />
@@ -669,7 +669,7 @@ export default function ExpensesPage() {
       {/* Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5">
         {/* Spending Overview */}
-        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5">
+        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="text-[15px] font-semibold text-dash-text">Spending overview</h2>
@@ -679,7 +679,7 @@ export default function ExpensesPage() {
           </div>
 
           {periodItems.length > 0 ? (
-            <div className="group min-w-0">
+            <div className="group min-w-0 overflow-hidden">
               <BarChart data={lineChartData} />
             </div>
           ) : (
@@ -694,7 +694,7 @@ export default function ExpensesPage() {
         </div>
 
         {/* Spending by Category */}
-        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5">
+        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5 min-w-0">
           <div>
             <h2 className="text-[15px] font-semibold text-dash-text">Spending by category</h2>
             <p className="text-[12px] text-dash-text-muted mt-0.5">Where your money goes</p>
