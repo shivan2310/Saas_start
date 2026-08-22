@@ -67,11 +67,12 @@ function getDateNDaysAgo(days: number): string {
   return d.toISOString().split("T")[0];
 }
 
-function BarChart({ data, period }: { data: { label: string; value: number; date: string }[]; period: Period }) {
+function LineChart({ data, period }: { data: { label: string; value: number; date: string }[]; period: Period }) {
   if (data.length < 1) return null;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 280 });
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -122,20 +123,54 @@ function BarChart({ data, period }: { data: { label: string; value: number; date
 
   // X-axis: proper tick generation per period
   const xTicks = generateXTicks(data, period, padding, plotWidth);
+  const yAxisWidth = 50;
 
-  const yAxisWidth = 50; // Fixed space for Y-axis labels
+  // Generate smooth line path
+  const linePath = generateLinePath(data, padding, yAxisWidth, plotWidth, plotHeight, maxValue, minValue);
+  const pointCoords = generatePointCoords(data, padding, yAxisWidth, plotWidth, plotHeight, maxValue, minValue);
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Find closest point
+    let closestIndex = 0;
+    let minDist = Infinity;
+    pointCoords.forEach((p, i) => {
+      const dx = mouseX - p.x;
+      const dy = mouseY - p.y;
+      const dist = dx * dx + dy * dy;
+      if (dist < minDist) {
+        minDist = dist;
+        closestIndex = i;
+      }
+    });
+    
+    if (minDist < 1600) { // ~40px threshold
+      setHoveredIndex(closestIndex);
+    } else {
+      setHoveredIndex(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+  };
 
   return (
     <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart">
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <svg 
+        viewBox={`0 0 ${width} ${height}`} 
+        className="w-full h-full" 
+        style={{ width: '100%', height: '100%', display: 'block' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         <defs>
-          <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#5BA37D" stopOpacity={1} />
-            <stop offset="100%" stopColor="#3D8B5F" stopOpacity={1} />
-          </linearGradient>
-          <linearGradient id="barGradientHover" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#6CC48F" stopOpacity={1} />
-            <stop offset="100%" stopColor="#4FAF72" stopOpacity={1} />
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#5BA37D" stopOpacity={0.15} />
+            <stop offset="100%" stopColor="#5BA37D" stopOpacity={0} />
           </linearGradient>
         </defs>
 
@@ -177,6 +212,82 @@ function BarChart({ data, period }: { data: { label: string; value: number; date
           opacity="0.3"
         />
 
+        {/* Area fill under line */}
+        <path
+          d={linePath.area}
+          fill="url(#lineGradient)"
+          opacity={0.8}
+        />
+
+        {/* Line */}
+        <path
+          d={linePath.line}
+          stroke="#5BA37D"
+          strokeWidth="2.5"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Data points */}
+        <g>
+          {pointCoords.map((p, i) => (
+            <g key={i}>
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={hoveredIndex === i ? 6 : 4}
+                fill="#5BA37D"
+                stroke="#1A1A1A"
+                strokeWidth={hoveredIndex === i ? 2 : 3}
+                opacity={data[i].value > 0 ? 1 : 0.3}
+              />
+            </g>
+          ))}
+        </g>
+
+        {/* Hover tooltip line and highlight */}
+        {hoveredIndex !== null && (
+          <g>
+            <line
+              x1={pointCoords[hoveredIndex].x}
+              y1={padding.top}
+              x2={pointCoords[hoveredIndex].x}
+              y2={height - padding.bottom}
+              stroke="#5BA37D"
+              strokeWidth="1"
+              strokeDasharray="4 4"
+              opacity="0.5"
+            />
+            <circle
+              cx={pointCoords[hoveredIndex].x}
+              cy={pointCoords[hoveredIndex].y}
+              r={8}
+              fill="none"
+              stroke="#5BA37D"
+              strokeWidth="2"
+            />
+            <text
+              x={pointCoords[hoveredIndex].x}
+              y={padding.top + 16}
+              textAnchor="middle"
+              className="text-dash-text"
+              style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'inherit' }}
+            >
+              {formatTooltipValue(data[hoveredIndex].value)}
+            </text>
+            <text
+              x={pointCoords[hoveredIndex].x}
+              y={height - padding.bottom + 36}
+              textAnchor="middle"
+              className="text-dash-text-secondary"
+              style={{ fontSize: '11px', fontWeight: 400, fontFamily: 'inherit' }}
+            >
+              {formatTooltipDate(data[hoveredIndex].date, period)}
+            </text>
+          </g>
+        )}
+
         {/* X-axis labels */}
         <g fill="#9AA0A0" textAnchor="middle" fontFamily="inherit">
           {xTicks.map((tick, i) => (
@@ -202,57 +313,75 @@ function BarChart({ data, period }: { data: { label: string; value: number; date
           strokeWidth="0.5"
           opacity="0.3"
         />
-
-        {/* Bars */}
-        <g>
-          {data.map((d, i) => {
-            const tick = xTicks[i];
-            if (!tick) return null;
-
-            const barWidth = Math.max(Math.min(tick.width, 32), 4);
-            const barHeight = maxValue > 0 ? ((d.value - minValue) / (maxValue - minValue || 1)) * plotHeight : 0;
-            const x = tick.x - barWidth / 2;
-            const y = padding.top + plotHeight - barHeight;
-
-            return (
-              <g key={i} className="group cursor-pointer">
-                <rect
-                  x={padding.left + yAxisWidth + x}
-                  y={y}
-                  width={barWidth}
-                  height={Math.max(barHeight, d.value > 0 ? 2 : 0)}
-                  fill="url(#barGradient)"
-                  rx={2}
-                  ry={2}
-                  className="transition-all duration-150"
-                  onMouseEnter={(e) => {
-                    const rect = e.currentTarget;
-                    rect.setAttribute("fill", "url(#barGradientHover)");
-                  }}
-                  onMouseLeave={(e) => {
-                    const rect = e.currentTarget;
-                    rect.setAttribute("fill", "url(#barGradient)");
-                  }}
-                />
-                {/* Value label on top of bar - only for significant values */}
-                {d.value > 0 && barHeight > 16 && (
-                  <text
-                    x={padding.left + yAxisWidth + tick.x}
-                    y={y - 6}
-                    textAnchor="middle"
-                    className="text-dash-text-secondary"
-                    style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'inherit' }}
-                  >
-                    {d.value >= 100000 ? `${(d.value / 100000).toFixed(1)}L` : d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}K` : d.value.toLocaleString()}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </g>
       </svg>
     </div>
   );
+}
+
+function generateLinePath(
+  data: { label: string; value: number; date: string }[],
+  padding: { left: number; right: number; top: number; bottom: number },
+  yAxisWidth: number,
+  plotWidth: number,
+  plotHeight: number,
+  maxValue: number,
+  minValue: number
+): { line: string; area: string } {
+  const count = data.length;
+  if (count === 0) return { line: "", area: "" };
+
+  const stepX = plotWidth / count;
+  const scaleY = (value: number) => padding.top + plotHeight - ((value - minValue) / (maxValue - minValue || 1)) * plotHeight;
+
+  const points = data.map((d, i) => ({
+    x: padding.left + yAxisWidth + (i + 0.5) * stepX,
+    y: scaleY(d.value),
+  }));
+
+  // Generate smooth curve using Catmull-Rom spline
+  let linePath = `M ${points[0].x} ${points[0].y}`;
+  let areaPath = `M ${points[0].x} ${padding.top + plotHeight} L ${points[0].x} ${points[0].y}`;
+
+  for (let i = 0; i < count - 1; i++) {
+    const p0 = i > 0 ? points[i - 1] : points[0];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = i + 2 < count ? points[i + 2] : points[count - 1];
+
+    // Catmull-Rom to Bezier conversion
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+    linePath += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+    areaPath += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+
+  areaPath += ` L ${points[count - 1].x} ${padding.top + plotHeight} Z`;
+
+  return { line: linePath, area: areaPath };
+}
+
+function generatePointCoords(
+  data: { label: string; value: number; date: string }[],
+  padding: { left: number; right: number; top: number; bottom: number },
+  yAxisWidth: number,
+  plotWidth: number,
+  plotHeight: number,
+  maxValue: number,
+  minValue: number
+): { x: number; y: number }[] {
+  const count = data.length;
+  if (count === 0) return [];
+
+  const stepX = plotWidth / count;
+  const scaleY = (value: number) => padding.top + plotHeight - ((value - minValue) / (maxValue - minValue || 1)) * plotHeight;
+
+  return data.map((d, i) => ({
+    x: padding.left + yAxisWidth + (i + 0.5) * stepX,
+    y: scaleY(d.value),
+  }));
 }
 
 function generateXTicks(
@@ -266,11 +395,7 @@ function generateXTicks(
 
   const stepX = plotWidth / count;
 
-  // For 7D: show all days
-  // For 30D: show ~7-8 labels
-  // For 90D: show ~6 labels (monthly)
-  // For 180D: show ~6 labels (monthly)
-  // For 1Y: show ~12 labels (monthly)
+  // Label density per period
   let labelInterval = 1;
   let maxLabels = count;
 
@@ -303,9 +428,9 @@ function generateXTicks(
 
 function shouldShowLabel(index: number, count: number, interval: number, period: Period, data: { label: string; value: number; date: string }[]): boolean {
   if (count <= 7) return true;
-  if (period === "1y") {
-    // For 1Y, show month boundaries
-    const date = new Date(data[index].date);
+  if (period === "1y" || period === "90d" || period === "180d") {
+    // Show month boundaries
+    const date = new Date(data[index].date + "T00:00:00");
     return date.getDate() === 1 || index === 0 || index === count - 1;
   }
   return index % interval === 0 || index === 0 || index === count - 1;
@@ -320,11 +445,32 @@ function formatXLabel(dateStr: string, period: Period): string {
       return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
     case "90d":
     case "180d":
-      return date.toLocaleDateString("en-GB", { month: "short" });
     case "1y":
       return date.toLocaleDateString("en-GB", { month: "short" });
     default:
       return date.toLocaleDateString("en-GB", { weekday: "short" });
+  }
+}
+
+function formatTooltipValue(value: number): string {
+  if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
+  if (value >= 1000) return `₹${(value / 1000).toFixed(1)}K`;
+  return `₹${value.toLocaleString()}`;
+}
+
+function formatTooltipDate(dateStr: string, period: Period): string {
+  const date = new Date(dateStr + "T00:00:00");
+  switch (period) {
+    case "7d":
+      return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+    case "30d":
+      return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    case "90d":
+    case "180d":
+    case "1y":
+      return date.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+    default:
+      return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
   }
 }
 
@@ -602,36 +748,61 @@ export default function ExpensesPage() {
   }));
 
   const lineChartData = useMemo(() => {
-    // Generate all dates in the period
-    const allDates = Array.from({ length: periodDays }, (_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (periodDays - 1 - i));
-      return d.toISOString().split("T")[0];
-    });
+    // Generate proper data points based on period granularity
+    // 7d, 30d → daily; 3M, 6M, 1Y → monthly
+    
+    if (period === "7d" || period === "30d") {
+      // Daily aggregation
+      const allDates = Array.from({ length: periodDays }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (periodDays - 1 - i));
+        return d.toISOString().split("T")[0];
+      });
 
-    // Aggregate spending by date
-    const dailyTotals = new Map<string, number>();
-    periodItems.forEach(item => {
-      const day = item.createdAt.split("T")[0];
-      dailyTotals.set(day, (dailyTotals.get(day) || 0) + item.amount);
-    });
+      const dailyTotals = new Map<string, number>();
+      periodItems.forEach(item => {
+        const day = item.createdAt.split("T")[0];
+        dailyTotals.set(day, (dailyTotals.get(day) || 0) + item.amount);
+      });
 
-    // For longer periods, sample data points to keep chart readable
-    let sampleDates = allDates;
-    if (periodDays > 30) {
-      const sampleCount = 30; // Show ~30 points max
-      const step = Math.ceil(periodDays / sampleCount);
-      sampleDates = allDates.filter((_, i) => i % step === 0);
+      return allDates.map(day => ({
+        label: period === "7d" 
+          ? new Date(day + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short" })
+          : new Date(day + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+        value: dailyTotals.get(day) || 0,
+        date: day,
+      }));
     }
 
-    return sampleDates.map(day => ({
-      label: periodDays > 30 
-        ? new Date(day).toLocaleDateString("en-GB", { month: "short", day: "numeric" })
-        : new Date(day).toLocaleDateString("en-GB", { weekday: "short" }),
-      value: dailyTotals.get(day) || 0,
-      date: day,
-    }));
-  }, [periodItems, periodDays]);
+    // Monthly aggregation for 3M, 6M, 1Y
+    const monthsBack = period === "90d" ? 3 : period === "180d" ? 6 : 12;
+    const monthlyTotals = new Map<string, number>();
+    
+    periodItems.forEach(item => {
+      const date = new Date(item.createdAt);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyTotals.set(monthKey, (monthlyTotals.get(monthKey) || 0) + item.amount);
+    });
+
+    // Generate all months in range
+    const allMonths: string[] = [];
+    const now = new Date();
+    for (let i = monthsBack - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      allMonths.push(monthKey);
+    }
+
+    return allMonths.map(monthKey => {
+      const [year, month] = monthKey.split('-').map(Number);
+      const date = new Date(year, month - 1, 1);
+      return {
+        label: date.toLocaleDateString("en-GB", { month: "short" }),
+        value: monthlyTotals.get(monthKey) || 0,
+        date: monthKey,
+      };
+    });
+  }, [periodItems, periodDays, period]);
 
   const previousPeriodItems = useMemo(() => {
     const prevStart = new Date(cutoffDate);
@@ -764,7 +935,7 @@ export default function ExpensesPage() {
 
           {periodItems.length > 0 ? (
             <div className="group min-w-0 overflow-hidden flex-1">
-              <BarChart data={lineChartData} period={period} />
+              <LineChart data={lineChartData} period={period} />
             </div>
           ) : (
             <div className="py-12 text-center">
