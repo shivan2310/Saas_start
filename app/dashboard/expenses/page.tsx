@@ -98,9 +98,13 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
     return { label: d.label, x, show };
   });
 
+  const textStyle = { fontFamily: 'inherit', fontSize: '9px', fontWeight: 500 } as React.CSSProperties;
+  const axisTextStyle = { fontFamily: 'inherit', fontSize: '8px', fontWeight: 500 } as React.CSSProperties;
+  const valueTextStyle = { fontFamily: 'inherit', fontSize: '8px', fontWeight: 600 } as React.CSSProperties;
+
   return (
-    <div className="relative h-72 w-full" role="img" aria-label="Spending trend chart">
-      <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ overflow: "visible" }}>
+    <div className="relative h-72 w-full min-w-0" role="img" aria-label="Spending trend chart">
+      <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" style={{ overflow: "visible", width: '100%', height: '100%' }}>
         <defs>
           <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#5BA37D" stopOpacity={1} />
@@ -131,7 +135,7 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
                 y={tick.y + 3} 
                 textAnchor="end" 
                 className="text-dash-text-secondary" 
-                style={{ fontSize: "9px", fontWeight: 500 }}
+                style={textStyle}
               >
                 {tick.value}
               </text>
@@ -158,7 +162,7 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
               x={tick.x} 
               y={100 - padding.bottom + 16} 
               className="text-dash-text-secondary" 
-              style={{ fontSize: "8px", fontWeight: 500, display: tick.show ? "block" : "none" }}
+              style={{ ...axisTextStyle, display: tick.show ? "block" : "none" }}
             >
               {tick.label}
             </text>
@@ -210,7 +214,7 @@ function BarChart({ data }: { data: { label: string; value: number; date: string
                     y={y - 5}
                     textAnchor="middle"
                     className="text-dash-text-secondary"
-                    style={{ fontSize: "8px", fontWeight: 600 }}
+                    style={valueTextStyle}
                   >
                     {d.value >= 100000 ? `${(d.value / 100000).toFixed(1)}L` : d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value.toString()}
                   </text>
@@ -675,7 +679,7 @@ export default function ExpensesPage() {
           </div>
 
           {periodItems.length > 0 ? (
-            <div className="group">
+            <div className="group min-w-0">
               <BarChart data={lineChartData} />
             </div>
           ) : (
