@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef, useCallback, memo } from "react";
 import { Trash2, Plus, ChevronDown, Search, Calendar, Filter, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
@@ -62,18 +62,56 @@ function formatDateShort(date: string | Date): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-function getDateNDaysAgo(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d.toISOString().split("T")[0];
+/**
+ * Local-timezone YYYY-MM-DD key. Never bucket dates via toISOString(): it
+ * converts to UTC, which shifts expenses created between midnight and the
+ * UTC offset onto the wrong calendar day for non-UTC timezones.
+ */
+function toLocalDateKey(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-function LineChart({ data, period }: { data: { label: string; value: number; date: string }[]; period: Period }) {
-  if (data.length < 1) return null;
+/**
+ * Inclusive window of exactly `days` local calendar days ending today.
+ * start = local midnight of (today - (days - 1)), end = now.
+ */
+function getPeriodWindow(days: number): { start: Date; end: Date } {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+  return { start, end: new Date() };
+}
 
+/** Round up to a "nice" Y-axis maximum (1/2/2.5/5 × 10^n) slightly above `value`. */
+function niceCeil(value: number): number {
+  if (!(value > 0)) return 1;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+  const fraction = value / magnitude;
+  const steps = [1, 2, 2.5, 5, 10];
+  const nice = steps.find((s) => s >= fraction * (1 + 1e-9)) ?? 10;
+  return nice * magnitude;
+}
+
+interface ChartPoint {
+  date: string;
+  value: number;
+}
+
+const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]; period: Period }) {
+  // Hooks must run unconditionally (before any early return) per the Rules of Hooks.
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 280 });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // Clear hover state when the dataset changes (e.g., switching period) so a
+  // stale index can never point past the end of the new dataset.
+  useEffect(() => {
+    setHoveredIndex(null);
+  }, [data]);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -88,6 +126,12 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
     return () => resizeObserver.disconnect();
   }, []);
 
+  if (data.length < 1) {
+    return (
+      <div ref={containerRef} className="relative w-full min-w-0" style={{ height: "280px" }} role="img" aria-label="Spending trend chart" />
+    );
+  }
+
   const { width, height } = dimensions;
 
   if (width < 50) {
@@ -96,11 +140,12 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
     );
   }
 
-  const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const allZero = data.every(d => d.value === 0);
+  // Y-axis: zero baseline, topped by a nice value slightly above the real max.
+  const maxValue = niceCeil(Math.max(...data.map((d) => d.value), 1));
   const minValue = 0; // Expense data is never negative - force zero baseline
 
   const padding = { top: 16, right: 24, bottom: 50, left: 0 };
+  const yAxisWidth = 50;
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 
@@ -123,12 +168,33 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
   });
 
   // X-axis: proper tick generation per period
-  const xTicks = generateXTicks(data, period, padding, plotWidth, width);
-  const yAxisWidth = 50;
+  const xTicks = generateXTicks(data, period, plotWidth, width);
 
-  // Generate smooth line path
-  const linePath = generateLinePath(data, padding, yAxisWidth, plotWidth, plotHeight, maxValue, minValue);
-  const pointCoords = generatePointCoords(data, padding, yAxisWidth, plotWidth, plotHeight, maxValue, minValue);
+  // Single source of truth for point positions: straight segments between the
+  // actual aggregated values — no smoothing, interpolation, or synthetic data.
+  const stepX = plotWidth / data.length;
+  const scaleY = (value: number) =>
+    padding.top + plotHeight - ((value - minValue) / (maxValue - minValue || 1)) * plotHeight;
+  const pointCoords = data.map((d, i) => ({
+    x: padding.left + yAxisWidth + (i + 0.5) * stepX,
+    y: scaleY(d.value),
+  }));
+
+  let linePath = "";
+  let areaPath = "";
+  if (pointCoords.length > 0) {
+    linePath = `M ${pointCoords[0].x} ${pointCoords[0].y}`;
+    areaPath = `M ${pointCoords[0].x} ${padding.top + plotHeight} L ${pointCoords[0].x} ${pointCoords[0].y}`;
+    for (let i = 1; i < pointCoords.length; i++) {
+      linePath += ` L ${pointCoords[i].x} ${pointCoords[i].y}`;
+      areaPath += ` L ${pointCoords[i].x} ${pointCoords[i].y}`;
+    }
+    areaPath += ` L ${pointCoords[pointCoords.length - 1].x} ${padding.top + plotHeight} Z`;
+  }
+
+  // Defensively clamp the hover index so a stale value can never index out of bounds.
+  const activeIndex =
+    hoveredIndex !== null && hoveredIndex >= 0 && hoveredIndex < data.length ? hoveredIndex : null;
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -215,14 +281,14 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
 
         {/* Area fill under line */}
         <path
-          d={linePath.area}
+          d={areaPath}
           fill="url(#lineGradient)"
           opacity={0.8}
         />
 
         {/* Line */}
         <path
-          d={linePath.line}
+          d={linePath}
           stroke="#5BA37D"
           strokeWidth="2.5"
           fill="none"
@@ -237,10 +303,10 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
               <circle
                 cx={p.x}
                 cy={p.y}
-                r={hoveredIndex === i ? 6 : 4}
+                r={activeIndex === i ? 6 : 4}
                 fill="#5BA37D"
                 stroke="#1A1A1A"
-                strokeWidth={hoveredIndex === i ? 2 : 3}
+                strokeWidth={activeIndex === i ? 2 : 3}
                 opacity={data[i].value > 0 ? 1 : 0.3}
               />
             </g>
@@ -248,12 +314,12 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
         </g>
 
         {/* Hover tooltip line and highlight */}
-        {hoveredIndex !== null && (
+        {activeIndex !== null && (
           <g>
             <line
-              x1={pointCoords[hoveredIndex].x}
+              x1={pointCoords[activeIndex].x}
               y1={padding.top}
-              x2={pointCoords[hoveredIndex].x}
+              x2={pointCoords[activeIndex].x}
               y2={height - padding.bottom}
               stroke="#5BA37D"
               strokeWidth="1"
@@ -261,30 +327,30 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
               opacity="0.5"
             />
             <circle
-              cx={pointCoords[hoveredIndex].x}
-              cy={pointCoords[hoveredIndex].y}
+              cx={pointCoords[activeIndex].x}
+              cy={pointCoords[activeIndex].y}
               r={8}
               fill="none"
               stroke="#5BA37D"
               strokeWidth="2"
             />
             <text
-              x={pointCoords[hoveredIndex].x}
+              x={pointCoords[activeIndex].x}
               y={padding.top + 16}
               textAnchor="middle"
               className="text-dash-text"
               style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'inherit' }}
             >
-              {formatTooltipValue(data[hoveredIndex].value)}
+              {formatTooltipValue(data[activeIndex].value)}
             </text>
             <text
-              x={pointCoords[hoveredIndex].x}
+              x={pointCoords[activeIndex].x}
               y={height - padding.bottom + 36}
               textAnchor="middle"
               className="text-dash-text-secondary"
               style={{ fontSize: '11px', fontWeight: 400, fontFamily: 'inherit' }}
             >
-              {formatTooltipDate(data[hoveredIndex].date, period)}
+              {formatTooltipDate(data[activeIndex].date, period)}
             </text>
           </g>
         )}
@@ -317,70 +383,14 @@ function LineChart({ data, period }: { data: { label: string; value: number; dat
       </svg>
     </div>
   );
-}
-
-function generateLinePath(
-  data: { label: string; value: number; date: string }[],
-  padding: { left: number; right: number; top: number; bottom: number },
-  yAxisWidth: number,
-  plotWidth: number,
-  plotHeight: number,
-  maxValue: number,
-  minValue: number
-): { line: string; area: string } {
-  const count = data.length;
-  if (count === 0) return { line: "", area: "" };
-
-  const stepX = plotWidth / count;
-  const scaleY = (value: number) => padding.top + plotHeight - ((value - minValue) / (maxValue - minValue || 1)) * plotHeight;
-
-  const points = data.map((d, i) => ({
-    x: padding.left + yAxisWidth + (i + 0.5) * stepX,
-    y: scaleY(d.value),
-  }));
-
-  // Generate linear (straight) line - no overshoot, no negative values
-  let linePath = `M ${points[0].x} ${points[0].y}`;
-  let areaPath = `M ${points[0].x} ${padding.top + plotHeight} L ${points[0].x} ${points[0].y}`;
-
-  for (let i = 1; i < count; i++) {
-    linePath += ` L ${points[i].x} ${points[i].y}`;
-    areaPath += ` L ${points[i].x} ${points[i].y}`;
-  }
-
-  areaPath += ` L ${points[count - 1].x} ${padding.top + plotHeight} Z`;
-
-  return { line: linePath, area: areaPath };
-}
-
-function generatePointCoords(
-  data: { label: string; value: number; date: string }[],
-  padding: { left: number; right: number; top: number; bottom: number },
-  yAxisWidth: number,
-  plotWidth: number,
-  plotHeight: number,
-  maxValue: number,
-  minValue: number
-): { x: number; y: number }[] {
-  const count = data.length;
-  if (count === 0) return [];
-
-  const stepX = plotWidth / count;
-  const scaleY = (value: number) => padding.top + plotHeight - ((value - minValue) / (maxValue - minValue || 1)) * plotHeight;
-
-  return data.map((d, i) => ({
-    x: padding.left + yAxisWidth + (i + 0.5) * stepX,
-    y: scaleY(d.value),
-  }));
-}
+});
 
 function generateXTicks(
-  data: { label: string; value: number; date: string }[],
+  data: ChartPoint[],
   period: Period,
-  padding: { left: number; right: number; top: number; bottom: number },
   plotWidth: number,
   fullWidth: number
-): { x: number; label: string; width: number }[] {
+): { x: number; label: string }[] {
   const count = data.length;
   if (count === 0) return [];
 
@@ -412,34 +422,11 @@ function generateXTicks(
   maxLabels = Math.min(maxLabels, count);
   const labelInterval = Math.max(1, Math.ceil(count / maxLabels));
 
-  return data.map((d, i) => {
-    const show = shouldShowLabel(i, count, labelInterval, period, data);
-    let label = "";
-    if (show) {
-      if (period === "30d") {
-        // Compact labels for 30D: just day number
-        const date = new Date(d.date + "T00:00:00");
-        label = date.getDate().toString();
-      } else {
-        label = formatXLabel(d.date, period);
-      }
-    }
-    return {
-      x: (i + 0.5) * stepX,
-      label,
-      width: stepX,
-    };
-  });
-}
-
-function shouldShowLabel(index: number, count: number, interval: number, period: Period, data: { label: string; value: number; date: string }[]): boolean {
-  if (count <= 7) return true;
-  if (period === "1y" || period === "90d" || period === "180d") {
-    // Show month boundaries
-    const date = new Date(data[index].date + "T00:00:00");
-    return date.getDate() === 1 || index === 0 || index === count - 1;
-  }
-  return index % interval === 0 || index === 0 || index === count - 1;
+  // Evenly spaced ticks across the actual buckets, oldest → newest.
+  return data.map((d, i) => ({
+    x: (i + 0.5) * stepX,
+    label: i % labelInterval === 0 || i === count - 1 ? formatXLabel(d.date, period) : "",
+  }));
 }
 
 function formatXLabel(dateStr: string, period: Period): string {
@@ -448,7 +435,9 @@ function formatXLabel(dateStr: string, period: Period): string {
     case "7d":
       return date.toLocaleDateString("en-GB", { weekday: "short" });
     case "30d":
-      return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      // Compact day-only labels keep 30 daily buckets readable; the tooltip
+      // shows the full date.
+      return String(date.getDate());
     case "90d":
     case "180d":
     case "1y":
@@ -630,11 +619,12 @@ export default function ExpensesPage() {
   };
 
   const periodDays = PERIOD_OPTIONS.find((p) => p.value === period)?.days ?? 30;
-  const cutoffDate = getDateNDaysAgo(periodDays);
+  // Stable per-period window: exactly `periodDays` local calendar days ending today.
+  const periodStart = useMemo(() => getPeriodWindow(periodDays).start, [periodDays]);
 
   const filteredItems = useMemo(() => {
     return items
-      .filter((item) => item.createdAt >= cutoffDate)
+      .filter((item) => new Date(item.createdAt).getTime() >= periodStart.getTime())
       .filter((item) => categoryFilter === "all" || item.category === categoryFilter)
       .filter((item) =>
         searchQuery === "" ||
@@ -642,11 +632,11 @@ export default function ExpensesPage() {
         item.category.toLowerCase().includes(searchQuery.toLowerCase())
       )
       .sort((a, b) => (sortDesc ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-  }, [items, cutoffDate, categoryFilter, searchQuery, sortDesc]);
+  }, [items, periodStart, categoryFilter, searchQuery, sortDesc]);
 
   const periodItems = useMemo(() => {
-    return items.filter((item) => item.createdAt >= cutoffDate);
-  }, [items, cutoffDate]);
+    return items.filter((item) => new Date(item.createdAt).getTime() >= periodStart.getTime());
+  }, [items, periodStart]);
 
   const total = periodItems.reduce((sum, item) => sum + item.amount, 0);
   const avgPerDay = periodItems.length > 0 ? total / periodDays : 0;
@@ -677,69 +667,57 @@ export default function ExpensesPage() {
     color: CHART_COLORS[i % CHART_COLORS.length],
   }));
 
-  const lineChartData = useMemo(() => {
-    // Generate proper data points based on period granularity
-    // 7d, 30d → daily; 3M, 6M, 1Y → monthly
-    
+  const lineChartData = useMemo((): ChartPoint[] => {
+    // Aggregate REAL transactions only — sum amounts per bucket, zero-fill
+    // gaps, no interpolation or synthetic points. Dates are normalized to the
+    // user's local timezone so buckets match the days expenses actually
+    // happened on.
+    const totalsByDay = new Map<string, number>();
+    const totalsByMonth = new Map<string, number>();
+    periodItems.forEach((item) => {
+      const dayKey = toLocalDateKey(item.createdAt);
+      totalsByDay.set(dayKey, (totalsByDay.get(dayKey) || 0) + item.amount);
+      const monthKey = dayKey.slice(0, 7);
+      totalsByMonth.set(monthKey, (totalsByMonth.get(monthKey) || 0) + item.amount);
+    });
+
     if (period === "7d" || period === "30d") {
-      // Daily aggregation
-      const allDates = Array.from({ length: periodDays }, (_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (periodDays - 1 - i));
-        return d.toISOString().split("T")[0];
-      });
-
-      const dailyTotals = new Map<string, number>();
-      periodItems.forEach(item => {
-        const day = item.createdAt.split("T")[0];
-        dailyTotals.set(day, (dailyTotals.get(day) || 0) + item.amount);
-      });
-
-      return allDates.map(day => ({
-        label: period === "7d" 
-          ? new Date(day + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short" })
-          : new Date(day + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
-        value: dailyTotals.get(day) || 0,
-        date: day,
-      }));
+      // Daily buckets: one per local calendar day in the window, oldest → newest.
+      const buckets: ChartPoint[] = [];
+      for (let i = 0; i < periodDays; i++) {
+        const dayDate = new Date(periodStart);
+        dayDate.setDate(dayDate.getDate() + i);
+        const key = toLocalDateKey(dayDate);
+        buckets.push({ date: key, value: totalsByDay.get(key) || 0 });
+      }
+      return buckets;
     }
 
-    // Monthly aggregation for 3M, 6M, 1Y
-    const monthsBack = period === "90d" ? 3 : period === "180d" ? 6 : 12;
-    const monthlyTotals = new Map<string, number>();
-    
-    periodItems.forEach(item => {
-      const date = new Date(item.createdAt);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      monthlyTotals.set(monthKey, (monthlyTotals.get(monthKey) || 0) + item.amount);
-    });
-
-    // Generate all months in range
-    const allMonths: string[] = [];
+    // Monthly buckets for 3M/6M/1Y: span from the window-start month through
+    // the current month inclusive, so every expense inside the period filter
+    // lands in a bucket (prevents silently dropping the partial first month).
+    const buckets: ChartPoint[] = [];
     const now = new Date();
-    for (let i = monthsBack - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      allMonths.push(monthKey);
+    const cursor = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    while (cursor <= lastMonth) {
+      const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+      buckets.push({ date: `${key}-01`, value: totalsByMonth.get(key) || 0 });
+      cursor.setMonth(cursor.getMonth() + 1);
     }
-
-    return allMonths.map(monthKey => {
-      const [year, month] = monthKey.split('-').map(Number);
-      const date = new Date(year, month - 1, 1);
-      return {
-        label: date.toLocaleDateString("en-GB", { month: "short" }),
-        value: monthlyTotals.get(monthKey) || 0,
-        date: monthKey,
-      };
-    });
-  }, [periodItems, periodDays, period]);
+    return buckets;
+  }, [periodItems, periodDays, period, periodStart]);
 
   const previousPeriodItems = useMemo(() => {
-    const prevStart = new Date(cutoffDate);
-    prevStart.setDate(prevStart.getDate() - periodDays);
-    const prevStartStr = prevStart.toISOString().split("T")[0];
-    return items.filter((item) => item.createdAt >= prevStartStr && item.createdAt < cutoffDate);
-  }, [items, cutoffDate, periodDays]);
+    const prevEnd = periodStart.getTime();
+    const prevStartDate = new Date(periodStart);
+    prevStartDate.setDate(prevStartDate.getDate() - periodDays);
+    const prevStart = prevStartDate.getTime();
+    return items.filter((item) => {
+      const t = new Date(item.createdAt).getTime();
+      return t >= prevStart && t < prevEnd;
+    });
+  }, [items, periodStart, periodDays]);
 
   const prevTotal = previousPeriodItems.reduce((sum, item) => sum + item.amount, 0);
   const totalTrend = prevTotal > 0 ? ((total - prevTotal) / prevTotal) * 100 : 0;
@@ -869,7 +847,7 @@ export default function ExpensesPage() {
             </div>
           ) : (
             <div className="py-12 text-center">
-              <p className="text-dash-text-muted mb-3">No spending data for this period.</p>
+              <p className="text-dash-text-muted mb-3">No data available for this period.</p>
               <Button variant="dash-secondary" size="dash-sm" onClick={() => setShowAdd(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add your first expense
