@@ -15,21 +15,14 @@ interface DonutChartProps {
 }
 
 const DEFAULT_CATEGORIES: SpendingCategory[] = [
-  { name: "Shopping", amount: 500, color: "#8FBC8F" },
-  { name: "Food", amount: 40, color: "#FFA500" },
-  { name: "Transport", amount: 120, color: "#4682B4" },
-  { name: "Bills", amount: 300, color: "#9370DB" },
-  { name: "Health", amount: 80, color: "#FFD700" },
-  { name: "Entertainment", amount: 60, color: "#20B2AA" },
-  { name: "Education", amount: 150, color: "#FF69B4" },
-  { name: "Travel", amount: 200, color: "#DC143C" },
-  { name: "Home", amount: 250, color: "#8B4513" },
+  { name: "Shopping", amount: 500, color: "#8FAF9F" },
+  { name: "Food", amount: 40, color: "#F0A878" },
 ];
 
 export const DonutChart: React.FC<DonutChartProps> = ({
   categories = DEFAULT_CATEGORIES,
   size = 280,
-  strokeWidth = 60,
+  strokeWidth = 24,
 }) => {
   const validCategories = categories.filter((c) => c.amount > 0);
   const total = validCategories.reduce((sum, c) => sum + c.amount, 0);
@@ -47,55 +40,44 @@ export const DonutChart: React.FC<DonutChartProps> = ({
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
 
-  let currentAngle = -90;
+  let currentOffset = 0;
 
   const segments = validCategories.map((cat) => {
     const percentage = cat.amount / total;
-    const angle = percentage * 360;
-    const startAngle = currentAngle;
-    const endAngle = currentAngle + angle;
-    currentAngle = endAngle;
+    const dashLength = circumference * percentage;
+    const gapLength = circumference - dashLength;
 
-    const startRad = (startAngle * Math.PI) / 180;
-    const endRad = (endAngle * Math.PI) / 180;
-
-    const x1 = center + radius * Math.cos(startRad);
-    const y1 = center + radius * Math.sin(startRad);
-    const x2 = center + radius * Math.cos(endRad);
-    const y2 = center + radius * Math.sin(endRad);
-
-    const largeArcFlag = angle > 180 ? 1 : 0;
-
-    const pathD = [
-      `M ${x1} ${y1}`,
-      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-    ].join(" ");
-
-    return {
+    const segment = {
       ...cat,
       percentage,
-      angle,
-      pathD,
-      strokeDasharray: `${circumference * percentage} ${circumference}`,
-      strokeDashoffset: -circumference * (startAngle + 90) / 360,
+      strokeDasharray: `${dashLength} ${gapLength}`,
+      strokeDashoffset: -currentOffset,
     };
+
+    currentOffset += dashLength;
+    return segment;
   });
 
   const legendItems = [...validCategories].sort((a, b) => b.amount - a.amount);
 
   return (
     <div className="rounded-xl bg-[#161616] p-6">
-      <div className="mb-6 text-center">
-        <h3 className="text-white font-bold text-lg">Spending by category</h3>
-        <p className="text-gray-500 text-sm mt-0.5">Where your money goes</p>
-      </div>
-
       <div className="flex justify-center mb-6">
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="relative">
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            stroke="#2a2a2a"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
           {segments.map((seg, idx) => (
-            <path
+            <circle
               key={seg.name}
-              d={seg.pathD}
+              cx={center}
+              cy={center}
+              r={radius}
               stroke={seg.color}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
@@ -106,14 +88,6 @@ export const DonutChart: React.FC<DonutChartProps> = ({
               }}
             />
           ))}
-          <circle
-            cx={center}
-            cy={center}
-            r={radius}
-            stroke="#161616"
-            strokeWidth={strokeWidth}
-            fill="none"
-          />
           <g className="absolute top-0 left-0">
             <text
               x={center}

@@ -661,8 +661,8 @@ export default function ExpensesPage() {
   const topCategory = sortedCategories[0];
 
   const CHART_COLORS = [
-  "#8FAFA5", // sage (primary)
-  "#E8A87C", // warm sand
+  "#8FAF9F", // sage green (Shopping)
+  "#F0A878", // peach/orange (Food)
   "#A8D0E6", // muted blue
   "#D4A5D4", // muted lavender
   "#F4C47C", // muted gold
@@ -896,7 +896,7 @@ export default function ExpensesPage() {
                     color: CHART_COLORS[i % CHART_COLORS.length],
                   }))}
                 size={280}
-                strokeWidth={60}
+                strokeWidth={24}
               />
             </div>
           ) : (
