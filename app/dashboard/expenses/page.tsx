@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
+import { DonutChart } from "@/components/dashboard/DonutChart";
 
 const DEFAULT_CATEGORIES = [
   "Food",
@@ -479,61 +480,6 @@ function formatTooltipDate(dateStr: string, period: Period): string {
   }
 }
 
-function DonutChart({
-  data,
-  total,
-}: {
-  data: { label: string; value: number; color: string }[];
-  total: number;
-}) {
-  if (data.length === 0) return null;
-
-  const circumference = 2 * Math.PI * 45;
-  let currentAngle = -90;
-
-  return (
-    <div className="relative w-48 h-48 flex-shrink-0" role="img" aria-label="Category distribution">
-      <svg viewBox="0 0 120 120" className="w-48 h-48 -rotate-90">
-        {data.map((segment, i) => {
-          const percentage = total > 0 ? segment.value / total : 0;
-          const strokeDasharray = `${percentage * circumference} ${circumference}`;
-          const strokeDashoffset = circumference * (currentAngle / 360 + percentage / 2);
-          currentAngle += percentage * 360;
-          return (
-            <circle
-              key={i}
-              cx="60"
-              cy="60"
-              r="45"
-              fill="none"
-              stroke={segment.color}
-              strokeWidth="16"
-              strokeDasharray={strokeDasharray}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-            />
-          );
-        })}
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[22px] font-semibold text-dash-text">{formatCurrency(total)}</span>
-        <span className="text-[11px] text-dash-text-muted uppercase tracking-wider">Total</span>
-      </div>
-    </div>
-  );
-}
-
-function Tooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; color: string; name: string }[]; label?: string }) {
-  if (!active || !payload || !label) return null;
-  const item = payload[0];
-  return (
-    <div className="bg-dash-elevated border border-dash-border rounded-lg p-3 shadow-lg text-center">
-      <p className="text-[12px] font-medium text-dash-text">{label}</p>
-      <p className="text-[16px] font-semibold text-dash-text mt-0.5">{formatCurrency(item.value)}</p>
-    </div>
-  );
-}
-
 function PeriodSelector({ selected, onChange }: { selected: Period; onChange: (p: Period) => void }) {
   return (
     <div className="flex items-center gap-1 bg-dash-surface rounded-md p-1" role="group" aria-label="Time period">
@@ -577,27 +523,6 @@ function MetricCard({
           {trend.value}
         </p>
       )}
-    </div>
-  );
-}
-
-function CategoryLegendItem({
-  color,
-  label,
-  amount,
-  percentage,
-}: {
-  color: string;
-  label: string;
-  amount: string;
-  percentage: number;
-}) {
-  return (
-    <div className="flex items-center gap-3 py-1.5">
-      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-      <span className="text-[13px] text-dash-text-secondary truncate">{label}</span>
-      <span className="text-[13px] font-medium text-dash-text ml-auto">{amount}</span>
-      <span className="text-[11px] text-dash-text-muted w-14 text-right">{percentage.toFixed(0)}%</span>
     </div>
   );
 }
@@ -962,18 +887,17 @@ export default function ExpensesPage() {
 
           {periodItems.length > 0 ? (
             <div className="flex flex-col items-center gap-4">
-              <DonutChart data={donutData} total={total} />
-              <div className="w-full space-y-2">
-                {donutData.map((segment, i) => (
-                  <CategoryLegendItem
-                    key={segment.label}
-                    color={segment.color}
-                    label={segment.label}
-                    amount={formatCurrency(segment.value)}
-                    percentage={total > 0 ? (segment.value / total) * 100 : 0}
-                  />
-                ))}
-              </div>
+              <DonutChart
+                categories={sortedCategories
+                  .filter(([_, amount]) => amount > 0)
+                  .map(([name, amount], i) => ({
+                    name,
+                    amount,
+                    color: CHART_COLORS[i % CHART_COLORS.length],
+                  }))}
+                size={280}
+                strokeWidth={60}
+              />
             </div>
           ) : (
             <div className="py-12 text-center text-dash-text-muted">
