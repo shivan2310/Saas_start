@@ -146,7 +146,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
 
   const padding = { top: 16, right: 24, bottom: 50, left: 0 };
   const yAxisWidth = 50;
-  const plotWidth = width - padding.left - padding.right;
+  const plotWidth = width - padding.left - padding.right - yAxisWidth;
   const plotHeight = height - padding.top - padding.bottom;
 
   if (plotWidth <= 0 || plotHeight <= 0) {
@@ -154,6 +154,12 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
       <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart" />
     );
   }
+
+  const getTooltipAnchor = (x: number) => {
+    if (x < padding.left + yAxisWidth + 30) return "start";
+    if (x > width - padding.right - 30) return "end";
+    return "middle";
+  };
 
   // Y-axis: generate nice round numbers
   const yTickCount = 5;
@@ -337,7 +343,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
             <text
               x={pointCoords[activeIndex].x}
               y={padding.top + 16}
-              textAnchor="middle"
+              textAnchor={getTooltipAnchor(pointCoords[activeIndex].x)}
               className="text-dash-text"
               style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'inherit' }}
             >
@@ -346,7 +352,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
             <text
               x={pointCoords[activeIndex].x}
               y={height - padding.bottom + 36}
-              textAnchor="middle"
+              textAnchor={getTooltipAnchor(pointCoords[activeIndex].x)}
               className="text-dash-text-secondary"
               style={{ fontSize: '11px', fontWeight: 400, fontFamily: 'inherit' }}
             >
