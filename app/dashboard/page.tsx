@@ -41,19 +41,25 @@ export default function DashboardPage() {
     if (!user) return;
 
     setLoadingOverview(true);
-    Promise.all([
+    Promise.allSettled([
       personalService.getExpenses(user.uid),
       todoService.getUserTodos(user.uid),
       personalService.getDates(user.uid),
       personalService.getDiary(user.uid)
     ])
-      .then(([expensesData, todosData, datesData, diaryData]) => {
-        setExpenses(expensesData);
-        setTodos(todosData);
-        setImportantDates(datesData);
-        setDiaryEntries(diaryData);
+      .then(([expensesRes, todosRes, datesRes, diaryRes]) => {
+        if (expensesRes.status === 'fulfilled') setExpenses(expensesRes.value);
+        else console.error("Failed to load expenses:", expensesRes.reason);
+        
+        if (todosRes.status === 'fulfilled') setTodos(todosRes.value);
+        else console.error("Failed to load todos:", todosRes.reason);
+        
+        if (datesRes.status === 'fulfilled') setImportantDates(datesRes.value);
+        else console.error("Failed to load dates:", datesRes.reason);
+        
+        if (diaryRes.status === 'fulfilled') setDiaryEntries(diaryRes.value);
+        else console.error("Failed to load diary:", diaryRes.reason);
       })
-      .catch(console.error)
       .finally(() => setLoadingOverview(false));
   }, [user]);
 
