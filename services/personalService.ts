@@ -10,7 +10,7 @@ import { DiaryEntry, Expense, ImportantDate } from "@/types";
 
 export const personalService = {
   async getExpenses(userId: string): Promise<Expense[]> { return getCollection<Expense>("expenses", userId); },
-  async addExpense(userId: string, description: string, amount: number, category: string): Promise<Expense> { return add<Expense>("expenses", { userId, description, amount, category }); },
+  async addExpense(userId: string, description: string, amount: number, category: string, paymentType?: string): Promise<Expense> { return add<Expense>("expenses", { userId, description, amount, category, paymentType }); },
   async getDates(userId: string): Promise<ImportantDate[]> { return getCollection<ImportantDate>("importantDates", userId); },
   async addDate(userId: string, title: string, date: string, notes: string): Promise<ImportantDate> { return add<ImportantDate>("importantDates", { userId, title, date, notes }); },
   async getDiary(userId: string): Promise<DiaryEntry[]> {

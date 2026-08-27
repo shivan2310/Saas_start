@@ -24,7 +24,7 @@ export interface TodoItem {
   createdAt: string;
 }
 
-export interface Expense { id: string; userId: string; description: string; amount: number; category: string; createdAt: string; }
+export interface Expense { id: string; userId: string; description: string; amount: number; category: string; paymentType?: string; createdAt: string; }
 export interface ImportantDate { id: string; userId: string; title: string; date: string; notes: string; createdAt: string; }
 export interface DiaryEntry { id: string; userId: string; title: string; content: string; createdAt: string; }
 

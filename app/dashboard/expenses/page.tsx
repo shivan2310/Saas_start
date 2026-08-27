@@ -104,7 +104,7 @@ interface ChartPoint {
 const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]; period: Period }) {
   // Hooks must run unconditionally (before any early return) per the Rules of Hooks.
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 280 });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Clear hover state when the dataset changes (e.g., switching period) so a
@@ -116,8 +116,8 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const { width } = entry.contentRect;
-        setDimensions((prev) => ({ ...prev, width: Math.max(width, 1) }));
+        const { width, height } = entry.contentRect;
+        setDimensions({ width: Math.max(width, 1), height: Math.max(height, 280) });
       }
     });
     if (containerRef.current) {
@@ -128,7 +128,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
 
   if (data.length < 1) {
     return (
-      <div ref={containerRef} className="relative w-full min-w-0" style={{ height: "280px" }} role="img" aria-label="Spending trend chart" />
+      <div ref={containerRef} className="relative w-full h-full min-h-[280px] min-w-0" role="img" aria-label="Spending trend chart" />
     );
   }
 
@@ -136,7 +136,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
 
   if (width < 50) {
     return (
-      <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart" />
+      <div ref={containerRef} className="relative w-full h-full min-h-[280px] min-w-0" role="img" aria-label="Spending trend chart" />
     );
   }
 
@@ -151,7 +151,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
 
   if (plotWidth <= 0 || plotHeight <= 0) {
     return (
-      <div ref={containerRef} className="relative w-full min-w-0" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart" />
+      <div ref={containerRef} className="relative w-full h-full min-h-[280px] min-w-0" role="img" aria-label="Spending trend chart" />
     );
   }
 
@@ -232,7 +232,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
   };
 
   return (
-    <div ref={containerRef} className="relative w-full min-w-0 overflow-hidden" style={{ height: `${height}px` }} role="img" aria-label="Spending trend chart">
+    <div ref={containerRef} className="relative w-full h-full min-h-[280px] min-w-0 overflow-hidden" role="img" aria-label="Spending trend chart">
       <svg 
         viewBox={`0 0 ${width} ${height}`} 
         className="w-full h-full" 
@@ -534,7 +534,7 @@ function TransactionRow({
       <td className="py-3 px-4 text-[12px] text-dash-text-muted whitespace-nowrap">{formatDateShort(item.createdAt)}</td>
       <td className="py-3 px-4 text-[13px] font-medium text-dash-text">{item.description}</td>
       <td className="py-3 px-4 text-[12px] text-dash-text-secondary">{item.category}</td>
-      <td className="py-3 px-4 text-[12px] text-dash-text-muted">—</td>
+      <td className="py-3 px-4 text-[12px] text-dash-text-muted capitalize">{item.paymentType || "—"}</td>
       <td className="py-3 px-4 text-[13px] font-medium text-dash-text text-right">{formatCurrencyPrecise(item.amount)}</td>
       <td className="py-3 px-4 text-right">
         <button
@@ -570,6 +570,7 @@ export default function ExpensesPage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Food");
   const [customCategory, setCustomCategory] = useState("");
+  const [paymentType, setPaymentType] = useState("Credit Card");
   const [showAdd, setShowAdd] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [period, setPeriod] = useState<Period>("30d");
@@ -605,7 +606,7 @@ export default function ExpensesPage() {
 
     setIsSubmitting(true);
     try {
-      const item = await personalService.addExpense(user.uid, description.trim(), numericAmount, finalCategory);
+      const item = await personalService.addExpense(user.uid, description.trim(), numericAmount, finalCategory, paymentType);
       setItems((v) => [item, ...v]);
       setDescription("");
       setAmount("");
@@ -751,7 +752,7 @@ export default function ExpensesPage() {
               <X className="h-5 w-5" />
             </button>
           </div>
-          <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Description"
               placeholder="What was it?"
@@ -771,7 +772,7 @@ export default function ExpensesPage() {
               onChange={(e) => setAmount(e.target.value)}
               required
             />
-            <div className="sm:col-span-3">
+            <div>
               <label className="text-[11px] font-medium text-dash-text-secondary uppercase tracking-wider block mb-1.5">Category</label>
               <select
                 value={category}
@@ -801,7 +802,19 @@ export default function ExpensesPage() {
                 />
               )}
             </div>
-            <div className="sm:col-span-3 flex justify-end gap-2 pt-2 border-t border-dash-border">
+            <div>
+              <label className="text-[11px] font-medium text-dash-text-secondary uppercase tracking-wider block mb-1.5">Payment Type</label>
+              <select
+                value={paymentType}
+                onChange={(e) => setPaymentType(e.target.value)}
+                className="w-full bg-dash-surface border border-dash-border rounded-md px-3 py-2.5 text-[13px] text-dash-text-secondary focus:border-dash-accent focus:outline-none cursor-pointer"
+              >
+                {["Credit Card", "Debit Card", "Cash", "UPI", "Net Banking", "Wallet", "Other"].map((pt) => (
+                  <option key={pt} value={pt} className="bg-dash-card">{pt}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2 flex justify-end gap-2 pt-2 border-t border-dash-border">
               <Button type="button" variant="dash-ghost" onClick={() => setShowAdd(false)}>
                 Cancel
               </Button>
@@ -836,10 +849,10 @@ export default function ExpensesPage() {
       </div>
 
       {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
         {/* Spending Overview */}
-        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5 min-w-0 flex flex-col">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="bg-dash-card border border-dash-border rounded-xl p-5 min-w-0 flex flex-col" style={{ minHeight: '380px' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 shrink-0">
             <div>
               <h2 className="text-[15px] font-semibold text-dash-text">Spending overview</h2>
               <p className="text-[12px] text-dash-text-muted mt-0.5">Your spending over time</p>
@@ -848,11 +861,11 @@ export default function ExpensesPage() {
           </div>
 
           {periodItems.length > 0 ? (
-            <div className="group min-w-0 overflow-hidden flex-1">
+            <div className="flex-1 min-h-0">
               <LineChart data={lineChartData} period={period} />
             </div>
           ) : (
-            <div className="py-12 text-center">
+            <div className="flex-1 flex items-center justify-center flex-col py-8 text-center">
               <p className="text-dash-text-muted mb-3">No data available for this period.</p>
               <Button variant="dash-secondary" size="dash-sm" onClick={() => setShowAdd(true)}>
                 <Plus className="h-4 w-4 mr-1" />
@@ -863,14 +876,14 @@ export default function ExpensesPage() {
         </div>
 
         {/* Spending by Category */}
-        <div className="bg-dash-card border border-dash-border rounded-xl p-5 space-y-5 min-w-0">
-          <div>
+        <div className="bg-dash-card border border-dash-border rounded-xl p-5 min-w-0 flex flex-col" style={{ minHeight: '380px' }}>
+          <div className="shrink-0 mb-4">
             <h2 className="text-[15px] font-semibold text-dash-text">Spending by category</h2>
             <p className="text-[12px] text-dash-text-muted mt-0.5">Where your money goes</p>
           </div>
 
           {periodItems.length > 0 ? (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 flex-1 justify-center">
               <DonutChart
                 categories={sortedCategories
                   .filter(([_, amount]) => amount > 0)
@@ -879,12 +892,12 @@ export default function ExpensesPage() {
                     amount,
                     color: CHART_COLORS[i % CHART_COLORS.length],
                   }))}
-                size={280}
+                size={240}
                 strokeWidth={24}
               />
             </div>
           ) : (
-            <div className="py-12 text-center text-dash-text-muted">
+            <div className="flex-1 flex items-center justify-center text-dash-text-muted">
               No categories yet.
             </div>
           )}
