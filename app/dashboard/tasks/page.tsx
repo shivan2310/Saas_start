@@ -99,9 +99,9 @@ export default function TasksPage() {
         await todoService.updateTodo(editingTodo.id, {
           text: modalText.trim(),
           priority: modalPriority,
-          dueDate: modalDueDate || undefined
+          dueDate: modalDueDate || null
         });
-        setTodos(prev => prev.map(t => t.id === editingTodo.id ? { ...t, text: modalText.trim(), priority: modalPriority, dueDate: modalDueDate || undefined } : t));
+        setTodos(prev => prev.map(t => t.id === editingTodo.id ? { ...t, text: modalText.trim(), priority: modalPriority, dueDate: modalDueDate || null } : t));
       } else {
         const created = await todoService.addTodo(user.uid, modalText.trim(), modalPriority, modalDueDate || undefined);
         setTodos(prev => [created, ...prev]);
