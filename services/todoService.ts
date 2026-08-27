@@ -22,6 +22,10 @@ export const todoService = {
     if (error) throw error;
     return data as TodoItem;
   },
+  async updateTodo(todoId: string, updates: { text?: string; priority?: Priority; dueDate?: string }): Promise<void> {
+    const { error } = await supabase.from("todos").update(updates).eq("id", todoId);
+    if (error) throw error;
+  },
   async toggleTodo(todoId: string, done: boolean): Promise<void> {
     const { error } = await supabase.from("todos").update({ done }).eq("id", todoId);
     if (error) throw error;

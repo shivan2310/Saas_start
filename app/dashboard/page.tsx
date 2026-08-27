@@ -25,6 +25,7 @@ import {
   TrendingUp,
   Tag,
   Clock,
+  Check,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -85,6 +86,21 @@ export default function DashboardPage() {
       });
     } finally {
       setSendingVerification(false);
+    }
+  };
+
+  const handleToggleTodo = async (id: string, currentDone: boolean) => {
+    try {
+      setTodos((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, done: !currentDone } : t))
+      );
+      await todoService.toggleTodo(id, !currentDone);
+    } catch (error) {
+      console.error("Failed to toggle task:", error);
+      setTodos((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, done: currentDone } : t))
+      );
+      toast({ type: "error", title: "Error", description: "Could not update task." });
     }
   };
 
@@ -166,9 +182,27 @@ export default function DashboardPage() {
                 </div>
               ) : previewTodos.length > 0 ? (
                 previewTodos.map((todo) => (
-                  <div key={todo.id} className="flex items-start gap-2.5">
-                    <Circle className="h-3.5 w-3.5 shrink-0 text-dash-text-muted mt-0.5" />
-                    <span className="text-[13px] text-dash-text truncate">{todo.text}</span>
+                  <div key={todo.id} className="flex items-start gap-2.5 group">
+                    <button
+                      onClick={() => handleToggleTodo(todo.id, todo.done)}
+                      className={cn(
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-dash mt-0.5",
+                        todo.done 
+                          ? "bg-dash-accent border-dash-accent text-dash-background" 
+                          : "border-dash-border hover:border-dash-text text-transparent"
+                      )}
+                    >
+                      {todo.done && <Check className="h-3 w-3" strokeWidth={3} />}
+                    </button>
+                    <span 
+                      className={cn(
+                        "text-[13px] truncate transition-dash cursor-pointer",
+                        todo.done ? "text-dash-text-muted line-through" : "text-dash-text"
+                      )}
+                      onClick={() => handleToggleTodo(todo.id, todo.done)}
+                    >
+                      {todo.text}
+                    </span>
                   </div>
                 ))
               ) : (
