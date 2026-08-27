@@ -21,17 +21,16 @@ const DEFAULT_CATEGORIES: SpendingCategory[] = [
 
 export const DonutChart: React.FC<DonutChartProps> = ({
   categories = DEFAULT_CATEGORIES,
-  size = 280,
-  strokeWidth = 24,
+  size = 180,
+  strokeWidth = 20,
 }) => {
   const validCategories = categories.filter((c) => c.amount > 0);
   const total = validCategories.reduce((sum, c) => sum + c.amount, 0);
 
   if (total === 0) {
     return (
-      <div className="rounded-xl bg-[#161616] p-8 text-center">
-        <p className="text-white text-lg font-bold">No spending data</p>
-        <p className="text-gray-500 mt-1 text-sm">Add expenses to see the chart</p>
+      <div className="flex items-center justify-center h-full text-dash-text-muted text-sm">
+        No spending data yet.
       </div>
     );
   }
@@ -46,98 +45,103 @@ export const DonutChart: React.FC<DonutChartProps> = ({
     const percentage = cat.amount / total;
     const dashLength = circumference * percentage;
     const gapLength = circumference - dashLength;
-
     const segment = {
       ...cat,
       percentage,
       strokeDasharray: `${dashLength} ${gapLength}`,
       strokeDashoffset: -currentOffset,
     };
-
     currentOffset += dashLength;
     return segment;
   });
 
   const legendItems = [...validCategories].sort((a, b) => b.amount - a.amount);
 
+  const totalFormatted =
+    total >= 100000
+      ? `₹${(total / 100000).toFixed(1)}L`
+      : total >= 1000
+      ? `₹${(total / 1000).toFixed(1)}K`
+      : `₹${total.toLocaleString()}`;
+
   return (
-    <div className="rounded-xl bg-[#161616] p-6">
-      <div className="flex justify-center mb-6">
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="relative">
+    <div className="flex flex-col items-center gap-5 w-full">
+      {/* Donut ring */}
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* Track */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke="#222526"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        {/* Segments */}
+        {segments.map((seg) => (
           <circle
+            key={seg.name}
             cx={center}
             cy={center}
             r={radius}
-            stroke="#2a2a2a"
+            stroke={seg.color}
             strokeWidth={strokeWidth}
+            strokeLinecap="round"
             fill="none"
+            style={{
+              strokeDasharray: seg.strokeDasharray,
+              strokeDashoffset: seg.strokeDashoffset,
+            }}
           />
-          {segments.map((seg, idx) => (
-            <circle
-              key={seg.name}
-              cx={center}
-              cy={center}
-              r={radius}
-              stroke={seg.color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-              style={{
-                strokeDasharray: seg.strokeDasharray,
-                strokeDashoffset: seg.strokeDashoffset,
-              }}
-            />
-          ))}
-          <g className="absolute top-0 left-0">
-            <text
-              x={center}
-              y={center - 8}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="white"
-              fontSize={Math.max(size * 0.12, 24)}
-              fontWeight="bold"
-              fontFamily="system-ui, sans-serif"
-            >
-              ₹{total.toLocaleString()}
-            </text>
-            <text
-              x={center}
-              y={center + 22}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="#888"
-              fontSize={Math.max(size * 0.05, 10)}
-              fontWeight="500"
-              fontFamily="system-ui, sans-serif"
-              letterSpacing="0.05em"
-            >
-              TOTAL
-            </text>
-          </g>
-        </svg>
-      </div>
+        ))}
+        {/* Center label */}
+        <text
+          x={center}
+          y={center - 7}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#F2F2F0"
+          fontSize={Math.round(size * 0.115)}
+          fontWeight="700"
+          fontFamily="system-ui, sans-serif"
+        >
+          {totalFormatted}
+        </text>
+        <text
+          x={center}
+          y={center + 14}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#737777"
+          fontSize={Math.round(size * 0.065)}
+          fontWeight="500"
+          fontFamily="system-ui, sans-serif"
+          letterSpacing="0.06em"
+        >
+          TOTAL
+        </text>
+      </svg>
 
-      <div className="space-y-3">
+      {/* Legend */}
+      <div className="w-full space-y-2.5 px-1">
         {legendItems.map((cat) => {
           const percentage = ((cat.amount / total) * 100).toFixed(1);
           return (
-            <div
-              key={cat.name}
-              className="flex items-center justify-between px-2"
-            >
-              <div className="flex items-center gap-3">
+            <div key={cat.name} className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
                 <div
-                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: cat.color }}
                 />
-                <span className="text-white text-sm font-medium">{cat.name}</span>
+                <span className="text-[13px] text-dash-text-secondary font-medium">
+                  {cat.name}
+                </span>
               </div>
-              <div className="flex items-center gap-4 text-right min-w-[120px]">
-                <span className="text-white font-semibold text-sm">
+              <div className="flex items-center gap-3 text-right">
+                <span className="text-[13px] text-dash-text font-semibold">
                   ₹{cat.amount.toLocaleString()}
                 </span>
-                <span className="text-gray-500 text-sm font-medium whitespace-nowrap">
+                <span className="text-[12px] text-dash-text-muted w-10 text-right">
                   {percentage}%
                 </span>
               </div>

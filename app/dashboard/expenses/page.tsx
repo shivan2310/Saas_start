@@ -849,9 +849,9 @@ export default function ExpensesPage() {
       </div>
 
       {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 lg:grid-rows-[380px]">
         {/* Spending Overview */}
-        <div className="bg-dash-card border border-dash-border rounded-xl p-5 min-w-0 flex flex-col" style={{ minHeight: '380px' }}>
+        <div className="bg-dash-card border border-dash-border rounded-xl p-5 min-w-0 flex flex-col">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 shrink-0">
             <div>
               <h2 className="text-[15px] font-semibold text-dash-text">Spending overview</h2>
@@ -865,7 +865,7 @@ export default function ExpensesPage() {
               <LineChart data={lineChartData} period={period} />
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center flex-col py-8 text-center">
+            <div className="flex-1 flex items-center justify-center flex-col text-center">
               <p className="text-dash-text-muted mb-3">No data available for this period.</p>
               <Button variant="dash-secondary" size="dash-sm" onClick={() => setShowAdd(true)}>
                 <Plus className="h-4 w-4 mr-1" />
@@ -876,14 +876,14 @@ export default function ExpensesPage() {
         </div>
 
         {/* Spending by Category */}
-        <div className="bg-dash-card border border-dash-border rounded-xl p-5 min-w-0 flex flex-col" style={{ minHeight: '380px' }}>
+        <div className="bg-dash-card border border-dash-border rounded-xl p-5 min-w-0 flex flex-col">
           <div className="shrink-0 mb-4">
             <h2 className="text-[15px] font-semibold text-dash-text">Spending by category</h2>
             <p className="text-[12px] text-dash-text-muted mt-0.5">Where your money goes</p>
           </div>
 
           {periodItems.length > 0 ? (
-            <div className="flex flex-col items-center gap-4 flex-1 justify-center">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-0">
               <DonutChart
                 categories={sortedCategories
                   .filter(([_, amount]) => amount > 0)
@@ -892,12 +892,12 @@ export default function ExpensesPage() {
                     amount,
                     color: CHART_COLORS[i % CHART_COLORS.length],
                   }))}
-                size={240}
-                strokeWidth={24}
+                size={180}
+                strokeWidth={20}
               />
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-dash-text-muted">
+            <div className="flex-1 flex items-center justify-center text-dash-text-muted text-sm">
               No categories yet.
             </div>
           )}
