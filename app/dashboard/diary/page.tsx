@@ -1,22 +1,22 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Trash2, Lock, Plus, Calendar, Search, Unlock, Eye, EyeOff, RotateCcw } from "lucide-react";
+import { Trash2, Lock, Plus, Calendar, Search, Eye, EyeOff, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { authService } from "@/services/authService";
 import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
 import { hasUnlockedJournalKey, unlockAccountJournalKey } from "@/lib/journalCrypto";
+import { userService } from "@/services/userService";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function DiaryPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [items, setItems] = useState<DiaryEntry[]>([]);
   const [isLoadingJournal, setIsLoadingJournal] = useState(true);
-  const [journalError, setJournalError] = useState("");
   const [needsFreshLogin, setNeedsFreshLogin] = useState(false);
+  const [journalError, setJournalError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
@@ -49,7 +49,9 @@ export default function DiaryPage() {
       } catch (error) {
         console.error("Failed to load encrypted journal:", error);
         setNeedsFreshLogin(true);
-        setJournalError("Your encrypted journal key is locked for this session. Please unlock it to continue.");
+        setJournalError(
+          "Your encrypted journal key is locked for this session. Please unlock it to continue."
+        );
       } finally {
         setIsLoadingJournal(false);
       }
@@ -59,14 +61,26 @@ export default function DiaryPage() {
   }, [user]);
 
   const handleUnlock = async () => {
-    if (!user || !profile?.journalKey || !unlockPassword.trim()) return;
+    if (!user || !unlockPassword.trim()) return;
     setIsUnlocking(true);
     setUnlockError("");
     try {
-      await unlockAccountJournalKey(user.uid, user.email || "", unlockPassword, profile.journalKey);
+      const wrappedKey = await unlockAccountJournalKey(
+        user.uid,
+        user.email || "",
+        unlockPassword,
+        profile?.journalKey
+      );
+
+      if (!profile?.journalKey) {
+        await userService.setJournalKey(user.uid, wrappedKey, user.email || "");
+        await refreshProfile();
+      }
+
       setShowUnlockModal(false);
       setUnlockPassword("");
       setNeedsFreshLogin(false);
+      setJournalError("");
       const entries = await personalService.getDiary(user.uid);
       setItems(entries);
       await personalService.encryptPlainDiaryEntries(user.uid);
@@ -105,7 +119,7 @@ export default function DiaryPage() {
     e.preventDefault();
     if (!user || needsFreshLogin || !content.trim()) return;
     setIsSaving(true);
-    
+
     try {
       if (selectedEntry) {
         const updated = await personalService.updateDiaryEntry(
@@ -141,24 +155,94 @@ export default function DiaryPage() {
     }
   };
 
-  const filteredItems = items.filter(i => 
-    i.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    i.content.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredItems = items.filter(
+    (i) =>
+      i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      i.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (journalError || needsFreshLogin) {
+  // ─── Locked state ───────────────────────────────────────────────────────────
+  if (!isLoadingJournal && needsFreshLogin) {
     return (
-      <div className="max-w-md mt-10 rounded-lg border border-dash-border bg-dash-card p-6">
-        <Lock className="h-6 w-6 text-dash-text-muted mb-4" />
-        <h3 className="text-[16px] font-semibold text-dash-text mb-2">Journal Locked</h3>
-        <p className="text-[13px] text-dash-text-muted mb-6">
-          {journalError || "Your encrypted journal key is locked for this session. Enter your password to unlock it."}
-        </p>
-        <Button onClick={openUnlockModal} variant="dash-primary">Unlock Journal</Button>
-      </div>
+      <>
+        <div className="max-w-md mt-10 rounded-xl border border-dash-border bg-dash-card p-8">
+          <Lock className="h-6 w-6 text-dash-text-muted mb-4" />
+          <h3 className="text-[16px] font-semibold text-dash-text mb-2">Journal Locked</h3>
+          <p className="text-[13px] text-dash-text-muted mb-6">
+            {journalError ||
+              "Your encrypted journal key is locked for this session. Enter your password to unlock it."}
+          </p>
+          <Button onClick={openUnlockModal} variant="dash-primary">
+            Unlock Journal
+          </Button>
+        </div>
+
+        {/* Unlock Modal — rendered here so it is reachable */}
+        {showUnlockModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="w-full max-w-md bg-dash-surface border border-dash-border rounded-xl shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-[16px] font-semibold text-dash-text">Unlock Journal</h3>
+                <button
+                  onClick={closeUnlockModal}
+                  className="text-dash-text-muted hover:text-dash-text transition-colors p-1.5 rounded-md hover:bg-dash-hover"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="text-[13px] text-dash-text-muted mb-5">
+                Enter your account password to unlock your encrypted journal for this session.
+              </p>
+              {unlockError && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-[13px] text-red-400">
+                  {unlockError}
+                </div>
+              )}
+              <div className="relative mb-5">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Your account password"
+                  value={unlockPassword}
+                  onChange={(e) => setUnlockPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
+                  autoFocus
+                  className="w-full bg-dash-background border border-dash-border rounded-lg pl-3 pr-10 py-2.5 text-[14px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-muted hover:text-dash-text transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={closeUnlockModal}
+                  variant="dash-ghost"
+                  className="flex-1"
+                  disabled={isUnlocking}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleUnlock}
+                  variant="dash-primary"
+                  className="flex-1"
+                  isLoading={isUnlocking}
+                  disabled={!unlockPassword.trim()}
+                >
+                  Unlock
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
+  // ─── Main journal view ───────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-6xl">
       <div className="flex items-end justify-between mb-6 shrink-0">
@@ -166,18 +250,21 @@ export default function DiaryPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex gap-8">
-        
         {/* Left Col: Entries List */}
         <div className="w-64 shrink-0 flex flex-col border-r border-dash-border pr-6">
-          <Button onClick={handleNewEntry} variant="dash-secondary" className="w-full mb-6 shrink-0 justify-start">
+          <Button
+            onClick={handleNewEntry}
+            variant="dash-secondary"
+            className="w-full mb-6 shrink-0 justify-start"
+          >
             <Plus className="h-4 w-4 mr-2" /> New Entry
           </Button>
 
           <div className="relative mb-4 shrink-0">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-dash-text-muted" />
-            <input 
-              type="text" 
-              placeholder="Search..." 
+            <input
+              type="text"
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-dash-surface border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
@@ -194,16 +281,16 @@ export default function DiaryPage() {
             ) : filteredItems.length === 0 ? (
               <div className="text-[13px] text-dash-text-muted py-4">No entries found.</div>
             ) : (
-              filteredItems.map(item => {
+              filteredItems.map((item) => {
                 const isSelected = selectedEntry?.id === item.id;
                 return (
-                  <div 
+                  <div
                     key={item.id}
                     onClick={() => handleSelectEntry(item)}
                     className={cn(
                       "group p-3 rounded-lg cursor-pointer transition-dash border",
-                      isSelected 
-                        ? "bg-dash-surface border-dash-border" 
+                      isSelected
+                        ? "bg-dash-surface border-dash-border"
                         : "border-transparent hover:bg-dash-hover"
                     )}
                   >
@@ -211,7 +298,7 @@ export default function DiaryPage() {
                       <div className="text-[14px] font-medium text-dash-text truncate pr-2">
                         {item.title}
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => removeEntry(e, item.id)}
                         className="opacity-0 group-hover:opacity-100 text-dash-text-muted hover:text-dash-text transition-opacity p-0.5"
                       >
@@ -235,13 +322,21 @@ export default function DiaryPage() {
             <div className="flex items-center justify-between border-b border-dash-border pb-4 mb-6 shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-[13px] text-dash-text-muted font-medium">
-                  {selectedEntry ? formatDate(selectedEntry.createdAt) : formatDate(new Date().toISOString())}
+                  {selectedEntry
+                    ? formatDate(selectedEntry.createdAt)
+                    : formatDate(new Date().toISOString())}
                 </span>
                 <span className="text-[10px] uppercase tracking-wider text-dash-accent font-semibold px-2 py-0.5 bg-dash-accent/10 rounded">
                   {selectedEntry ? "Editing" : "Draft"}
                 </span>
               </div>
-              <Button type="submit" variant="dash-primary" size="dash-sm" isLoading={isSaving} disabled={!content.trim()}>
+              <Button
+                type="submit"
+                variant="dash-primary"
+                size="dash-sm"
+                isLoading={isSaving}
+                disabled={!content.trim()}
+              >
                 Save entry
               </Button>
             </div>
@@ -259,59 +354,11 @@ export default function DiaryPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="flex-1 w-full bg-transparent border-none text-[15px] leading-relaxed text-dash-text placeholder:text-dash-text-muted focus:outline-none resize-none"
-              style={{ minHeight: '300px' }}
+              style={{ minHeight: "300px" }}
             />
           </form>
         </div>
-
       </div>
     </div>
   );
-
-  if (showUnlockModal) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="w-full max-w-md bg-dash-card rounded-xl border border-dash-border p-6 animate-in fade-in zoom-in-95">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[18px] font-semibold text-dash-text">Unlock Journal</h3>
-            <button onClick={closeUnlockModal} className="text-dash-text-muted hover:text-dash-text transition-colors p-1">
-              <RotateCcw className="h-5 w-5" />
-            </button>
-          </div>
-          <p className="text-[13px] text-dash-text-muted mb-6">Enter your password to unlock your encrypted journal for this session.</p>
-          {unlockError && (
-            <div className="mb-4 p-3 bg-dash-accent/10 border border-dash-accent/30 rounded-md text-[13px] text-dash-accent">
-              {unlockError}
-            </div>
-          )}
-          <div className="relative mb-4">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={unlockPassword}
-              onChange={(e) => setUnlockPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
-              autoFocus
-              className="w-full bg-dash-surface border border-dash-border rounded-md pl-3 pr-10 py-2.5 text-[14px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-muted hover:text-dash-text transition-colors"
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
-          </div>
-          <div className="flex gap-3">
-            <Button onClick={closeUnlockModal} variant="dash-secondary" className="flex-1" disabled={isUnlocking}>
-              Cancel
-            </Button>
-            <Button onClick={handleUnlock} variant="dash-primary" className="flex-1" isLoading={isUnlocking} disabled={!unlockPassword.trim()}>
-              Unlock
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 }
