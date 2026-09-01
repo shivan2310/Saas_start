@@ -47,7 +47,7 @@ export function getJournalEncryptionKeyType(value: string): "account" | "device"
 }
 
 export function hasUnlockedJournalKey(userId: string): boolean {
-  return Boolean(sessionStorage.getItem(getSessionKeyName(userId)));
+  return Boolean(localStorage.getItem(getSessionKeyName(userId)));
 }
 
 export async function unlockAccountJournalKey(
@@ -58,18 +58,18 @@ export async function unlockAccountJournalKey(
 ): Promise<string> {
   if (wrappedJournalKey) {
     const rawKey = await unwrapJournalKey(email, password, wrappedJournalKey);
-    sessionStorage.setItem(getSessionKeyName(userId), bytesToBase64(rawKey));
+    localStorage.setItem(getSessionKeyName(userId), bytesToBase64(rawKey));
     return wrappedJournalKey;
   }
 
   const rawKey = crypto.getRandomValues(new Uint8Array(32));
   const wrappedKey = await wrapJournalKey(email, password, rawKey);
-  sessionStorage.setItem(getSessionKeyName(userId), bytesToBase64(rawKey));
+  localStorage.setItem(getSessionKeyName(userId), bytesToBase64(rawKey));
   return wrappedKey;
 }
 
 export function clearUnlockedJournalKey(userId: string): void {
-  sessionStorage.removeItem(getSessionKeyName(userId));
+  localStorage.removeItem(getSessionKeyName(userId));
 }
 
 export async function encryptJournalPayload(
@@ -212,7 +212,7 @@ async function derivePasswordKey(
 }
 
 async function getUnlockedAccountJournalKey(userId: string): Promise<CryptoKey> {
-  const rawKey = sessionStorage.getItem(getSessionKeyName(userId));
+  const rawKey = localStorage.getItem(getSessionKeyName(userId));
 
   if (!rawKey) {
     throw new Error("Journal key is locked. Sign in again to unlock it.");

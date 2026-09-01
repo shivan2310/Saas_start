@@ -1,22 +1,18 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Trash2, Lock, Plus, Calendar, Search, Eye, EyeOff, X } from "lucide-react";
+import { Trash2, Plus, Calendar, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
-import { hasUnlockedJournalKey, unlockAccountJournalKey } from "@/lib/journalCrypto";
-import { userService } from "@/services/userService";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function DiaryPage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user } = useAuth();
   const [items, setItems] = useState<DiaryEntry[]>([]);
   const [isLoadingJournal, setIsLoadingJournal] = useState(true);
-  const [needsFreshLogin, setNeedsFreshLogin] = useState(false);
-  const [journalError, setJournalError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
@@ -24,34 +20,17 @@ export default function DiaryPage() {
   const [content, setContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const [showUnlockModal, setShowUnlockModal] = useState(false);
-  const [unlockPassword, setUnlockPassword] = useState("");
-  const [isUnlocking, setIsUnlocking] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [unlockError, setUnlockError] = useState("");
-
   useEffect(() => {
     if (!user) return;
 
     const loadJournal = async () => {
       setIsLoadingJournal(true);
-      setJournalError("");
-      setNeedsFreshLogin(false);
       try {
-        const isUnlocked = hasUnlockedJournalKey(user.uid);
         const entries = await personalService.getDiary(user.uid);
         setItems(entries);
-        if (isUnlocked) {
-          await personalService.encryptPlainDiaryEntries(user.uid);
-        } else {
-          setNeedsFreshLogin(true);
-        }
+        await personalService.encryptPlainDiaryEntries(user.uid);
       } catch (error) {
         console.error("Failed to load encrypted journal:", error);
-        setNeedsFreshLogin(true);
-        setJournalError(
-          "Your encrypted journal key is locked for this session. Please unlock it to continue."
-        );
       } finally {
         setIsLoadingJournal(false);
       }
@@ -59,49 +38,6 @@ export default function DiaryPage() {
 
     void loadJournal();
   }, [user]);
-
-  const handleUnlock = async () => {
-    if (!user || !unlockPassword.trim()) return;
-    setIsUnlocking(true);
-    setUnlockError("");
-    try {
-      const wrappedKey = await unlockAccountJournalKey(
-        user.uid,
-        user.email || "",
-        unlockPassword,
-        profile?.journalKey
-      );
-
-      if (!profile?.journalKey) {
-        await userService.setJournalKey(user.uid, wrappedKey, user.email || "");
-        await refreshProfile();
-      }
-
-      setShowUnlockModal(false);
-      setUnlockPassword("");
-      setNeedsFreshLogin(false);
-      setJournalError("");
-      const entries = await personalService.getDiary(user.uid);
-      setItems(entries);
-      await personalService.encryptPlainDiaryEntries(user.uid);
-    } catch (error) {
-      console.error("Failed to unlock journal:", error);
-      setUnlockError("Incorrect password. Please try again.");
-    } finally {
-      setIsUnlocking(false);
-    }
-  };
-
-  const openUnlockModal = () => {
-    setShowUnlockModal(true);
-    setUnlockError("");
-  };
-
-  const closeUnlockModal = () => {
-    setShowUnlockModal(false);
-    setUnlockPassword("");
-    setUnlockError("");
-  };
 
   const handleNewEntry = () => {
     setSelectedEntry(null);
@@ -117,7 +53,7 @@ export default function DiaryPage() {
 
   const saveEntry = async (e: FormEvent) => {
     e.preventDefault();
-    if (!user || needsFreshLogin || !content.trim()) return;
+    if (!user || !content.trim()) return;
     setIsSaving(true);
 
     try {
@@ -161,86 +97,7 @@ export default function DiaryPage() {
       i.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // ─── Locked state ───────────────────────────────────────────────────────────
-  if (!isLoadingJournal && needsFreshLogin) {
-    return (
-      <>
-        <div className="max-w-md mt-10 rounded-xl border border-dash-border bg-dash-card p-8">
-          <Lock className="h-6 w-6 text-dash-text-muted mb-4" />
-          <h3 className="text-[16px] font-semibold text-dash-text mb-2">Journal Locked</h3>
-          <p className="text-[13px] text-dash-text-muted mb-6">
-            {journalError ||
-              "Your encrypted journal key is locked for this session. Enter your password to unlock it."}
-          </p>
-          <Button onClick={openUnlockModal} variant="dash-primary">
-            Unlock Journal
-          </Button>
-        </div>
 
-        {/* Unlock Modal — rendered here so it is reachable */}
-        {showUnlockModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="w-full max-w-md bg-dash-surface border border-dash-border rounded-xl shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-[16px] font-semibold text-dash-text">Unlock Journal</h3>
-                <button
-                  onClick={closeUnlockModal}
-                  className="text-dash-text-muted hover:text-dash-text transition-colors p-1.5 rounded-md hover:bg-dash-hover"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <p className="text-[13px] text-dash-text-muted mb-5">
-                Enter your account password to unlock your encrypted journal for this session.
-              </p>
-              {unlockError && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-[13px] text-red-400">
-                  {unlockError}
-                </div>
-              )}
-              <div className="relative mb-5">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Your account password"
-                  value={unlockPassword}
-                  onChange={(e) => setUnlockPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
-                  autoFocus
-                  className="w-full bg-dash-background border border-dash-border rounded-lg pl-3 pr-10 py-2.5 text-[14px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-muted hover:text-dash-text transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  onClick={closeUnlockModal}
-                  variant="dash-ghost"
-                  className="flex-1"
-                  disabled={isUnlocking}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleUnlock}
-                  variant="dash-primary"
-                  className="flex-1"
-                  isLoading={isUnlocking}
-                  disabled={!unlockPassword.trim()}
-                >
-                  Unlock
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
 
   // ─── Main journal view ───────────────────────────────────────────────────────
   return (
