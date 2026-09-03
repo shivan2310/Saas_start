@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0f1e"/>
+      <stop offset="50%" style="stop-color:#12102e"/>
+      <stop offset="100%" style="stop-color:#1a0a2e"/>
+    </linearGradient>
+    <linearGradient id="textGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="50%" style="stop-color:#f0f0ff"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <radialGradient id="orb1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="orb2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="orb3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#818cf8;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#818cf8;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#bg)"/>
+
+  <!-- Ambient Orbs -->
+  <circle cx="200" cy="100" r="180" fill="url(#orb1)"/>
+  <circle cx="1000" cy="300" r="220" fill="url(#orb2)"/>
+  <circle cx="600" cy="350" r="160" fill="url(#orb3)"/>
+  <circle cx="900" cy="80" r="100" fill="url(#orb1)"/>
+
+  <!-- Subtle Grid Lines -->
+  <g opacity="0.04" stroke="#a78bfa" stroke-width="0.5">
+    <line x1="0" y1="100" x2="1200" y2="100"/>
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="300" y1="0" x2="300" y2="400"/>
+    <line x1="600" y1="0" x2="600" y2="400"/>
+    <line x1="900" y1="0" x2="900" y2="400"/>
+  </g>
+
+  <!-- Small Decorative Dots -->
+  <circle cx="150" cy="80" r="2" fill="#a78bfa" opacity="0.4"/>
+  <circle cx="350" cy="320" r="1.5" fill="#818cf8" opacity="0.3"/>
+  <circle cx="850" cy="90" r="2.5" fill="#6366f1" opacity="0.5"/>
+  <circle cx="1050" cy="280" r="1.5" fill="#a78bfa" opacity="0.35"/>
+  <circle cx="500" cy="60" r="2" fill="#818cf8" opacity="0.25"/>
+  <circle cx="700" cy="340" r="2" fill="#6366f1" opacity="0.3"/>
+
+  <!-- Main Title -->
+  <text x="600" y="175" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="80" font-weight="700" fill="url(#textGlow)" filter="url(#glow)" letter-spacing="12">NIVIO</text>
+
+  <!-- Accent Line -->
+  <rect x="440" y="205" width="320" height="2" rx="1" fill="url(#accentLine)"/>
+
+  <!-- Tagline -->
+  <text x="600" y="250" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="300" fill="#a78bfa" opacity="0.9" letter-spacing="4">YOUR PERSONAL LIFE, ORGANIZED</text>
+
+  <!-- Subtle Tech Tags -->
+  <g font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" letter-spacing="1">
+    <rect x="355" y="285" width="90" height="26" rx="13" fill="#6366f1" opacity="0.15" stroke="#6366f1" stroke-opacity="0.3" stroke-width="0.5"/>
+    <text x="400" y="302" text-anchor="middle" fill="#a78bfa" opacity="0.7">Next.js</text>
+
+    <rect x="460" y="285" width="100" height="26" rx="13" fill="#6366f1" opacity="0.15" stroke="#6366f1" stroke-opacity="0.3" stroke-width="0.5"/>
+    <text x="510" y="302" text-anchor="middle" fill="#a78bfa" opacity="0.7">TypeScript</text>
+
+    <rect x="575" y="285" width="100" height="26" rx="13" fill="#6366f1" opacity="0.15" stroke="#6366f1" stroke-opacity="0.3" stroke-width="0.5"/>
+    <text x="625" y="302" text-anchor="middle" fill="#a78bfa" opacity="0.7">Supabase</text>
+
+    <rect x="690" y="285" width="100" height="26" rx="13" fill="#6366f1" opacity="0.15" stroke="#6366f1" stroke-opacity="0.3" stroke-width="0.5"/>
+    <text x="740" y="302" text-anchor="middle" fill="#a78bfa" opacity="0.7">Tailwind</text>
+  </g>
+
+  <!-- Corner Accents -->
+  <path d="M0 0 L60 0 L0 60 Z" fill="#6366f1" opacity="0.06"/>
+  <path d="M1200 400 L1140 400 L1200 340 Z" fill="#a78bfa" opacity="0.06"/>
+</svg>
