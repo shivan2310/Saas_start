@@ -4,8 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const VIDEO_SOURCE =
-  "/Hand_writing_in_open_journal_202607292151.mp4";
+const VIDEO_SOURCE = "/journal-hero.mp4";
 
 type FrameCanvas = HTMLCanvasElement | OffscreenCanvas;
 

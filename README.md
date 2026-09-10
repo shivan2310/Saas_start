@@ -66,43 +66,47 @@
 
 ```
 nivio/
-├── app/
-│   ├── api/                  # API routes
-│   ├── dashboard/
-│   │   ├── dates/            # Important dates page
-│   │   ├── diary/            # Encrypted journal page
-│   │   ├── expenses/         # Expense tracking page
-│   │   ├── settings/         # User settings page
-│   │   ├── tasks/            # Task management page
-│   │   ├── layout.tsx        # Dashboard shell layout
-│   │   └── page.tsx          # Dashboard home
-│   ├── login/                # Login page
-│   ├── signup/               # Signup page
+├── app/                      # Next.js 14 App Router (routes, pages, layouts)
+│   ├── api/health/           # Health check API route
+│   ├── dashboard/            # Authenticated dashboard views (dates, diary, expenses, settings, tasks)
 │   ├── forgot-password/      # Password reset flow
-│   ├── verify-email/         # Email verification
-│   ├── layout.tsx            # Root layout
-│   └── page.tsx              # Landing page
-├── components/
-│   ├── dashboard/            # Dashboard-specific components
-│   ├── landing/              # Landing page components
-│   ├── layout/               # Layout components (sidebar, header)
-│   └── ui/                   # Reusable UI primitives (Toast, etc.)
-├── context/
-│   ├── AuthContext.tsx        # Authentication state & route guard
-│   └── ThemeContext.tsx       # Theme (light/dark) provider
-├── hooks/                    # Custom React hooks
-├── lib/
-│   └── journalCrypto.ts      # AES-GCM journal encryption module
-├── services/
-│   ├── authService.ts        # Auth operations (signup, login, reset)
-│   ├── personalService.ts    # Expenses, dates, diary CRUD
-│   ├── todoService.ts        # Task CRUD
-│   └── userService.ts        # User profile operations
-├── supabase/
+│   ├── login/                # Authentication login page
+│   ├── signup/               # User registration page
+│   ├── verify-email/         # Email verification notice
+│   ├── layout.tsx            # Root HTML layout & fonts
+│   └── page.tsx              # Landing page entry point
+├── components/               # Component library with barrel exports
+│   ├── common/               # Cross-cutting components (ErrorBoundary)
+│   ├── dashboard/            # Dashboard widgets (Sidebar, Charts, TopNav)
+│   ├── landing/              # Landing sections (NivioLanding, Hero, Features, CTA)
+│   ├── layout/               # Global navigation & footer
+│   ├── ui/                   # Design system primitives (Button, Modal, Toast, Skeleton)
+│   └── index.ts              # Unified components barrel export
+├── context/                  # React context providers (AuthContext, ThemeContext) & index.ts
+├── hooks/                    # Custom React hooks (useAuth, useTheme) & index.ts
+├── lib/                      # Utilities, crypto & validation schemas
+│   ├── authErrors.ts         # Auth error mapping
+│   ├── journalCrypto.ts      # Zero-knowledge AES-256-GCM encryption
+│   └── utils.ts              # Styling & formatting utilities
+├── public/                   # Static assets (banner.svg, journal-hero.mp4)
+├── services/                 # Domain data services
+│   ├── authService.ts        # Supabase auth operations
+│   ├── userService.ts        # Profile & encryption key store
+│   ├── todoService.ts        # Task management CRUD
+│   ├── expenseService.ts     # Expense logging & analytics
+│   ├── dateService.ts        # Important dates & reminders
+│   ├── diaryService.ts       # Encrypted journal operations
+│   ├── personalService.ts    # Unified facade (backward-compatible)
+│   └── index.ts              # Central services barrel export
+├── supabase/                 # Supabase client, schema & migrations
 │   ├── client.ts             # Browser Supabase client
-│   └── schema.sql            # Tables, triggers & RLS policies
-├── middleware.ts              # Security headers middleware
-└── types/                    # Shared TypeScript type definitions
+│   ├── schema.sql            # Postgres tables & RLS policies
+│   └── migrations/           # Versioned migrations
+├── middleware.ts              # HTTP security headers middleware
+├── types/                    # Shared TypeScript models & interfaces
+├── next.config.mjs           # Next.js configuration
+├── tailwind.config.ts        # Tailwind CSS configuration
+└── tsconfig.json             # TypeScript configuration
 ```
 
 ---
