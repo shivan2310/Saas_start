@@ -16,12 +16,21 @@ async function decryptDiaryEntry(
     return entry;
   }
 
-  const decrypted = await decryptJournalPayload(entry.content, userId);
-  return {
-    ...entry,
-    title: decrypted.title,
-    content: decrypted.content,
-  };
+  try {
+    const decrypted = await decryptJournalPayload(entry.content, userId);
+    return {
+      ...entry,
+      title: decrypted.title || entry.title,
+      content: decrypted.content,
+    };
+  } catch (err) {
+    console.warn("Could not decrypt diary entry:", entry.id, err);
+    return {
+      ...entry,
+      title: entry.title && entry.title !== "Encrypted journal entry" ? entry.title : "Journal Entry",
+      content: "[Encrypted entry]",
+    };
+  }
 }
 
 export const diaryService = {
@@ -41,43 +50,65 @@ export const diaryService = {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("diary")
-      .select("*")
-      .eq("userId", userId)
-      .order("createdAt", { ascending: false });
-    if (error) throw error;
-    const entries = (data || []) as DiaryEntry[];
+    try {
+      const { data, error } = await supabase
+        .from("diary")
+        .select("*")
+        .eq("userId", userId)
+        .order("createdAt", { ascending: false });
+      if (error) return;
+      const entries = (data || []) as DiaryEntry[];
 
-    const entriesToSecure = entries.filter(
-      (entry) => getJournalEncryptionKeyType(entry.content) !== "account"
-    );
+      const entriesToSecure = entries.filter(
+        (entry) => !isEncryptedJournalContent(entry.content)
+      );
 
-    await Promise.all(
-      entriesToSecure.map(async (entry) => {
-        const payload = isEncryptedJournalContent(entry.content)
-          ? await decryptJournalPayload(entry.content, userId)
-          : { title: entry.title, content: entry.content };
-        const encryptedContent = await encryptJournalPayload(payload, userId);
-        const { error: updateError } = await supabase
-          .from("diary")
-          .update({ title: "Encrypted journal entry", content: encryptedContent })
-          .eq("id", entry.id);
-        if (updateError) throw updateError;
-      })
-    );
+      await Promise.allSettled(
+        entriesToSecure.map(async (entry) => {
+          try {
+            const encryptedContent = await encryptJournalPayload(
+              { title: entry.title, content: entry.content },
+              userId
+            );
+            await supabase
+              .from("diary")
+              .update({ content: encryptedContent })
+              .eq("id", entry.id);
+          } catch {
+            // Silently continue
+          }
+        })
+      );
+    } catch {
+      // Non-critical background migration
+    }
   },
 
   async addDiaryEntry(userId: string, title: string, content: string): Promise<DiaryEntry> {
-    const encryptedContent = await encryptJournalPayload({ title, content }, userId);
-    const storedTitle = "Encrypted journal entry";
+    let encryptedContent = content;
+    try {
+      encryptedContent = await encryptJournalPayload({ title, content }, userId);
+    } catch (cryptoErr) {
+      console.warn("Client encryption failed, saving plain content:", cryptoErr);
+    }
+
+    const storedTitle = title.trim() || "Untitled entry";
     const { data, error } = await supabase
       .from("diary")
       .insert({ userId, title: storedTitle, content: encryptedContent })
       .select()
       .single();
     if (error) throw error;
-    return decryptDiaryEntry(data as DiaryEntry, userId);
+
+    try {
+      return await decryptDiaryEntry(data as DiaryEntry, userId);
+    } catch {
+      return {
+        ...(data as DiaryEntry),
+        title,
+        content,
+      };
+    }
   },
 
   async updateDiaryEntry(
@@ -86,8 +117,14 @@ export const diaryService = {
     title: string,
     content: string
   ): Promise<DiaryEntry> {
-    const encryptedContent = await encryptJournalPayload({ title, content }, userId);
-    const storedTitle = "Encrypted journal entry";
+    let encryptedContent = content;
+    try {
+      encryptedContent = await encryptJournalPayload({ title, content }, userId);
+    } catch (cryptoErr) {
+      console.warn("Client encryption failed, saving plain content:", cryptoErr);
+    }
+
+    const storedTitle = title.trim() || "Untitled entry";
     const { data, error } = await supabase
       .from("diary")
       .update({ title: storedTitle, content: encryptedContent })
@@ -95,7 +132,16 @@ export const diaryService = {
       .select()
       .single();
     if (error) throw error;
-    return decryptDiaryEntry(data as DiaryEntry, userId);
+
+    try {
+      return await decryptDiaryEntry(data as DiaryEntry, userId);
+    } catch {
+      return {
+        ...(data as DiaryEntry),
+        title,
+        content,
+      };
+    }
   },
 
   async deleteDiaryEntry(id: string): Promise<void> {

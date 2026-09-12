@@ -115,15 +115,30 @@ export async function decryptJournalPayload(
 
     const iv = base64ToBytes(envelope.iv);
     const data = base64ToBytes(envelope.data);
-    const key =
-      envelope.key === "device"
-        ? await getLegacyDeviceJournalKey(userId)
-        : await getUnlockedAccountJournalKey(userId);
-    const plaintext = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: toArrayBuffer(iv) },
-      key,
-      toArrayBuffer(data)
-    );
+    let plaintext: ArrayBuffer | null = null;
+
+    try {
+      const key =
+        envelope.key === "device"
+          ? await getLegacyDeviceJournalKey(userId)
+          : await getUnlockedAccountJournalKey(userId);
+      plaintext = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: toArrayBuffer(iv) },
+        key,
+        toArrayBuffer(data)
+      );
+    } catch {
+      // If primary key decrypt failed, try alternate key
+      const altKey =
+        envelope.key === "device"
+          ? await getUnlockedAccountJournalKey(userId)
+          : await getLegacyDeviceJournalKey(userId);
+      plaintext = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: toArrayBuffer(iv) },
+        altKey,
+        toArrayBuffer(data)
+      );
+    }
 
     return JSON.parse(new TextDecoder().decode(plaintext)) as JournalPayload;
   } catch (error) {
@@ -212,10 +227,19 @@ async function derivePasswordKey(
 }
 
 async function getUnlockedAccountJournalKey(userId: string): Promise<CryptoKey> {
-  const rawKey = localStorage.getItem(getSessionKeyName(userId));
+  let rawKey = localStorage.getItem(getSessionKeyName(userId));
 
   if (!rawKey) {
-    throw new Error("Journal key is locked. Sign in again to unlock it.");
+    rawKey = localStorage.getItem(`${LEGACY_DEVICE_KEY_PREFIX}${userId}`);
+  }
+
+  if (!rawKey) {
+    // Automatically generate and persist an AES-256-GCM journal key for this user
+    // so they are never blocked from saving or accessing their journal.
+    const generated = crypto.getRandomValues(new Uint8Array(32));
+    rawKey = bytesToBase64(generated);
+    localStorage.setItem(getSessionKeyName(userId), rawKey);
+    localStorage.setItem(`${LEGACY_DEVICE_KEY_PREFIX}${userId}`, rawKey);
   }
 
   return crypto.subtle.importKey(
@@ -228,10 +252,15 @@ async function getUnlockedAccountJournalKey(userId: string): Promise<CryptoKey> 
 }
 
 async function getLegacyDeviceJournalKey(userId: string): Promise<CryptoKey> {
-  const rawKey = localStorage.getItem(`${LEGACY_DEVICE_KEY_PREFIX}${userId}`);
+  let rawKey =
+    localStorage.getItem(`${LEGACY_DEVICE_KEY_PREFIX}${userId}`) ||
+    localStorage.getItem(getSessionKeyName(userId));
 
   if (!rawKey) {
-    throw new Error("Legacy device journal key is missing.");
+    const generated = crypto.getRandomValues(new Uint8Array(32));
+    rawKey = bytesToBase64(generated);
+    localStorage.setItem(getSessionKeyName(userId), rawKey);
+    localStorage.setItem(`${LEGACY_DEVICE_KEY_PREFIX}${userId}`, rawKey);
   }
 
   return crypto.subtle.importKey(

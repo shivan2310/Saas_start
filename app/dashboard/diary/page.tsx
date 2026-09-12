@@ -7,10 +7,12 @@ import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function DiaryPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [items, setItems] = useState<DiaryEntry[]>([]);
   const [isLoadingJournal, setIsLoadingJournal] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,9 +53,25 @@ export default function DiaryPage() {
     setContent(entry.content);
   };
 
-  const saveEntry = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!user || !content.trim()) return;
+  const saveEntry = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    if (!user) {
+      toast({
+        type: "error",
+        title: "Not Authenticated",
+        description: "You must be signed in to save entries.",
+      });
+      return;
+    }
+    if (!content.trim()) {
+      toast({
+        type: "error",
+        title: "Empty Content",
+        description: "Please write some content before saving.",
+      });
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -66,6 +84,11 @@ export default function DiaryPage() {
         );
         setItems((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
         setSelectedEntry(updated);
+        toast({
+          type: "success",
+          title: "Entry Updated",
+          description: "Your journal entry was updated successfully.",
+        });
       } else {
         const item = await personalService.addDiaryEntry(
           user.uid,
@@ -74,9 +97,19 @@ export default function DiaryPage() {
         );
         setItems((v) => [item, ...v]);
         setSelectedEntry(item);
+        toast({
+          type: "success",
+          title: "Entry Saved",
+          description: "Your journal entry was saved successfully.",
+        });
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Save entry error:", err);
+      toast({
+        type: "error",
+        title: "Save Failed",
+        description: err?.message || "Could not save journal entry. Please try again.",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -84,10 +117,24 @@ export default function DiaryPage() {
 
   const removeEntry = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    await personalService.remove("diary", id);
-    setItems((v) => v.filter((item) => item.id !== id));
-    if (selectedEntry?.id === id) {
-      handleNewEntry();
+    try {
+      await personalService.remove("diary", id);
+      setItems((v) => v.filter((item) => item.id !== id));
+      if (selectedEntry?.id === id) {
+        handleNewEntry();
+      }
+      toast({
+        type: "success",
+        title: "Entry Deleted",
+        description: "The journal entry has been removed.",
+      });
+    } catch (err: any) {
+      console.error("Remove entry error:", err);
+      toast({
+        type: "error",
+        title: "Delete Failed",
+        description: err?.message || "Failed to delete the journal entry.",
+      });
     }
   };
 
@@ -98,6 +145,13 @@ export default function DiaryPage() {
   );
 
 
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      e.preventDefault();
+      void saveEntry();
+    }
+  };
 
   // ─── Main journal view ───────────────────────────────────────────────────────
   return (
@@ -175,7 +229,7 @@ export default function DiaryPage() {
 
         {/* Right Col: Editor */}
         <div className="flex-1 flex flex-col min-w-0">
-          <form onSubmit={saveEntry} className="flex-1 flex flex-col h-full">
+          <form onSubmit={saveEntry} onKeyDown={handleKeyDown} className="flex-1 flex flex-col h-full">
             <div className="flex items-center justify-between border-b border-dash-border pb-4 mb-6 shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-[13px] text-dash-text-muted font-medium">
