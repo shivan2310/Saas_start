@@ -125,6 +125,7 @@ function CinematicMemory() {
         ref={canvasRef}
         className={`absolute left-0 top-0 h-full w-full scale-[1.15] object-cover object-top ${hasFinished ? "block" : "hidden"}`}
       />
+      <div className="absolute inset-0 pointer-events-none transition-colors duration-300 dark:bg-[#0D0F10]/75" />
     </div>
   );
 }
@@ -149,19 +150,23 @@ export function NivioLanding() {
   }, []);
 
   return (
-    <main className="relative min-h-[100dvh] overflow-x-hidden text-[#191919]" style={{ backgroundColor: "#ffffff" }}>
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-white dark:bg-[#0D0F10] text-[#191919] dark:text-[#F2F2F0] transition-colors duration-200">
       <CinematicMemory />
-        <header className="fixed inset-x-0 top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#191919]/5">
+      <header className="fixed inset-x-0 top-0 z-30 bg-white/85 dark:bg-[#0D0F10]/90 backdrop-blur-md border-b border-[#191919]/5 dark:border-dash-border transition-colors duration-200">
         <div className="mx-auto flex h-16 sm:h-20 max-w-[1440px] items-center justify-between px-4 sm:px-10 lg:px-14">
-          <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.03em] text-[#191919]">
-            <span className="relative block h-[17px] w-[17px] rounded-[5px] border border-[#191919]">
-              <span className="absolute left-[4px] top-[4px] h-[7px] w-[7px] rounded-full bg-[#191919]" />
+          <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.03em] text-[#191919] dark:text-[#F2F2F0]">
+            <span className="relative block h-[17px] w-[17px] rounded-[5px] border border-[#191919] dark:border-[#F2F2F0]">
+              <span className="absolute left-[4px] top-[4px] h-[7px] w-[7px] rounded-full bg-[#191919] dark:bg-[#F2F2F0]" />
             </span>
             Nivio
           </Link>
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 md:flex" aria-label="Primary navigation">
             {["Features", "Privacy", "AI", "Pricing"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-[13px] text-[#191919]/70 transition-colors duration-200 hover:text-[#191919]">
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="text-[13px] text-[#191919]/70 dark:text-[#A5A8A8] transition-colors duration-200 hover:text-[#191919] dark:hover:text-[#F2F2F0]"
+              >
                 {item}
               </a>
             ))}
@@ -169,12 +174,15 @@ export function NivioLanding() {
           
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Link href="/signup" className="hidden md:inline-flex rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-[#fff] transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
+            <Link
+              href="/signup"
+              className="hidden md:inline-flex rounded-full bg-[#191919] dark:bg-dash-text text-white dark:text-dash-background hover:bg-[#3a3a3a] dark:hover:bg-white px-4 py-2 text-[12px] font-medium transition-colors duration-200 shadow-sm"
+            >
               Start Free
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-[#191919] -mr-2"
+              className="md:hidden p-2 text-[#191919] dark:text-[#F2F2F0] -mr-2"
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
               aria-controls="landing-mobile-navigation"
@@ -185,24 +193,24 @@ export function NivioLanding() {
         </div>
         
         {mobileMenuOpen && (
-          <nav id="landing-mobile-navigation" className="absolute left-0 flex max-h-[calc(100dvh-4rem)] w-full flex-col gap-4 overflow-y-auto border-t border-[#191919]/10 bg-white px-4 py-5 shadow-lg md:hidden sm:max-h-[calc(100dvh-5rem)]">
+          <nav id="landing-mobile-navigation" className="absolute left-0 flex max-h-[calc(100dvh-4rem)] w-full flex-col gap-4 overflow-y-auto border-t border-[#191919]/10 dark:border-dash-border bg-white dark:bg-[#151718] px-4 py-5 shadow-lg md:hidden sm:max-h-[calc(100dvh-5rem)]">
             {["Features", "Privacy", "AI", "Pricing"].map((item) => (
               <a 
                 key={item} 
                 href={`#${item.toLowerCase()}`} 
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-[14px] font-medium text-[#191919]"
+                className="text-[14px] font-medium text-[#191919] dark:text-[#F2F2F0]"
               >
                 {item}
               </a>
             ))}
-            <div className="flex items-center justify-between border-t border-[#191919]/10 pt-3 px-1">
-              <span className="text-[14px] font-medium text-[#191919]/70">Theme</span>
+            <div className="flex items-center justify-between border-t border-[#191919]/10 dark:border-dash-border pt-3 px-1">
+              <span className="text-[14px] font-medium text-[#191919]/70 dark:text-dash-text-muted">Theme</span>
               <ThemeToggle showLabel />
             </div>
             <Link 
               href="/signup" 
-              className="mt-2 w-full text-center rounded-full bg-[#191919] px-4 py-3 text-[13px] font-medium text-[#fff]"
+              className="mt-2 w-full text-center rounded-full bg-[#191919] dark:bg-dash-text text-white dark:text-dash-background hover:bg-[#3a3a3a] dark:hover:bg-white px-4 py-3 text-[13px] font-medium transition-colors duration-200"
             >
               Start Free
             </Link>
@@ -213,41 +221,48 @@ export function NivioLanding() {
       {/* Hero Section */}
       <section className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-4 sm:px-10 pt-20 sm:pt-24 pb-[270px] sm:pb-[260px] md:pb-[250px] text-center">
         <div className="flex max-w-2xl flex-col items-center my-auto">
-          <h1 className="font-serif text-[clamp(2.15rem,6.5vw,7.25rem)] leading-[0.95] sm:leading-[0.92] tracking-[-0.05em] sm:tracking-[-0.065em] text-[#191919]">
+          <h1 className="font-serif text-[clamp(2.15rem,6.5vw,7.25rem)] leading-[0.95] sm:leading-[0.92] tracking-[-0.05em] sm:tracking-[-0.065em] text-[#191919] dark:text-[#F2F2F0]">
             Your life,<br />beautifully remembered.
           </h1>
-          <p className="mt-5 sm:mt-8 max-w-md text-xs sm:text-[15px] leading-relaxed sm:leading-7 text-[#191919]/75 font-normal">
+          <p className="mt-5 sm:mt-8 max-w-md text-xs sm:text-[15px] leading-relaxed sm:leading-7 text-[#191919]/75 dark:text-[#A5A8A8] font-normal">
             A private space where your journal, tasks, reminders, expenses, memories, and everyday life come together. AI quietly organizes everything for you while your personal data remains completely yours.
           </p>
-          <Link href="/signup" className="mt-5 sm:mt-8 inline-flex items-center rounded-full bg-[#191919] px-5 py-2.5 sm:py-3 text-xs sm:text-[13px] font-medium text-[#fff] transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
+          <Link
+            href="/signup"
+            className="mt-5 sm:mt-8 inline-flex items-center rounded-full bg-[#191919] dark:bg-dash-text text-white dark:text-dash-background hover:bg-[#3a3a3a] dark:hover:bg-white px-5 py-2.5 sm:py-3 text-xs sm:text-[13px] font-medium transition-colors duration-200 shadow-sm"
+          >
             Start Free
           </Link>
         </div>
       </section>
 
       {/* Bottom Section */}
-      <section className="absolute inset-x-0 bottom-0 z-20 border-t border-[#191919]/10 shadow-lg" style={{ backgroundColor: "#ffffff" }}>
+      <section className="absolute inset-x-0 bottom-0 z-20 border-t border-[#191919]/10 dark:border-dash-border bg-white dark:bg-[#101213] shadow-lg transition-colors duration-200">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-10 lg:px-14">
           <div className="grid gap-3 sm:gap-8 py-4 sm:py-7 md:grid-cols-[1fr_1.1fr] md:gap-16 md:py-8">
             <div>
-              <p className="text-[9px] sm:text-[10px] font-medium tracking-[0.16em]" style={{ color: "rgba(25, 25, 25, 0.6)" }}>YOUR DIGITAL DIARY</p>
-              <h2 className="mt-1.5 sm:mt-3 font-serif text-[clamp(1.35rem,2.8vw,2.7rem)] leading-[1.05] sm:leading-[0.98] tracking-[-0.045em]" style={{ color: "#191919" }}>
+              <p className="text-[9px] sm:text-[10px] font-medium tracking-[0.16em] text-[#191919]/60 dark:text-dash-accent">YOUR DIGITAL DIARY</p>
+              <h2 className="mt-1.5 sm:mt-3 font-serif text-[clamp(1.35rem,2.8vw,2.7rem)] leading-[1.05] sm:leading-[0.98] tracking-[-0.045em] text-[#191919] dark:text-[#F2F2F0]">
                 Designed for<br className="hidden sm:inline" /> everyday life.
               </h2>
             </div>
-            <p className="max-w-xl self-end text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed sm:leading-6" style={{ color: "#191919" }}>
+            <p className="max-w-xl self-end text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed sm:leading-6 text-[#191919] dark:text-[#A5A8A8]">
               Capture your thoughts, organize your day, remember meaningful moments, track expenses, manage tasks, and let AI connect everything naturally—without compromising your privacy.
             </p>
           </div>
-          <div className="h-px" style={{ backgroundColor: "rgba(25, 25, 25, 0.1)" }} />
+          <div className="h-px bg-[#191919]/10 dark:bg-dash-border" />
           <div className="grid grid-cols-3 gap-1.5 sm:gap-3 py-2.5 sm:py-4">
             {features.map(([number, title, href]) => (
-              <Link key={title} href={href} className="group flex min-w-0 items-center justify-between px-2.5 sm:px-5 py-2.5 sm:py-4 rounded-sm sm:rounded-none transition-colors duration-200 hover:opacity-90" style={{ backgroundColor: "#f4f3f3" }}>
+              <Link
+                key={title}
+                href={href}
+                className="group flex min-w-0 items-center justify-between px-2.5 sm:px-5 py-2.5 sm:py-4 rounded-sm sm:rounded-none bg-[#f4f3f3] dark:bg-[#151718] dark:border dark:border-dash-border transition-colors duration-200 hover:opacity-90 hover:bg-[#eaeaea] dark:hover:bg-dash-hover"
+              >
                 <span className="flex min-w-0 items-baseline gap-1.5 sm:gap-3">
-                  <span className="text-[9px] sm:text-[10px]" style={{ color: "rgba(25, 25, 25, 0.5)" }}>{number}</span>
-                  <span className="truncate text-[11px] sm:text-[13px] font-medium" style={{ color: "#191919" }}>{title}</span>
+                  <span className="text-[9px] sm:text-[10px] text-[#191919]/50 dark:text-dash-accent">{number}</span>
+                  <span className="truncate text-[11px] sm:text-[13px] font-medium text-[#191919] dark:text-[#F2F2F0]">{title}</span>
                 </span>
-                <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1" style={{ color: "#191919" }} strokeWidth={1.5} />
+                <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1 text-[#191919] dark:text-[#F2F2F0]" strokeWidth={1.5} />
               </Link>
             ))}
           </div>
