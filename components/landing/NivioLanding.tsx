@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const VIDEO_SOURCE = "/journal-hero.mp4";
 
@@ -167,6 +168,7 @@ export function NivioLanding() {
           </nav>
           
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link href="/signup" className="hidden md:inline-flex rounded-full bg-[#191919] px-4 py-2 text-[12px] font-medium text-[#fff] transition-colors duration-200 hover:bg-[#3a3a3a] shadow-sm">
               Start Free
             </Link>
@@ -194,6 +196,10 @@ export function NivioLanding() {
                 {item}
               </a>
             ))}
+            <div className="flex items-center justify-between border-t border-[#191919]/10 pt-3 px-1">
+              <span className="text-[14px] font-medium text-[#191919]/70">Theme</span>
+              <ThemeToggle showLabel />
+            </div>
             <Link 
               href="/signup" 
               className="mt-2 w-full text-center rounded-full bg-[#191919] px-4 py-3 text-[13px] font-medium text-[#fff]"

@@ -8,11 +8,13 @@ import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
-import { User } from "lucide-react";
+import { User, Sun, Moon, Check } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 const SECTIONS = [
   "Profile",
   "Account",
+  "Appearance",
 ] as const;
 
 type Section = typeof SECTIONS[number];
@@ -20,6 +22,7 @@ type Section = typeof SECTIONS[number];
 export default function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   const [activeSection, setActiveSection] = useState<Section>("Profile");
   const [displayName, setDisplayName] = useState(profile?.displayName || "");
@@ -192,6 +195,87 @@ export default function SettingsPage() {
                     Reset Password
                   </Button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "Appearance" && (
+            <div className="space-y-6">
+              <div className="border-b border-dash-border pb-4">
+                <h3 className="text-[16px] font-medium text-dash-text">Appearance & Theme</h3>
+                <p className="text-[13px] text-dash-text-muted mt-1">
+                  Customize the interface theme to your personal preference.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Light Mode Card */}
+                <button
+                  type="button"
+                  onClick={() => setTheme("light")}
+                  className={cn(
+                    "relative flex flex-col items-start p-4 rounded-lg border text-left transition-dash",
+                    theme === "light"
+                      ? "border-dash-accent bg-dash-card shadow-sm ring-1 ring-dash-accent"
+                      : "border-dash-border bg-dash-surface hover:border-dash-accent/50 hover:bg-dash-hover"
+                  )}
+                >
+                  <div className="flex w-full items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-md bg-amber-500/10 text-amber-500">
+                        <Sun className="h-4 w-4" />
+                      </div>
+                      <span className="text-[14px] font-semibold text-dash-text">Light</span>
+                    </div>
+                    {theme === "light" && (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-dash-accent text-white text-xs">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-dash-text-muted">
+                    Crisp, clean off-white interface optimal for bright daylight environments.
+                  </p>
+                  <div className="mt-4 w-full h-12 rounded border border-dash-border bg-[#F8F9FA] p-2 flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-white border border-gray-300" />
+                    <div className="h-2 w-16 bg-gray-200 rounded" />
+                    <div className="h-2 w-8 bg-[#2D6A4F] rounded ml-auto" />
+                  </div>
+                </button>
+
+                {/* Dark Mode Card */}
+                <button
+                  type="button"
+                  onClick={() => setTheme("dark")}
+                  className={cn(
+                    "relative flex flex-col items-start p-4 rounded-lg border text-left transition-dash",
+                    theme === "dark"
+                      ? "border-dash-accent bg-dash-card shadow-sm ring-1 ring-dash-accent"
+                      : "border-dash-border bg-dash-surface hover:border-dash-accent/50 hover:bg-dash-hover"
+                  )}
+                >
+                  <div className="flex w-full items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-md bg-emerald-500/10 text-[#8FAFA5]">
+                        <Moon className="h-4 w-4" />
+                      </div>
+                      <span className="text-[14px] font-semibold text-dash-text">Dark</span>
+                    </div>
+                    {theme === "dark" && (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-dash-accent text-dash-background text-xs">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-dash-text-muted">
+                    Sleek, low-contrast dark interface tailored for night focus and OLED displays.
+                  </p>
+                  <div className="mt-4 w-full h-12 rounded border border-dash-border bg-[#0D0F10] p-2 flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#151718] border border-[#292C2D]" />
+                    <div className="h-2 w-16 bg-[#202223] rounded" />
+                    <div className="h-2 w-8 bg-[#8FAFA5] rounded ml-auto" />
+                  </div>
+                </button>
               </div>
             </div>
           )}

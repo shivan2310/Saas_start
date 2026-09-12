@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings, LogOut } from "lucide-react";
 import { authService } from "@/services/authService";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -61,7 +62,11 @@ export const Sidebar: React.FC = () => {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-dash-border">
+        <div className="p-4 border-t border-dash-border space-y-2">
+          <div className="flex items-center justify-between px-3 py-1.5 rounded-md bg-dash-card/50 border border-dash-border/60">
+            <span className="text-[12px] font-medium text-dash-text-secondary">Theme</span>
+            <ThemeToggle />
+          </div>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover transition-dash"

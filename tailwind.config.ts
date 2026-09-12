@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -21,26 +22,27 @@ const config: Config = {
         muted: "hsl(var(--muted) / <alpha-value>)",
         "muted-light": "hsl(var(--muted-light) / <alpha-value>)",
         dash: {
-          background: "#0D0F10",
-          sidebar: "#101213",
-          card: "#151718",
-          elevated: "#1A1C1D",
-          hover: "#202223",
+          background: "var(--dash-background)",
+          sidebar: "var(--dash-sidebar)",
+          card: "var(--dash-card)",
+          surface: "var(--dash-surface)",
+          elevated: "var(--dash-elevated)",
+          hover: "var(--dash-hover)",
           border: {
-            DEFAULT: "#2A2D2E",
-            secondary: "#222526",
-            divider: "#292C2D",
+            DEFAULT: "var(--dash-border)",
+            secondary: "var(--dash-border-secondary)",
+            divider: "var(--dash-border-divider)",
           },
           text: {
-            DEFAULT: "#F2F2F0",
-            secondary: "#A5A8A8",
-            muted: "#737777",
-            disabled: "#555959",
+            DEFAULT: "var(--dash-text)",
+            secondary: "var(--dash-text-secondary)",
+            muted: "var(--dash-text-muted)",
+            disabled: "var(--dash-text-disabled)",
           },
           accent: {
-            DEFAULT: "#8FAFA5",
-            hover: "#A5C0B7",
-            bg: "rgba(143,175,165,0.10)",
+            DEFAULT: "var(--dash-accent)",
+            hover: "var(--dash-accent-hover)",
+            bg: "var(--dash-accent-bg)",
           }
         }
       },

@@ -2,20 +2,22 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
 interface ThemeContextValue {
   theme: Theme;
+  setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "light",
+  theme: "dark",
+  setTheme: () => {},
   toggleTheme: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("theme") as Theme | null;
@@ -24,12 +26,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       : "light";
     const nextTheme = savedTheme === "dark" || savedTheme === "light" ? savedTheme : preferredTheme;
 
-    setTheme(nextTheme);
+    setThemeState(nextTheme);
     document.documentElement.classList.toggle("dark", nextTheme === "dark");
   }, []);
 
+  const setTheme = (nextTheme: Theme) => {
+    setThemeState(nextTheme);
+    window.localStorage.setItem("theme", nextTheme);
+    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+  };
+
   const toggleTheme = () => {
-    setTheme((currentTheme) => {
+    setThemeState((currentTheme) => {
       const nextTheme = currentTheme === "light" ? "dark" : "light";
       window.localStorage.setItem("theme", nextTheme);
       document.documentElement.classList.toggle("dark", nextTheme === "dark");
@@ -37,7 +45,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
-  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 };
 
 export const useTheme = () => useContext(ThemeContext);
+

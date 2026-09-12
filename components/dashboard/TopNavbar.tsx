@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
 import { User, CheckCircle2, AlertTriangle, LogOut, Menu, X, LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const TopNavbar: React.FC = () => {
   const { profile, user, isEmailVerified } = useAuth();
@@ -46,6 +47,8 @@ export const TopNavbar: React.FC = () => {
 
         {/* Right side icons & info - visible on both mobile and desktop */}
         <div className="flex items-center justify-end gap-3 sm:gap-4 ml-auto">
+          <ThemeToggle />
+
           {/* Email Verification status badge */}
           {!isEmailVerified ? (
             <div
@@ -125,6 +128,10 @@ export const TopNavbar: React.FC = () => {
               </Link>
             );
           })}
+          <div className="flex items-center justify-between border-t border-dash-border pt-3 mt-2 px-3">
+            <span className="text-xs font-medium text-dash-text-muted">Theme</span>
+            <ThemeToggle showLabel />
+          </div>
         </nav>
       )}
     </header>
