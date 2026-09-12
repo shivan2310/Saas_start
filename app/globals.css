@@ -100,7 +100,12 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: var(--dash-text);
     font-weight: 600;
     letter-spacing: -0.025em;
@@ -142,30 +147,89 @@
 }
 
 @layer utilities {
-  .bg-dash-background { background-color: var(--dash-background); }
-  .bg-dash-sidebar { background-color: var(--dash-sidebar); }
-  .bg-dash-surface { background-color: var(--dash-surface); }
-  .bg-dash-elevated { background-color: var(--dash-elevated); }
-  .bg-dash-hover { background-color: var(--dash-hover); }
-  .bg-dash-card { background-color: var(--dash-card); }
+  .bg-dash-background {
+    background-color: var(--dash-background);
+  }
 
-  .border-dash-border { border-color: var(--dash-border); }
-  .border-dash-border-secondary { border-color: var(--dash-border-secondary); }
-  .border-dash-divider { border-color: var(--dash-border-divider); }
-  .border-dash-accent { border-color: var(--dash-accent); }
-  .border-dash-accent\/30 { border-color: var(--dash-accent-bg); }
+  .bg-dash-sidebar {
+    background-color: var(--dash-sidebar);
+  }
 
-  .text-dash-text { color: var(--dash-text); }
-  .text-dash-text-secondary { color: var(--dash-text-secondary); }
-  .text-dash-text-muted { color: var(--dash-text-muted); }
-  .text-dash-text-disabled { color: var(--dash-text-disabled); }
-  .text-dash-accent { color: var(--dash-accent); }
-  .text-dash-accent-hover { color: var(--dash-accent-hover); }
-  .text-dash-background { color: var(--dash-background); }
+  .bg-dash-surface {
+    background-color: var(--dash-surface);
+  }
 
-  .bg-dash-accent { background-color: var(--dash-accent); }
-  .bg-dash-accent-hover { background-color: var(--dash-accent-hover); }
-  .bg-dash-accent-bg { background-color: var(--dash-accent-bg); }
+  .bg-dash-elevated {
+    background-color: var(--dash-elevated);
+  }
+
+  .bg-dash-hover {
+    background-color: var(--dash-hover);
+  }
+
+  .bg-dash-card {
+    background-color: var(--dash-card);
+  }
+
+  .border-dash-border {
+    border-color: var(--dash-border);
+  }
+
+  .border-dash-border-secondary {
+    border-color: var(--dash-border-secondary);
+  }
+
+  .border-dash-divider {
+    border-color: var(--dash-border-divider);
+  }
+
+  .border-dash-accent {
+    border-color: var(--dash-accent);
+  }
+
+  .border-dash-accent\/30 {
+    border-color: var(--dash-accent-bg);
+  }
+
+  .text-dash-text {
+    color: var(--dash-text);
+  }
+
+  .text-dash-text-secondary {
+    color: var(--dash-text-secondary);
+  }
+
+  .text-dash-text-muted {
+    color: var(--dash-text-muted);
+  }
+
+  .text-dash-text-disabled {
+    color: var(--dash-text-disabled);
+  }
+
+  .text-dash-accent {
+    color: var(--dash-accent);
+  }
+
+  .text-dash-accent-hover {
+    color: var(--dash-accent-hover);
+  }
+
+  .text-dash-background {
+    color: var(--dash-background);
+  }
+
+  .bg-dash-accent {
+    background-color: var(--dash-accent);
+  }
+
+  .bg-dash-accent-hover {
+    background-color: var(--dash-accent-hover);
+  }
+
+  .bg-dash-accent-bg {
+    background-color: var(--dash-accent-bg);
+  }
 
   .focus-dash:focus-visible {
     outline: none;
@@ -176,4 +240,3 @@
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
 }
-
