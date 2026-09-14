@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "aqua";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -16,6 +16,12 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggleTheme: () => {},
 });
 
+function applyTheme(nextTheme: Theme) {
+  const root = document.documentElement;
+  root.setAttribute("data-theme", nextTheme);
+  root.classList.toggle("dark", nextTheme === "dark");
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>("dark");
 
@@ -24,23 +30,23 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
-    const nextTheme = savedTheme === "dark" || savedTheme === "light" ? savedTheme : preferredTheme;
+    const nextTheme = savedTheme === "dark" || savedTheme === "light" || savedTheme === "aqua" ? savedTheme : preferredTheme;
 
     setThemeState(nextTheme);
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    applyTheme(nextTheme);
   }, []);
 
   const setTheme = (nextTheme: Theme) => {
     setThemeState(nextTheme);
     window.localStorage.setItem("theme", nextTheme);
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    applyTheme(nextTheme);
   };
 
   const toggleTheme = () => {
     setThemeState((currentTheme) => {
-      const nextTheme = currentTheme === "light" ? "dark" : "light";
+      const nextTheme: Theme = currentTheme === "dark" ? "light" : "dark";
       window.localStorage.setItem("theme", nextTheme);
-      document.documentElement.classList.toggle("dark", nextTheme === "dark");
+      applyTheme(nextTheme);
       return nextTheme;
     });
   };

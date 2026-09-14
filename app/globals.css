@@ -89,6 +89,48 @@
     --dash-nav-active-bg: #1A1C1D;
   }
 
+  [data-theme="aqua"] {
+    --background: 180 20% 97%;
+    --sidebar: 180 25% 98%;
+    --surface: 180 25% 96%;
+    --elevated: 180 25% 94%;
+    --hover: 180 25% 93%;
+    --border: 182 25% 88%;
+    --border-subtle: 180 20% 92%;
+    --foreground: 183 20% 11%;
+    --foreground-secondary: 183 12% 36%;
+    --foreground-muted: 183 8% 51%;
+    --foreground-disabled: 183 8% 68%;
+    --accent: 184 41% 51%;
+    --accent-hover: 184 43% 45%;
+    --accent-bg: 180 83% 94%;
+    --muted: 183 8% 51%;
+    --muted-light: 183 8% 68%;
+
+    /* Nivio dashboard palette - Aqua */
+    --dash-background: #F5FAFA;
+    --dash-sidebar: #F9FCFC;
+    --dash-header: #F9FCFC;
+    --dash-card: #FFFFFF;
+    --dash-surface: #F1F8F8;
+    --dash-elevated: #ECF6F6;
+    --dash-hover: #E8F4F4;
+    --dash-nav-active-bg: #E3FDFD;
+
+    --dash-border: #D7E9EA;
+    --dash-border-secondary: #E6F0F0;
+    --dash-border-divider: #E1EEEE;
+
+    --dash-text: #172122;
+    --dash-text-secondary: #506567;
+    --dash-text-muted: #77898B;
+    --dash-text-disabled: #A5B5B6;
+
+    --dash-accent: #4FAFB6;
+    --dash-accent-hover: #419DA5;
+    --dash-accent-bg: #E3FDFD;
+  }
+
   * {
     border-color: var(--dash-border);
   }
