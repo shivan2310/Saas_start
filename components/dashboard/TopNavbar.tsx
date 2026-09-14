@@ -23,7 +23,7 @@ export const TopNavbar: React.FC = () => {
   };
 
   return (
-    <header className="border-b border-dash-border bg-dash-background/95 backdrop-blur">
+    <header className="border-b border-dash-border-secondary bg-dash-header/95 backdrop-blur">
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
         {/* Left side on mobile */}
         <div className="flex items-center gap-2 xl:hidden">
@@ -52,7 +52,7 @@ export const TopNavbar: React.FC = () => {
           {/* Email Verification status badge */}
           {!isEmailVerified ? (
             <div
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-dash-card border border-dash-border text-[11px] font-medium text-dash-text"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-dash-card border border-dash-border-secondary text-[11px] font-medium text-dash-text"
               title="Email not verified"
             >
               <AlertTriangle className="h-3.5 w-3.5 text-dash-text" />
@@ -60,7 +60,7 @@ export const TopNavbar: React.FC = () => {
             </div>
           ) : (
             <div
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-dash-card border border-dash-border text-[11px] font-medium text-dash-text"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-dash-card border border-dash-border-secondary text-[11px] font-medium text-dash-text"
               title="Email verified"
             >
               <CheckCircle2 className="h-3.5 w-3.5 text-dash-text" />
@@ -69,8 +69,8 @@ export const TopNavbar: React.FC = () => {
           )}
 
           {/* User Pill */}
-          <div className="flex items-center gap-2 pl-3 border-l border-dash-border">
-            <div className="w-8 h-8 rounded-full bg-dash-card border border-dash-border flex items-center justify-center text-dash-text font-semibold text-xs shrink-0 overflow-hidden">
+          <div className="flex items-center gap-2 pl-3 border-l border-dash-border-secondary">
+            <div className="w-8 h-8 rounded-full bg-dash-card border border-dash-border-secondary flex items-center justify-center text-dash-text font-semibold text-xs shrink-0 overflow-hidden">
               {profile?.photoURL ? (
                       <img src={profile.photoURL} alt="User profile" className="w-full h-full object-cover" />
               ) : profile?.displayName ? (
@@ -101,7 +101,7 @@ export const TopNavbar: React.FC = () => {
       {mobileMenuOpen && (
         <nav
           aria-label="Mobile dashboard navigation"
-          className="xl:hidden flex w-full flex-col gap-1 border-t border-dash-border bg-dash-background px-3 py-3"
+          className="xl:hidden flex w-full flex-col gap-1 border-t border-dash-border-secondary bg-dash-header px-3 py-3"
         >
           {[
             { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -120,7 +120,7 @@ export const TopNavbar: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   "flex items-center gap-3 rounded px-3 py-2.5 text-[13px] font-medium transition-dash",
-                  isActive ? "bg-dash-elevated text-dash-text border-l-2 border-dash-accent" : "text-dash-text-secondary hover:bg-dash-hover hover:text-dash-text"
+                  isActive ? "bg-dash-nav-active text-dash-text border-l-2 border-dash-accent font-semibold" : "text-dash-text-secondary hover:bg-dash-hover hover:text-dash-text"
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -128,7 +128,7 @@ export const TopNavbar: React.FC = () => {
               </Link>
             );
           })}
-          <div className="flex items-center justify-between border-t border-dash-border pt-3 mt-2 px-3">
+          <div className="flex items-center justify-between border-t border-dash-border-secondary pt-3 mt-2 px-3">
             <span className="text-xs font-medium text-dash-text-muted">Theme</span>
             <ThemeToggle showLabel />
           </div>

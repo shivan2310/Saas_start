@@ -242,13 +242,13 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
       >
         <defs>
           <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#5BA37D" stopOpacity={0.15} />
-            <stop offset="100%" stopColor="#5BA37D" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--dash-accent)" stopOpacity={0.18} />
+            <stop offset="100%" stopColor="var(--dash-accent)" stopOpacity={0} />
           </linearGradient>
         </defs>
 
         {/* Y-axis grid lines and labels */}
-        <g fontSize="13" fill="#9AA0A0" fontFamily="inherit">
+        <g fontSize="13" fill="var(--dash-text-muted)" fontFamily="inherit">
           {yLabels.map((tick, i) => (
             <g key={i}>
               <line
@@ -256,9 +256,9 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
                 y1={tick.y}
                 x2={width - padding.right}
                 y2={tick.y}
-                stroke="#2D3132"
+                stroke="var(--dash-border-secondary)"
                 strokeWidth="0.5"
-                opacity={i === 0 ? 0.5 : 0.15}
+                opacity={i === 0 ? 0.6 : 0.25}
                 strokeDasharray={i === 0 ? "none" : "3 3"}
               />
               <text
@@ -280,9 +280,9 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
           y1={padding.top}
           x2={padding.left + yAxisWidth}
           y2={height - padding.bottom}
-          stroke="#2D3132"
+          stroke="var(--dash-border-secondary)"
           strokeWidth="0.5"
-          opacity="0.3"
+          opacity="0.5"
         />
 
         {/* Area fill under line */}
@@ -295,7 +295,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
         {/* Line */}
         <path
           d={linePath}
-          stroke="#5BA37D"
+          stroke="var(--dash-accent)"
           strokeWidth="2.5"
           fill="none"
           strokeLinecap="round"
@@ -310,8 +310,8 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
                 cx={p.x}
                 cy={p.y}
                 r={activeIndex === i ? 6 : 4}
-                fill="#5BA37D"
-                stroke="#1A1A1A"
+                fill="var(--dash-accent)"
+                stroke="var(--dash-card)"
                 strokeWidth={activeIndex === i ? 2 : 3}
                 opacity={data[i].value > 0 ? 1 : 0.3}
               />
@@ -327,7 +327,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
               y1={padding.top}
               x2={pointCoords[activeIndex].x}
               y2={height - padding.bottom}
-              stroke="#5BA37D"
+              stroke="var(--dash-accent)"
               strokeWidth="1"
               strokeDasharray="4 4"
               opacity="0.5"
@@ -337,7 +337,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
               cy={pointCoords[activeIndex].y}
               r={8}
               fill="none"
-              stroke="#5BA37D"
+              stroke="var(--dash-accent)"
               strokeWidth="2"
             />
             <text
@@ -362,7 +362,7 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
         )}
 
         {/* X-axis labels */}
-        <g fill="#9AA0A0" textAnchor="middle" fontFamily="inherit">
+        <g fill="var(--dash-text-muted)" textAnchor="middle" fontFamily="inherit">
           {xTicks.map((tick, i) => (
             <text
               key={i}
@@ -382,9 +382,9 @@ const LineChart = memo(function LineChart({ data, period }: { data: ChartPoint[]
           y1={height - padding.bottom}
           x2={width - padding.right}
           y2={height - padding.bottom}
-          stroke="#2D3132"
+          stroke="var(--dash-border-secondary)"
           strokeWidth="0.5"
-          opacity="0.3"
+          opacity="0.5"
         />
       </svg>
     </div>
@@ -514,7 +514,7 @@ function MetricCard({
       <p className="text-[24px] font-semibold text-dash-text leading-tight">{value}</p>
       {sublabel && <p className="text-[11px] text-dash-text-muted mt-1">{sublabel}</p>}
       {trend && (
-        <p className={cn("text-[11px] font-medium mt-2 flex items-center gap-1", trend.positive ? "text-green-400" : "text-red-400")}>
+        <p className={cn("text-[11px] font-medium mt-2 flex items-center gap-1", trend.positive ? "text-dash-accent" : "text-red-500")}>
           {trend.value}
         </p>
       )}
@@ -530,7 +530,7 @@ function TransactionRow({
   onDelete: (id: string) => void;
 }) {
   return (
-    <tr className="border-b border-dash-border/50 last:border-0 hover:bg-dash-hover/50 transition-colors">
+    <tr className="border-b border-dash-border-secondary last:border-0 hover:bg-dash-hover/60 transition-colors">
       <td className="py-3 px-4 text-[12px] text-dash-text-muted whitespace-nowrap">{formatDateShort(item.createdAt)}</td>
       <td className="py-3 px-4 text-[13px] font-medium text-dash-text">{item.description}</td>
       <td className="py-3 px-4 text-[12px] text-dash-text-secondary">{item.category}</td>

@@ -236,9 +236,9 @@ export default function SettingsPage() {
                   <p className="text-[12px] text-dash-text-muted">
                     Crisp, clean off-white interface optimal for bright daylight environments.
                   </p>
-                  <div className="mt-4 w-full h-12 rounded border border-dash-border bg-[#F8F9FA] p-2 flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-white border border-gray-300" />
-                    <div className="h-2 w-16 bg-gray-200 rounded" />
+                  <div className="mt-4 w-full h-12 rounded border border-dash-border bg-[#F6F7F6] p-2 flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#FFFFFF] border border-[#E1E5E3]" />
+                    <div className="h-2 w-16 bg-[#EAEEEC] rounded" />
                     <div className="h-2 w-8 bg-[#2D6A4F] rounded ml-auto" />
                   </div>
                 </button>

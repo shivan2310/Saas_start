@@ -24,10 +24,12 @@ const config: Config = {
         dash: {
           background: "var(--dash-background)",
           sidebar: "var(--dash-sidebar)",
+          header: "var(--dash-header)",
           card: "var(--dash-card)",
           surface: "var(--dash-surface)",
           elevated: "var(--dash-elevated)",
           hover: "var(--dash-hover)",
+          "nav-active": "var(--dash-nav-active-bg)",
           border: {
             DEFAULT: "var(--dash-border)",
             secondary: "var(--dash-border-secondary)",

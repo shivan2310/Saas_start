@@ -314,7 +314,7 @@ export default function TasksPage() {
                   onClick={() => setFilter(f)}
                   className={cn(
                     "px-3 py-1.5 text-[13px] font-medium rounded-md transition-dash capitalize",
-                    filter === f ? "text-dash-text bg-dash-hover/50" : "text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover/30"
+                    filter === f ? "text-dash-text bg-dash-elevated border border-dash-border-secondary" : "text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover/60"
                   )}
                 >
                   {f}
@@ -330,18 +330,18 @@ export default function TasksPage() {
                   placeholder="Search tasks..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full sm:w-[220px] bg-transparent border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-accent focus:outline-none transition-dash"
+                  className="w-full sm:w-[220px] bg-dash-card border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-accent focus:outline-none transition-dash"
                 />
               </div>
               <div className="relative w-full sm:w-auto">
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortOption)}
-                  className="w-full sm:w-auto appearance-none bg-transparent border border-dash-border rounded-md pl-3 pr-8 py-1.5 text-[13px] text-dash-text-secondary cursor-pointer focus:border-dash-accent focus:outline-none transition-dash"
+                  className="w-full sm:w-auto appearance-none bg-dash-card border border-dash-border rounded-md pl-3 pr-8 py-1.5 text-[13px] text-dash-text-secondary cursor-pointer focus:border-dash-accent focus:outline-none transition-dash"
                 >
-                  <option value="dueDate">Sort by Date</option>
-                  <option value="priority">Sort by Priority</option>
-                  <option value="createdAt">Sort by Newest</option>
+                  <option value="dueDate" className="bg-dash-card text-dash-text">Sort by Date</option>
+                  <option value="priority" className="bg-dash-card text-dash-text">Sort by Priority</option>
+                  <option value="createdAt" className="bg-dash-card text-dash-text">Sort by Newest</option>
                 </select>
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-dash-text-muted pointer-events-none" />
               </div>
@@ -433,9 +433,9 @@ export default function TasksPage() {
                       onChange={(e) => setModalPriority(e.target.value as Priority)}
                       className="w-full appearance-none bg-dash-background border border-dash-border rounded-lg px-3 py-2.5 text-[13px] text-dash-text focus:border-dash-accent focus:outline-none transition-dash cursor-pointer"
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
+                      <option value="low" className="bg-dash-card text-dash-text">Low</option>
+                      <option value="medium" className="bg-dash-card text-dash-text">Medium</option>
+                      <option value="high" className="bg-dash-card text-dash-text">High</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dash-text-muted pointer-events-none" />
                   </div>

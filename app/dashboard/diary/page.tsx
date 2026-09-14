@@ -162,7 +162,7 @@ export default function DiaryPage() {
 
       <div className="flex-1 min-h-0 flex gap-8">
         {/* Left Col: Entries List */}
-        <div className="w-64 shrink-0 flex flex-col border-r border-dash-border pr-6">
+        <div className="w-64 shrink-0 flex flex-col border-r border-dash-border-secondary pr-6">
           <Button
             onClick={handleNewEntry}
             variant="dash-secondary"
@@ -178,7 +178,7 @@ export default function DiaryPage() {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-dash-surface border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
+              className="w-full bg-dash-card border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-dash-accent transition-dash"
             />
           </div>
 
@@ -201,7 +201,7 @@ export default function DiaryPage() {
                     className={cn(
                       "group p-3 rounded-lg cursor-pointer transition-dash border",
                       isSelected
-                        ? "bg-dash-surface border-dash-border"
+                        ? "bg-dash-card border-dash-border shadow-xs"
                         : "border-transparent hover:bg-dash-hover"
                     )}
                   >
@@ -230,7 +230,7 @@ export default function DiaryPage() {
         {/* Right Col: Editor */}
         <div className="flex-1 flex flex-col min-w-0">
           <form onSubmit={saveEntry} onKeyDown={handleKeyDown} className="flex-1 flex flex-col h-full">
-            <div className="flex items-center justify-between border-b border-dash-border pb-4 mb-6 shrink-0">
+            <div className="flex items-center justify-between border-b border-dash-border-secondary pb-4 mb-6 shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-[13px] text-dash-text-muted font-medium">
                   {selectedEntry

@@ -30,22 +30,24 @@
     --radius-lg: 12px;
 
     /* Nivio dashboard palette - Light */
-    --dash-background: #F8F9FA;
-    --dash-sidebar: #FFFFFF;
+    --dash-background: #F6F7F6;
+    --dash-sidebar: #FAFBFA;
+    --dash-header: #FAFBFA;
     --dash-card: #FFFFFF;
     --dash-surface: #FFFFFF;
-    --dash-elevated: #F1F3F5;
-    --dash-hover: #EAECEF;
-    --dash-border: #E2E4E8;
-    --dash-border-secondary: #ECEEF1;
-    --dash-border-divider: #E2E4E8;
-    --dash-text: #111827;
-    --dash-text-secondary: #4B5563;
-    --dash-text-muted: #6B7280;
-    --dash-text-disabled: #9CA3AF;
+    --dash-elevated: #F8F9F8;
+    --dash-hover: #F0F2F1;
+    --dash-border: #E1E5E3;
+    --dash-border-secondary: #EAEEEC;
+    --dash-border-divider: #EAEEEC;
+    --dash-text: #17201E;
+    --dash-text-secondary: #53605D;
+    --dash-text-muted: #7A8582;
+    --dash-text-disabled: #A3ACA9;
     --dash-accent: #2D6A4F;
     --dash-accent-hover: #1B4332;
-    --dash-accent-bg: rgba(45, 106, 79, 0.10);
+    --dash-accent-bg: rgba(45, 106, 79, 0.08);
+    --dash-nav-active-bg: rgba(45, 106, 79, 0.07);
   }
 
   .dark {
@@ -69,6 +71,7 @@
     /* Nivio dashboard palette - Dark */
     --dash-background: #0D0F10;
     --dash-sidebar: #101213;
+    --dash-header: #101213;
     --dash-card: #151718;
     --dash-surface: #151718;
     --dash-elevated: #1A1C1D;
@@ -83,6 +86,7 @@
     --dash-accent: #8FAFA5;
     --dash-accent-hover: #A5C0B7;
     --dash-accent-bg: rgba(143, 175, 165, 0.10);
+    --dash-nav-active-bg: #1A1C1D;
   }
 
   * {
@@ -153,6 +157,14 @@
 
   .bg-dash-sidebar {
     background-color: var(--dash-sidebar);
+  }
+
+  .bg-dash-header {
+    background-color: var(--dash-header);
+  }
+
+  .bg-dash-nav-active {
+    background-color: var(--dash-nav-active-bg);
   }
 
   .bg-dash-surface {

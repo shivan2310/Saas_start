@@ -29,9 +29,9 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
-      <aside className="hidden min-h-screen w-[240px] shrink-0 flex-col justify-between border-r border-dash-border bg-dash-sidebar xl:flex">
+      <aside className="hidden min-h-screen w-[240px] shrink-0 flex-col justify-between border-r border-dash-border-secondary bg-dash-sidebar xl:flex">
         <div>
-          <div className="h-16 px-6 border-b border-dash-border flex items-center gap-2 font-semibold text-base tracking-normal text-dash-text">
+          <div className="h-16 px-6 border-b border-dash-border-secondary flex items-center gap-2 font-semibold text-base tracking-normal text-dash-text">
             <div className="w-5 h-5 bg-dash-accent rounded flex items-center justify-center text-dash-background text-[10px] font-mono">
               N
             </div>
@@ -49,7 +49,7 @@ export const Sidebar: React.FC = () => {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-dash",
                     isActive
-                      ? "bg-dash-elevated text-dash-text border-l-2 border-dash-accent"
+                      ? "bg-dash-nav-active text-dash-text border-l-2 border-dash-accent font-semibold"
                       : "text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover"
                   )}
                 >
@@ -61,7 +61,7 @@ export const Sidebar: React.FC = () => {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-dash-border">
+        <div className="p-4 border-t border-dash-border-secondary">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover transition-dash"

@@ -328,28 +328,28 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 gap-2">
                 <Link
                   href="/dashboard/tasks"
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-surface hover:bg-dash-hover transition-dash group"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <Plus className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
                   <span className="text-[13px] text-dash-text">Add task</span>
                 </Link>
                 <Link
                   href="/dashboard/expenses"
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-surface hover:bg-dash-hover transition-dash group"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <Wallet className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
                   <span className="text-[13px] text-dash-text">Add expense</span>
                 </Link>
                 <Link
                   href="/dashboard/dates"
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-surface hover:bg-dash-hover transition-dash group"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <CalendarDays className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
                   <span className="text-[13px] text-dash-text">Add date</span>
                 </Link>
                 <Link
                   href="/dashboard/diary"
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-surface hover:bg-dash-hover transition-dash group"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <BookOpen className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
                   <span className="text-[13px] text-dash-text">New entry</span>
@@ -368,7 +368,7 @@ export default function DashboardPage() {
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-[13px] font-medium uppercase tracking-wider">Spending Trend</span>
               </div>
-              <div className="h-32 flex items-end justify-between gap-1.5">
+              <div className="h-32 flex items-end justify-between gap-1.5 pb-1 border-b border-dash-border-secondary">
                 {(() => {
                   const last7Days = Array.from({ length: 7 }, (_, i) => {
                     const d = new Date();
@@ -382,12 +382,18 @@ export default function DashboardPage() {
                   );
                   const maxDaily = Math.max(...dailyTotals, 1);
                   return dailyTotals.map((amt, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center justify-end">
+                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
                       <div
-                        className="w-full max-w-[32px] bg-dash-border rounded-t hover:bg-dash-accent transition-dash"
-                        style={{ height: `${Math.max((amt / maxDaily) * 100, 3)}%` }}
+                        className={cn(
+                          "w-full max-w-[32px] rounded-t transition-dash",
+                          amt > 0
+                            ? "bg-dash-accent/40 hover:bg-dash-accent"
+                            : "bg-dash-border-secondary/80 hover:bg-dash-border"
+                        )}
+                        style={{ height: `${Math.max((amt / maxDaily) * 100, amt > 0 ? 8 : 4)}%` }}
+                        title={`${new Date(last7Days[i]).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}: ₹${amt.toLocaleString()}`}
                       />
-                      <span className="mt-1.5 text-[10px] text-dash-text-muted">
+                      <span className="mt-2 text-[10px] font-medium text-dash-text-muted">
                         {new Date(last7Days[i]).toLocaleDateString(undefined, { weekday: 'short' })}
                       </span>
                     </div>

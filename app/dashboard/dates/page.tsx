@@ -212,7 +212,7 @@ export default function DatesPage() {
                       {item.notes && <span className="text-[13px] text-dash-text-muted">{item.notes}</span>}
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
-                      <span className="flex items-center gap-1.5 text-[13px] font-medium text-dash-text-secondary bg-dash-surface border border-dash-border px-2.5 py-1 rounded">
+                      <span className="flex items-center gap-1.5 text-[13px] font-medium text-dash-text-secondary bg-dash-elevated border border-dash-border-secondary px-2.5 py-1 rounded-md">
                         <CalendarIcon className="h-3 w-3" />
                         {item.date}
                       </span>
