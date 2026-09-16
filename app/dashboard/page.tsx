@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [importantDates, setImportantDates] = useState<ImportantDate[]>([]);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
   const [loadingOverview, setLoadingOverview] = useState(true);
+  const [trendView, setTrendView] = useState<"7d" | "recent">("7d");
 
   useEffect(() => {
     if (!user) return;
@@ -49,7 +50,17 @@ export default function DashboardPage() {
       personalService.getDiary(user.uid)
     ])
       .then(([expensesRes, todosRes, datesRes, diaryRes]) => {
-        if (expensesRes.status === 'fulfilled') setExpenses(expensesRes.value);
+        if (expensesRes.status === 'fulfilled') {
+          const expList = expensesRes.value;
+          setExpenses(expList);
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+          sevenDaysAgo.setHours(0, 0, 0, 0);
+          const hasRecent7d = expList.some((e) => e.createdAt && new Date(e.createdAt).getTime() >= sevenDaysAgo.getTime());
+          if (!hasRecent7d && expList.length > 0) {
+            setTrendView("recent");
+          }
+        }
         else console.error("Failed to load expenses:", expensesRes.reason);
         
         if (todosRes.status === 'fulfilled') setTodos(todosRes.value);
@@ -362,46 +373,198 @@ export default function DashboardPage() {
         {/* Right Column - Recent Activity & Stats */}
         <div className="lg:col-span-4 space-y-6">
           {/* Expense Trend Mini Chart */}
-          {expenses.length > 0 && (
-            <div className="rounded-lg border border-dash-border bg-dash-card p-5">
-              <div className="flex items-center gap-2 text-dash-text-secondary mb-4">
-                <TrendingUp className="h-4 w-4" />
-                <h2 className="text-[13px] font-medium uppercase tracking-wider">Spending Trend</h2>
-              </div>
-              <div className="h-32 flex items-end justify-between gap-1.5 pb-1 border-b border-dash-border-secondary">
-                {(() => {
-                  const last7Days = Array.from({ length: 7 }, (_, i) => {
-                    const d = new Date();
-                    d.setDate(d.getDate() - (6 - i));
-                    return d.toISOString().split('T')[0];
-                  });
-                  const dailyTotals = last7Days.map(day => 
-                    expenses
-                      .filter(e => e.createdAt.startsWith(day))
-                      .reduce((sum, e) => sum + e.amount, 0)
-                  );
-                  const maxDaily = Math.max(...dailyTotals, 1);
-                  return dailyTotals.map((amt, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
-                      <div
-                        className={cn(
-                          "w-full max-w-[32px] rounded-t transition-dash",
-                          amt > 0
-                            ? "bg-dash-accent/40 hover:bg-dash-accent"
-                            : "bg-dash-border-secondary/80 hover:bg-dash-border"
-                        )}
-                        style={{ height: `${Math.max((amt / maxDaily) * 100, amt > 0 ? 8 : 4)}%` }}
-                        title={`${new Date(last7Days[i]).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}: ₹${amt.toLocaleString()}`}
-                      />
-                      <span className="mt-2 text-[12px] font-medium text-dash-text-muted">
-                        {new Date(last7Days[i]).toLocaleDateString(undefined, { weekday: 'short' })}
+          {expenses.length > 0 && (() => {
+            function toLocalDateKey(date: Date | string | undefined | null): string {
+              if (!date) return "";
+              const d = typeof date === "string" ? new Date(date) : date;
+              if (isNaN(d.getTime())) return "";
+              const year = d.getFullYear();
+              const month = String(d.getMonth() + 1).padStart(2, "0");
+              const day = String(d.getDate()).padStart(2, "0");
+              return `${year}-${month}-${day}`;
+            }
+
+            const today = new Date();
+            const last7Days = Array.from({ length: 7 }, (_, i) => {
+              const d = new Date();
+              d.setDate(today.getDate() - (6 - i));
+              return {
+                key: toLocalDateKey(d),
+                label: d.toLocaleDateString(undefined, { weekday: "short" }),
+                fullDate: d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
+              };
+            });
+
+            const expensesByDay = new Map<string, number>();
+            expenses.forEach((e) => {
+              if (!e.createdAt) return;
+              const key = toLocalDateKey(e.createdAt);
+              if (key) {
+                expensesByDay.set(key, (expensesByDay.get(key) || 0) + Number(e.amount || 0));
+              }
+            });
+
+            const dailyData = last7Days.map((day) => ({
+              label: day.label,
+              tooltipTitle: day.fullDate,
+              amount: expensesByDay.get(day.key) || 0,
+            }));
+
+            const total7Days = dailyData.reduce((sum, d) => sum + d.amount, 0);
+
+            // Previous 7-day period (days 7 to 13 ago)
+            const prev7DaysKeys = new Set(
+              Array.from({ length: 7 }, (_, i) => {
+                const d = new Date();
+                d.setDate(today.getDate() - (13 - i));
+                return toLocalDateKey(d);
+              })
+            );
+            const totalPrev7Days = expenses
+              .filter((e) => e.createdAt && prev7DaysKeys.has(toLocalDateKey(e.createdAt)))
+              .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+            let trendBadge = "";
+            if (totalPrev7Days > 0) {
+              const diff = Math.round(((total7Days - totalPrev7Days) / totalPrev7Days) * 100);
+              trendBadge = `${diff >= 0 ? "+" : ""}${diff}% vs prev week`;
+            } else if (total7Days > 0) {
+              trendBadge = "Active this week";
+            } else {
+              trendBadge = "0 expenses this week";
+            }
+
+            // Recent entries
+            const sortedRecent = [...expenses]
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .slice(0, 7)
+              .reverse();
+
+            const recentData = sortedRecent.map((e) => {
+              const d = new Date(e.createdAt);
+              return {
+                label: !isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "—",
+                tooltipTitle: `${e.category || "Expense"} · ${!isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : ""}`,
+                amount: Number(e.amount || 0),
+              };
+            });
+
+            const currentData = trendView === "7d" ? dailyData : (recentData.length > 0 ? recentData : dailyData);
+            const maxDaily = Math.max(...currentData.map((d) => d.amount), 1);
+            const currentTotal = trendView === "7d" ? total7Days : recentData.reduce((sum, d) => sum + d.amount, 0);
+
+            return (
+              <div className="rounded-lg border border-dash-border bg-dash-card p-5 flex flex-col">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-dash-text-secondary">
+                    <TrendingUp className="h-4 w-4 text-dash-accent" />
+                    <h2 className="text-[13px] font-medium uppercase tracking-wider">Spending Trend</h2>
+                  </div>
+                  <div className="flex items-center gap-1 rounded bg-dash-elevated p-0.5 text-[11px]">
+                    <button
+                      onClick={() => setTrendView("7d")}
+                      className={cn(
+                        "px-2 py-0.5 rounded transition-dash font-medium",
+                        trendView === "7d"
+                          ? "bg-dash-card text-dash-text shadow-sm"
+                          : "text-dash-text-muted hover:text-dash-text"
+                      )}
+                    >
+                      7 Days
+                    </button>
+                    <button
+                      onClick={() => setTrendView("recent")}
+                      className={cn(
+                        "px-2 py-0.5 rounded transition-dash font-medium",
+                        trendView === "recent"
+                          ? "bg-dash-card text-dash-text shadow-sm"
+                          : "text-dash-text-muted hover:text-dash-text"
+                      )}
+                    >
+                      Recent
+                    </button>
+                  </div>
+                </div>
+
+                {/* Amount and Trend Badge */}
+                <div className="flex items-baseline justify-between mb-4">
+                  <div>
+                    <span className="text-[20px] font-bold text-dash-text">
+                      ₹{currentTotal.toLocaleString()}
+                    </span>
+                    <span className="text-[12px] text-dash-text-muted ml-1.5 font-normal">
+                      {trendView === "7d" ? "last 7 days" : "last 7 entries"}
+                    </span>
+                  </div>
+                  {trendView === "7d" && (
+                    <span className={cn(
+                      "text-[11px] font-medium px-2 py-0.5 rounded",
+                      trendBadge.includes("+") 
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        : trendBadge.includes("-")
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "bg-dash-elevated text-dash-text-muted"
+                    )}>
+                      {trendBadge}
+                    </span>
+                  )}
+                </div>
+
+                {/* Chart Plot Area */}
+                <div className="h-28 flex items-end justify-between gap-2 px-1">
+                  {currentData.map((pt, i) => {
+                    const heightPercent = maxDaily > 0 && pt.amount > 0
+                      ? Math.max(Math.round((pt.amount / maxDaily) * 100), 12)
+                      : 0;
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                        {/* Tooltip on hover */}
+                        <div className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 z-20 hidden group-hover:flex flex-col items-center bg-dash-text text-dash-background text-[11px] font-medium px-2 py-0.5 rounded shadow whitespace-nowrap">
+                          <span>{pt.tooltipTitle}</span>
+                          <span className="font-semibold text-dash-accent">₹{pt.amount.toLocaleString()}</span>
+                        </div>
+
+                        {/* Visual Bar with Track */}
+                        <div className="w-full max-w-[28px] h-full flex flex-col justify-end items-center rounded-t overflow-hidden bg-dash-elevated border border-dash-border-secondary/60">
+                          <div
+                            className={cn(
+                              "w-full rounded-t transition-all duration-300",
+                              pt.amount > 0
+                                ? "bg-dash-accent group-hover:brightness-110"
+                                : "h-[3px] bg-dash-border-secondary"
+                            )}
+                            style={{ height: pt.amount > 0 ? `${heightPercent}%` : "3px" }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* X-Axis Baseline & Day Labels */}
+                <div className="border-t border-dash-border-secondary pt-2 px-1 flex items-center justify-between gap-2">
+                  {currentData.map((pt, i) => (
+                    <div key={i} className="flex-1 text-center truncate">
+                      <span className="text-[12px] font-medium text-dash-text-muted">
+                        {pt.label}
                       </span>
                     </div>
-                  ));
-                })()}
+                  ))}
+                </div>
+
+                {trendView === "7d" && total7Days === 0 && expenses.length > 0 && (
+                  <div className="mt-3 pt-2 border-t border-dash-border-secondary/60 text-center">
+                    <button
+                      onClick={() => setTrendView("recent")}
+                      className="text-[12px] text-dash-accent hover:underline font-medium"
+                    >
+                      No spending in last 7 days · View recent entries →
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Recent Activity */}
           <div className="rounded-lg border border-dash-border bg-dash-card p-5">
