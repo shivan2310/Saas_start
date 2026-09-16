@@ -8,7 +8,7 @@ import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
-import { User, Sun, Moon, Check, Droplets } from "lucide-react";
+import { User, Sun, Moon, Check, Droplets, Heart } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 const SECTIONS = [
@@ -208,7 +208,7 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Light Mode Card */}
                 <button
                   type="button"
@@ -308,6 +308,40 @@ export default function SettingsPage() {
                     <div className="w-4 h-4 rounded-full bg-[#FFFFFF] border border-[#D7E9EA]" />
                     <div className="h-2 w-16 bg-[#E6F0F0] rounded" />
                     <div className="h-2 w-8 bg-[#4FAFB6] rounded ml-auto" />
+                  </div>
+                </button>
+
+                {/* Rose Mode Card */}
+                <button
+                  type="button"
+                  onClick={() => setTheme("rose")}
+                  className={cn(
+                    "relative flex flex-col items-start p-4 rounded-lg border text-left transition-dash",
+                    theme === "rose"
+                      ? "border-dash-accent bg-dash-card shadow-sm ring-1 ring-dash-accent"
+                      : "border-dash-border bg-dash-surface hover:border-dash-accent/50 hover:bg-dash-hover"
+                  )}
+                >
+                  <div className="flex w-full items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-md bg-[#B85C6B]/10 text-[#B85C6B]">
+                        <Heart className="h-4 w-4" />
+                      </div>
+                      <span className="text-[14px] font-semibold text-dash-text">Rose</span>
+                    </div>
+                    {theme === "rose" && (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-dash-accent text-white text-xs">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-dash-text-muted">
+                    Warm, calm, and elegant light theme with subtle modern rose accents.
+                  </p>
+                  <div className="mt-4 w-full h-12 rounded border border-[#E9DADC] bg-[#FAF7F7] p-2 flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#FFFFFF] border border-[#E9DADC]" />
+                    <div className="h-2 w-16 bg-[#F0E4E5] rounded" />
+                    <div className="h-2 w-8 bg-[#B85C6B] rounded ml-auto" />
                   </div>
                 </button>
               </div>

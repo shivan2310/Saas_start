@@ -131,6 +131,48 @@
     --dash-accent-bg: #E3FDFD;
   }
 
+  [data-theme="rose"] {
+    --background: 350 25% 97%;
+    --sidebar: 350 25% 98%;
+    --surface: 351 32% 96%;
+    --elevated: 348 33% 95%;
+    --hover: 350 33% 93%;
+    --border: 352 24% 88%;
+    --border-subtle: 355 27% 92%;
+    --foreground: 345 14% 11%;
+    --foreground-secondary: 350 10% 36%;
+    --foreground-muted: 349 7% 50%;
+    --foreground-disabled: 352 10% 68%;
+    --accent: 350 42% 54%;
+    --accent-hover: 350 36% 49%;
+    --accent-bg: 349 44% 94%;
+    --muted: 349 7% 50%;
+    --muted-light: 352 10% 68%;
+
+    /* Nivio dashboard palette - Rose */
+    --dash-background: #FAF7F7;
+    --dash-sidebar: #FCF9F9;
+    --dash-header: #FCF9F9;
+    --dash-card: #FFFFFF;
+    --dash-surface: #F8F1F2;
+    --dash-elevated: #F6ECEE;
+    --dash-hover: #F4E8EA;
+    --dash-nav-active-bg: #F8E8EB;
+
+    --dash-border: #E9DADC;
+    --dash-border-secondary: #F0E4E5;
+    --dash-border-divider: #EDE0E2;
+
+    --dash-text: #21191B;
+    --dash-text-secondary: #655356;
+    --dash-text-muted: #88777A;
+    --dash-text-disabled: #B4A5A7;
+
+    --dash-accent: #B85C6B;
+    --dash-accent-hover: #A94F5E;
+    --dash-accent-bg: #F8E8EB;
+  }
+
   * {
     border-color: var(--dash-border);
   }
