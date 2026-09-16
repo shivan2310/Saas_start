@@ -153,7 +153,7 @@ export function NivioLanding() {
     <main className="relative min-h-[100dvh] overflow-x-hidden bg-white dark:bg-[#0D0F10] text-[#191919] dark:text-[#F2F2F0] transition-colors duration-200">
       <CinematicMemory />
       <header className="fixed inset-x-0 top-0 z-30 bg-white/85 dark:bg-[#0D0F10]/90 backdrop-blur-md border-b border-[#191919]/5 dark:border-dash-border transition-colors duration-200">
-        <div className="mx-auto flex h-16 sm:h-20 max-w-[1440px] items-center justify-between px-4 sm:px-10 lg:px-14">
+        <div className="relative mx-auto flex h-16 sm:h-20 max-w-5xl items-center justify-between px-4 sm:px-8">
           <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.03em] text-[#191919] dark:text-[#F2F2F0]">
             <span className="relative block h-[17px] w-[17px] rounded-[5px] border border-[#191919] dark:border-[#F2F2F0]">
               <span className="absolute left-[4px] top-[4px] h-[7px] w-[7px] rounded-full bg-[#191919] dark:bg-[#F2F2F0]" />
@@ -221,15 +221,15 @@ export function NivioLanding() {
       {/* Hero Section */}
       <section className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-4 sm:px-10 pt-20 sm:pt-24 pb-[270px] sm:pb-[260px] md:pb-[250px] text-center">
         <div className="flex max-w-2xl flex-col items-center my-auto">
-          <h1 className="font-serif text-[clamp(2.15rem,6.5vw,7.25rem)] leading-[0.95] sm:leading-[0.92] tracking-[-0.05em] sm:tracking-[-0.065em] text-[#191919] dark:text-[#F2F2F0]">
+          <h1 className="font-serif text-[clamp(2.15rem,6.5vw,7.25rem)] leading-[1.12] sm:leading-[1.08] tracking-[-0.04em] sm:tracking-[-0.05em] text-[#191919] dark:text-[#F2F2F0]">
             Your life,<br />beautifully remembered.
           </h1>
-          <p className="mt-5 sm:mt-8 max-w-md text-xs sm:text-[15px] leading-relaxed sm:leading-7 text-[#191919]/75 dark:text-[#A5A8A8] font-normal">
+          <p className="mt-5 sm:mt-8 max-w-[64ch] text-xs sm:text-[15px] leading-relaxed sm:leading-7 text-[#191919]/75 dark:text-[#A5A8A8] font-normal">
             A private space where your journal, tasks, reminders, expenses, memories, and everyday life come together. AI quietly organizes everything for you while your personal data remains completely yours.
           </p>
           <Link
             href="/signup"
-            className="mt-5 sm:mt-8 inline-flex items-center rounded-full bg-[#191919] dark:bg-dash-text text-white dark:text-dash-background hover:bg-[#3a3a3a] dark:hover:bg-white px-5 py-2.5 sm:py-3 text-xs sm:text-[13px] font-medium transition-colors duration-200 shadow-sm"
+            className="mt-6 sm:mt-8 inline-flex items-center justify-center rounded-full bg-[#191919] dark:bg-dash-text text-white dark:text-dash-background hover:bg-[#3a3a3a] dark:hover:bg-white px-7 sm:px-9 py-3.5 sm:py-4 text-sm sm:text-base font-medium transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Start Free
           </Link>
@@ -239,24 +239,24 @@ export function NivioLanding() {
       {/* Bottom Section */}
       <section className="absolute inset-x-0 bottom-0 z-20 border-t border-[#191919]/10 dark:border-dash-border bg-white dark:bg-[#101213] shadow-lg transition-colors duration-200">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-10 lg:px-14">
-          <div className="grid gap-3 sm:gap-8 py-4 sm:py-7 md:grid-cols-[1fr_1.1fr] md:gap-16 md:py-8">
+          <div className="grid items-start gap-3 sm:gap-8 pt-4 sm:pt-6 pb-4 sm:pb-6 md:grid-cols-[1fr_1.1fr] md:gap-16 md:pt-7 md:pb-7">
             <div>
-              <p className="text-[9px] sm:text-[10px] font-medium tracking-[0.16em] text-[#191919]/60 dark:text-dash-accent">YOUR DIGITAL DIARY</p>
-              <h2 className="mt-1.5 sm:mt-3 font-serif text-[clamp(1.35rem,2.8vw,2.7rem)] leading-[1.05] sm:leading-[0.98] tracking-[-0.045em] text-[#191919] dark:text-[#F2F2F0]">
+              <p className="text-[11px] sm:text-xs font-medium tracking-normal text-[#191919]/65 dark:text-dash-accent">Your digital diary</p>
+              <h2 className="mt-1.5 sm:mt-2.5 font-serif text-[clamp(1.35rem,2.8vw,2.7rem)] leading-[1.08] sm:leading-[1.02] tracking-[-0.045em] text-[#191919] dark:text-[#F2F2F0]">
                 Designed for<br className="hidden sm:inline" /> everyday life.
               </h2>
             </div>
-            <p className="max-w-xl self-end text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed sm:leading-6 text-[#191919] dark:text-[#A5A8A8]">
+            <p className="max-w-xl self-start md:mt-6 text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed sm:leading-6 text-[#191919] dark:text-[#A5A8A8]">
               Capture your thoughts, organize your day, remember meaningful moments, track expenses, manage tasks, and let AI connect everything naturally—without compromising your privacy.
             </p>
           </div>
           <div className="h-px bg-[#191919]/10 dark:bg-dash-border" />
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-3 py-2.5 sm:py-4">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mt-4 sm:mt-6 pb-4 sm:pb-6">
             {features.map(([number, title, href]) => (
               <Link
                 key={title}
                 href={href}
-                className="group flex min-w-0 items-center justify-between px-2.5 sm:px-5 py-2.5 sm:py-4 rounded-sm sm:rounded-none bg-[#f4f3f3] dark:bg-[#151718] dark:border dark:border-dash-border transition-colors duration-200 hover:opacity-90 hover:bg-[#eaeaea] dark:hover:bg-dash-hover"
+                className="group flex min-w-0 items-center justify-between px-3 sm:px-6 py-4 sm:py-6 rounded-md bg-[#f4f3f3] dark:bg-[#151718] dark:border dark:border-dash-border transition-colors duration-200 hover:opacity-90 hover:bg-[#eaeaea] dark:hover:bg-dash-hover"
               >
                 <span className="flex min-w-0 items-baseline gap-1.5 sm:gap-3">
                   <span className="text-[9px] sm:text-[10px] text-[#191919]/50 dark:text-dash-accent">{number}</span>
