@@ -8,7 +8,7 @@ import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
-import { User, Sun, Moon, Check, Droplets, Heart, TreePine } from "lucide-react";
+import { User, Sun, Moon, Check, Droplets, Heart, TreePine, Leaf } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 const SECTIONS = [
@@ -376,6 +376,40 @@ export default function SettingsPage() {
                     <div className="w-4 h-4 rounded-full bg-[#132019] border border-[#293B31]" />
                     <div className="h-2 w-16 bg-[#223229] rounded" />
                     <div className="h-2 w-8 bg-[#52B788] rounded ml-auto" />
+                  </div>
+                </button>
+
+                {/* Sage Mode Card */}
+                <button
+                  type="button"
+                  onClick={() => setTheme("sage")}
+                  className={cn(
+                    "relative flex flex-col items-start p-4 rounded-lg border text-left transition-dash",
+                    theme === "sage"
+                      ? "border-dash-accent bg-dash-card shadow-sm ring-1 ring-dash-accent"
+                      : "border-dash-border bg-dash-surface hover:border-dash-accent/50 hover:bg-dash-hover"
+                  )}
+                >
+                  <div className="flex w-full items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-md bg-[#4F7761]/10 text-[#4F7761]">
+                        <Leaf className="h-4 w-4" />
+                      </div>
+                      <span className="text-[14px] font-semibold text-dash-text">Sage</span>
+                    </div>
+                    {theme === "sage" && (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-dash-accent text-white text-xs">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-dash-text-muted">
+                    Soft, understated botanical light theme for calm and focus.
+                  </p>
+                  <div className="mt-4 w-full h-12 rounded border border-[#D9E2DB] bg-[#F4F6F4] p-2 flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#FFFFFF] border border-[#D9E2DB]" />
+                    <div className="h-2 w-16 bg-[#E5EBE6] rounded" />
+                    <div className="h-2 w-8 bg-[#4F7761] rounded ml-auto" />
                   </div>
                 </button>
               </div>

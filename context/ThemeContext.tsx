@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "light" | "dark" | "aqua" | "rose" | "forest";
+export type Theme = "light" | "dark" | "aqua" | "rose" | "forest" | "sage";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -30,7 +30,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
-    const nextTheme = savedTheme === "dark" || savedTheme === "light" || savedTheme === "aqua" || savedTheme === "rose" || savedTheme === "forest" ? savedTheme : preferredTheme;
+    const nextTheme = savedTheme === "dark" || savedTheme === "light" || savedTheme === "aqua" || savedTheme === "rose" || savedTheme === "forest" || savedTheme === "sage" ? savedTheme : preferredTheme;
 
     setThemeState(nextTheme);
     applyTheme(nextTheme);

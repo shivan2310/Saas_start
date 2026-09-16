@@ -215,6 +215,48 @@
     --dash-accent-bg: #183A2B;
   }
 
+  [data-theme="sage"] {
+    --background: 120 11% 96%;
+    --sidebar: 120 14% 97%;
+    --surface: 120 17% 95%;
+    --elevated: 128 16% 92%;
+    --hover: 129 16% 92%;
+    --border: 133 13% 86%;
+    --border-subtle: 130 14% 91%;
+    --foreground: 139 16% 11%;
+    --foreground-secondary: 141 8% 35%;
+    --foreground-muted: 142 5% 50%;
+    --foreground-disabled: 142 8% 65%;
+    --accent: 147 20% 39%;
+    --accent-hover: 144 22% 33%;
+    --accent-bg: 133 19% 91%;
+    --muted: 142 5% 50%;
+    --muted-light: 142 8% 65%;
+
+    /* Nivio dashboard palette - Sage */
+    --dash-background: #F4F6F4;
+    --dash-sidebar: #F8FAF8;
+    --dash-header: #F8FAF8;
+    --dash-card: #FFFFFF;
+    --dash-surface: #F0F4F0;
+    --dash-elevated: #EBF1EC;
+    --dash-hover: #E7EEE8;
+    --dash-nav-active-bg: #E5EEE7;
+
+    --dash-border: #D9E2DB;
+    --dash-border-secondary: #E5EBE6;
+    --dash-border-divider: #DFE7E1;
+
+    --dash-text: #18211B;
+    --dash-text-secondary: #536158;
+    --dash-text-muted: #78847C;
+    --dash-text-disabled: #A5B0A8;
+
+    --dash-accent: #4F7761;
+    --dash-accent-hover: #426751;
+    --dash-accent-bg: #E5EEE7;
+  }
+
   * {
     border-color: var(--dash-border);
   }
