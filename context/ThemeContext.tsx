@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "light" | "dark" | "aqua" | "rose";
+export type Theme = "light" | "dark" | "aqua" | "rose" | "forest";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -19,7 +19,7 @@ const ThemeContext = createContext<ThemeContextValue>({
 function applyTheme(nextTheme: Theme) {
   const root = document.documentElement;
   root.setAttribute("data-theme", nextTheme);
-  root.classList.toggle("dark", nextTheme === "dark");
+  root.classList.toggle("dark", nextTheme === "dark" || nextTheme === "forest");
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -30,7 +30,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
-    const nextTheme = savedTheme === "dark" || savedTheme === "light" || savedTheme === "aqua" || savedTheme === "rose" ? savedTheme : preferredTheme;
+    const nextTheme = savedTheme === "dark" || savedTheme === "light" || savedTheme === "aqua" || savedTheme === "rose" || savedTheme === "forest" ? savedTheme : preferredTheme;
 
     setThemeState(nextTheme);
     applyTheme(nextTheme);
