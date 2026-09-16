@@ -131,8 +131,8 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <AlertCircle className="h-4 w-4 text-dash-text shrink-0" />
             <div>
-              <h4 className="text-[13px] font-semibold text-dash-text">Email Verification Pending</h4>
-              <p className="text-[12px] text-dash-text-muted mt-0.5">
+              <h2 className="text-[14px] font-semibold text-dash-text">Email Verification Pending</h2>
+              <p className="text-[13px] text-dash-text-muted mt-0.5">
                 Please verify your email address ({user?.email}) to secure your account.
               </p>
             </div>
@@ -149,13 +149,13 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Greeting Header */}
+      {/* Page Header */}
       <div>
-        <h2 className="text-[28px] font-semibold tracking-tight text-dash-text leading-tight">
-          {getGreeting()}, {profile?.displayName?.split(' ')[0] || "User"}.
-        </h2>
-        <p className="text-[14px] text-dash-text-secondary mt-1">
-          Here's what's happening with your day.
+        <h1 className="text-[28px] font-semibold tracking-tight text-dash-text leading-tight">
+          Overview
+        </h1>
+        <p className="text-[16px] text-dash-text-secondary mt-1">
+          {getGreeting()}, {profile?.displayName?.split(' ')[0] || "User"}. Here's what's happening with your day.
         </p>
       </div>
 
@@ -168,9 +168,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-dash-text-secondary">
                 <ListTodo className="h-4 w-4" />
-                <span className="text-[13px] font-medium uppercase tracking-wider">To-dos</span>
+                <h2 className="text-[13px] font-medium uppercase tracking-wider">To-dos</h2>
               </div>
-              <span className="text-[11px] text-dash-text-muted">{todos.filter(t => !t.done).length} remaining</span>
+              <span className="text-[12px] text-dash-text-muted">{todos.filter(t => !t.done).length} remaining</span>
             </div>
 
             <div className="flex-1 space-y-3 overflow-hidden min-h-[140px]">
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                     </button>
                     <span 
                       className={cn(
-                        "text-[13px] truncate transition-dash cursor-pointer",
+                        "text-[15px] truncate transition-dash cursor-pointer",
                         todo.done ? "text-dash-text-muted line-through" : "text-dash-text"
                       )}
                       onClick={() => handleToggleTodo(todo.id, todo.done)}
@@ -206,11 +206,11 @@ export default function DashboardPage() {
                   </div>
                 ))
               ) : (
-                <div className="text-[13px] text-dash-text-muted py-4">All caught up.</div>
+                <div className="text-[14px] text-dash-text-muted py-4">All caught up.</div>
               )}
             </div>
 
-            <Link href="/dashboard/tasks" className="mt-4 flex items-center gap-1.5 text-[12px] font-medium text-dash-text hover:text-dash-accent transition-dash">
+            <Link href="/dashboard/tasks" className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-dash-text hover:text-dash-accent transition-dash">
               Open tasks <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -221,7 +221,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-dash-border bg-dash-card p-5 flex flex-col">
               <div className="flex items-center gap-2 text-dash-text-secondary mb-4">
                 <CalendarDays className="h-4 w-4" />
-                <span className="text-[13px] font-medium uppercase tracking-wider">Important Dates</span>
+                <h2 className="text-[13px] font-medium uppercase tracking-wider">Important Dates</h2>
               </div>
 
               <div className="flex-1 flex flex-col justify-center min-h-[100px]">
@@ -229,20 +229,20 @@ export default function DashboardPage() {
                   <Skeleton className="h-6 w-1/2" />
                 ) : nextDate ? (
                   <div>
-                    <div className="text-[12px] text-dash-text-muted mb-1">{formatDate(`${nextDate.date}T00:00:00`)}</div>
-                    <div className="text-[15px] font-medium text-dash-text truncate">{nextDate.title}</div>
+                    <div className="text-[13px] text-dash-text-muted mb-1">{formatDate(`${nextDate.date}T00:00:00`)}</div>
+                    <div className="text-[16px] font-medium text-dash-text truncate">{nextDate.title}</div>
                     {nextDate.notes && (
-                      <div className="text-[12px] text-dash-text-muted mt-1 line-clamp-1 truncate">
+                      <div className="text-[13px] text-dash-text-muted mt-1 line-clamp-1 truncate">
                         {nextDate.notes}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="text-[13px] text-dash-text-muted">No upcoming dates.</div>
+                  <div className="text-[14px] text-dash-text-muted">No upcoming dates.</div>
                 )}
               </div>
 
-              <Link href="/dashboard/dates" className="mt-4 flex items-center gap-1.5 text-[12px] font-medium text-dash-text hover:text-dash-accent transition-dash">
+              <Link href="/dashboard/dates" className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-dash-text hover:text-dash-accent transition-dash">
                 View calendar <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -251,7 +251,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-dash-border bg-dash-card p-5 flex flex-col">
               <div className="flex items-center gap-2 text-dash-text-secondary mb-4">
                 <BookOpen className="h-4 w-4" />
-                <span className="text-[13px] font-medium uppercase tracking-wider">Journal</span>
+                <h2 className="text-[13px] font-medium uppercase tracking-wider">Journal</h2>
               </div>
 
               <div className="flex-1 flex flex-col justify-center min-h-[100px] overflow-hidden">
@@ -262,18 +262,18 @@ export default function DashboardPage() {
                   </div>
                 ) : latestDiary ? (
                   <div className="flex flex-col min-h-0">
-                    <div className="text-[12px] text-dash-text-muted mb-1 shrink-0">{formatDate(latestDiary.createdAt)}</div>
-                    <div className="text-[14px] font-medium text-dash-text truncate shrink-0">{latestDiary.title}</div>
-                    <div className="text-[12px] text-dash-text-muted mt-1 line-clamp-2 overflow-hidden">
+                    <div className="text-[13px] text-dash-text-muted mb-1 shrink-0">{formatDate(latestDiary.createdAt)}</div>
+                    <div className="text-[16px] font-medium text-dash-text truncate shrink-0">{latestDiary.title}</div>
+                    <div className="text-[14px] text-dash-text-muted mt-1 line-clamp-2 overflow-hidden">
                       {latestDiary.content}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-[13px] text-dash-text-muted">No entries yet.</div>
+                  <div className="text-[14px] text-dash-text-muted">No entries yet.</div>
                 )}
               </div>
 
-              <Link href="/dashboard/diary" className="mt-4 flex items-center gap-1.5 text-[12px] font-medium text-dash-text hover:text-dash-accent transition-dash">
+              <Link href="/dashboard/diary" className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-dash-text hover:text-dash-accent transition-dash">
                 Write entry <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-dash-border bg-dash-card p-5 flex flex-col">
               <div className="flex items-center gap-2 text-dash-text-secondary mb-4">
                 <Wallet className="h-4 w-4" />
-                <span className="text-[13px] font-medium uppercase tracking-wider">Expenses</span>
+                <h2 className="text-[13px] font-medium uppercase tracking-wider">Expenses</h2>
               </div>
 
               <div className="flex-1 flex flex-col justify-center min-h-[100px]">
@@ -296,14 +296,14 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div>
-                    <div className="text-[12px] text-dash-text-muted mb-1">Total spent this month</div>
+                    <div className="text-[13px] text-dash-text-muted mb-1">Total spent this month</div>
                     <div className="text-[24px] font-semibold text-dash-text">
                       ₹{totalSpent.toLocaleString()}
                     </div>
                     {sortedCategories.length > 0 && (
                       <div className="mt-3 space-y-1.5">
                         {sortedCategories.slice(0, 3).map(([cat, amt]) => (
-                          <div key={cat} className="flex items-center justify-between text-[12px]">
+                          <div key={cat} className="flex items-center justify-between text-[14px]">
                             <span className="text-dash-text-secondary">{cat}</span>
                             <span className="text-dash-text font-medium">₹{amt.toLocaleString()}</span>
                           </div>
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <Link href="/dashboard/expenses" className="mt-4 flex items-center gap-1.5 text-[12px] font-medium text-dash-text hover:text-dash-accent transition-dash">
+              <Link href="/dashboard/expenses" className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-dash-text hover:text-dash-accent transition-dash">
                 View analytics <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -323,7 +323,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-dash-border bg-dash-card p-5">
               <div className="flex items-center gap-2 text-dash-text-secondary mb-4">
                 <Tag className="h-4 w-4" />
-                <span className="text-[13px] font-medium uppercase tracking-wider">Quick Actions</span>
+                <h2 className="text-[13px] font-medium uppercase tracking-wider">Quick Actions</h2>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Link
@@ -331,28 +331,28 @@ export default function DashboardPage() {
                   className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <Plus className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
-                  <span className="text-[13px] text-dash-text">Add task</span>
+                  <span className="text-[14px] text-dash-text">Add task</span>
                 </Link>
                 <Link
                   href="/dashboard/expenses"
                   className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <Wallet className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
-                  <span className="text-[13px] text-dash-text">Add expense</span>
+                  <span className="text-[14px] text-dash-text">Add expense</span>
                 </Link>
                 <Link
                   href="/dashboard/dates"
                   className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <CalendarDays className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
-                  <span className="text-[13px] text-dash-text">Add date</span>
+                  <span className="text-[14px] text-dash-text">Add date</span>
                 </Link>
                 <Link
                   href="/dashboard/diary"
                   className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-dash-elevated border border-dash-border-secondary/60 hover:bg-dash-hover transition-dash group"
                 >
                   <BookOpen className="h-4 w-4 text-dash-text-muted group-hover:text-dash-accent transition-dash" />
-                  <span className="text-[13px] text-dash-text">New entry</span>
+                  <span className="text-[14px] text-dash-text">New entry</span>
                 </Link>
               </div>
             </div>
@@ -366,7 +366,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-dash-border bg-dash-card p-5">
               <div className="flex items-center gap-2 text-dash-text-secondary mb-4">
                 <TrendingUp className="h-4 w-4" />
-                <span className="text-[13px] font-medium uppercase tracking-wider">Spending Trend</span>
+                <h2 className="text-[13px] font-medium uppercase tracking-wider">Spending Trend</h2>
               </div>
               <div className="h-32 flex items-end justify-between gap-1.5 pb-1 border-b border-dash-border-secondary">
                 {(() => {
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                         style={{ height: `${Math.max((amt / maxDaily) * 100, amt > 0 ? 8 : 4)}%` }}
                         title={`${new Date(last7Days[i]).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}: ₹${amt.toLocaleString()}`}
                       />
-                      <span className="mt-2 text-[10px] font-medium text-dash-text-muted">
+                      <span className="mt-2 text-[12px] font-medium text-dash-text-muted">
                         {new Date(last7Days[i]).toLocaleDateString(undefined, { weekday: 'short' })}
                       </span>
                     </div>
@@ -407,7 +407,7 @@ export default function DashboardPage() {
           <div className="rounded-lg border border-dash-border bg-dash-card p-5">
             <div className="flex items-center gap-2 text-dash-text-secondary mb-4">
               <Clock className="h-4 w-4" />
-              <span className="text-[13px] font-medium uppercase tracking-wider">Recent Activity</span>
+              <h2 className="text-[13px] font-medium uppercase tracking-wider">Recent Activity</h2>
             </div>
             <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
               {(() => {
@@ -448,14 +448,14 @@ export default function DashboardPage() {
                 if (yesterdayItems.length > 0) activities.push({ date: "Yesterday", items: yesterdayItems });
 
                 return activities.length === 0 ? (
-                  <div className="text-[13px] text-dash-text-muted py-4">No recent activity.</div>
+                  <div className="text-[14px] text-dash-text-muted py-4">No recent activity.</div>
                 ) : (
                   activities.map((activity) => (
                     <div key={activity.date} className="space-y-2">
-                      <div className="text-[11px] font-medium text-dash-text-muted uppercase tracking-wider">{activity.date}</div>
+                      <div className="text-[12px] font-medium text-dash-text-muted uppercase tracking-wider">{activity.date}</div>
                       <div className="space-y-1.5 pl-2 border-l border-dash-border">
                         {activity.items.slice(0, 5).map((item, idx) => (
-                          <div key={idx} className="text-[12px] text-dash-text-secondary pb-2 last:pb-0">
+                          <div key={idx} className="text-[13px] text-dash-text-secondary pb-2 last:pb-0">
                             {item}
                           </div>
                         ))}
