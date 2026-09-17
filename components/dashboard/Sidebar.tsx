@@ -29,7 +29,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
-      <aside className="hidden min-h-screen w-[240px] shrink-0 flex-col justify-between border-r border-dash-border-secondary bg-dash-sidebar xl:flex">
+      <aside className="hidden sticky top-0 h-screen w-[240px] shrink-0 flex-col justify-between border-r border-dash-border-secondary bg-dash-sidebar xl:flex">
         <div>
           <div className="h-16 px-6 border-b border-dash-border-secondary flex items-center gap-2 font-semibold text-base tracking-normal text-dash-text">
             <div className="w-5 h-5 bg-dash-accent rounded flex items-center justify-center text-dash-background text-[10px] font-mono">
