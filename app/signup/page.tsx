@@ -62,141 +62,149 @@ export default function SignupPage() {
 
   if (authLoading || isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dash-background">
-        <div className="w-6 h-6 border-2 border-dash-border border-t-dash-accent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#090D0B]">
+        <div className="w-6 h-6 border-2 border-dash-border/30 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <AuthSplitLayout>
-      <div className="mb-10">
-        <h2 className="text-3xl font-light tracking-tight mb-2 text-dash-text">
-          Create account
-        </h2>
-        <p className="text-dash-text-secondary font-light">
-          Create your private space for everyday life.
-        </p>
+      <div className="w-full relative pb-24">
+        <div className="mb-14">
+          <h2 className="text-[36px] font-light tracking-tight mb-2 text-dash-text leading-tight">
+            Create account
+          </h2>
+          <p className="text-dash-text-secondary font-light">
+            Create your private space for everyday life.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+          <div className="space-y-8">
+            {/* Name Field */}
+            <div className="flex flex-col group">
+              <label
+                htmlFor="name"
+                className="text-[10px] uppercase tracking-widest text-dash-text-muted mb-3 font-semibold"
+              >
+                First Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                maxLength={100}
+                className={`w-full bg-transparent border-0 border-b border-dash-border pb-3 text-dash-text focus:ring-0 focus:border-white transition-colors outline-none placeholder:text-dash-text-disabled ${
+                  errors.name ? "border-red-500" : ""
+                }`}
+                placeholder="Mark"
+                {...register("name")}
+              />
+              {errors.name && (
+                <p className="text-[10px] text-red-500 mt-1.5 uppercase tracking-wide">{errors.name.message}</p>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div className="flex flex-col group">
+              <label
+                htmlFor="email"
+                className="text-[10px] uppercase tracking-widest text-dash-text-muted mb-3 font-semibold"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                className={`w-full bg-transparent border-0 border-b border-dash-border pb-3 text-dash-text focus:ring-0 focus:border-white transition-colors outline-none placeholder:text-dash-text-disabled ${
+                  errors.email ? "border-red-500" : ""
+                }`}
+                placeholder="mark.johnson@example.com"
+                {...register("email")}
+              />
+              {errors.email && (
+                <p className="text-[10px] text-red-500 mt-1.5 uppercase tracking-wide">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div className="flex flex-col group">
+              <label
+                htmlFor="password"
+                className="text-[10px] uppercase tracking-widest text-dash-text-muted mb-3 font-semibold"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  maxLength={128}
+                  className={`w-full bg-transparent border-0 border-b border-dash-border pb-3 text-dash-text focus:ring-0 focus:border-white transition-colors outline-none placeholder:text-dash-text-disabled pr-12 ${
+                    errors.password ? "border-red-500" : ""
+                  }`}
+                  placeholder="Create a strong password"
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-0 text-dash-text-muted hover:text-white text-[10px] uppercase tracking-widest font-semibold transition-colors pb-3"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              {errors.password ? (
+                <p className="text-[10px] text-red-500 mt-1.5 uppercase tracking-wide">{errors.password.message}</p>
+              ) : (
+                <p className="text-[10px] text-dash-text-muted mt-1.5 uppercase tracking-wide">Must be 8+ chars with 1 uppercase & 1 number</p>
+              )}
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <p className="text-xs text-dash-text-muted">
+              By creating an account, you agree to our{" "}
+              <Link href="#" className="text-white hover:underline transition-colors">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="#" className="text-white hover:underline transition-colors">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+
+          {/* Distinct Circular Submit Button */}
+          <div className="absolute -bottom-6 right-0">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-24 h-24 bg-white text-black rounded-full text-[10px] uppercase tracking-widest font-bold hover:scale-105 hover:bg-gray-200 shadow-xl transition-all duration-300 flex items-center justify-center text-center leading-tight disabled:opacity-50 disabled:hover:scale-100"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+              ) : (
+                <>Sign<br />Up</>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-5">
-          <div className="flex flex-col">
-            <label
-              htmlFor="name"
-              className="text-xs uppercase tracking-widest text-dash-text-muted mb-2 font-medium"
-            >
-              Full Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              maxLength={100}
-              className={`w-full bg-transparent border-0 border-b border-dash-border pb-2 text-dash-text focus:ring-0 focus:border-dash-text transition-colors outline-none placeholder:text-dash-text-disabled ${
-                errors.name ? "border-red-500" : ""
-              }`}
-              placeholder="John Doe"
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <label
-              htmlFor="email"
-              className="text-xs uppercase tracking-widest text-dash-text-muted mb-2 font-medium"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={`w-full bg-transparent border-0 border-b border-dash-border pb-2 text-dash-text focus:ring-0 focus:border-dash-text transition-colors outline-none placeholder:text-dash-text-disabled ${
-                errors.email ? "border-red-500" : ""
-              }`}
-              placeholder="name@example.com"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <label
-              htmlFor="password"
-              className="text-xs uppercase tracking-widest text-dash-text-muted mb-2 font-medium"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                maxLength={128}
-                className={`w-full bg-transparent border-0 border-b border-dash-border pb-2 text-dash-text focus:ring-0 focus:border-dash-text transition-colors outline-none placeholder:text-dash-text-disabled pr-10 ${
-                  errors.password ? "border-red-500" : ""
-                }`}
-                placeholder="••••••••"
-                {...register("password")}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-0 text-dash-text-muted hover:text-dash-text text-xs uppercase tracking-wider font-medium"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-            {errors.password ? (
-              <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
-            ) : (
-              <p className="text-xs text-dash-text-muted mt-1">Must be 8+ chars with 1 uppercase & 1 number</p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex justify-end mt-10">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-full bg-dash-text text-dash-background px-8 py-3 text-xs uppercase tracking-widest font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center shadow-lg"
+      <div className="absolute bottom-12 right-0 left-0 text-center md:text-left md:left-[50%] md:pl-16 lg:pl-24">
+        <p className="text-[13px] text-dash-text-muted">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-white hover:underline underline-offset-4 transition-all"
           >
-            {isSubmitting ? (
-              <div className="w-4 h-4 border-2 border-dash-background border-t-transparent rounded-full animate-spin" />
-            ) : (
-              "Create Account"
-            )}
-          </button>
-        </div>
-
-        <div className="text-center mt-6 space-y-4">
-          <p className="text-xs text-dash-text-muted">
-            By creating an account, you agree to our{" "}
-            <Link href="#" className="underline hover:text-dash-text transition-colors">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="#" className="underline hover:text-dash-text transition-colors">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-
-          <p className="text-sm text-dash-text-secondary">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="text-dash-text hover:underline underline-offset-4 transition-all"
-            >
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </form>
+            Sign in
+          </Link>
+        </p>
+      </div>
     </AuthSplitLayout>
   );
 }
