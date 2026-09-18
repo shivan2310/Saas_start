@@ -14,32 +14,30 @@ export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
           <div className="text-xl font-medium tracking-widest text-dash-text">NIVIO</div>
         </div>
 
-        {/* Abstract Minimal Artwork (Single curve + dot) */}
+        {/* Abstract Minimal Artwork (Geometric Star) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <svg
-            width="100%"
-            height="100%"
-            viewBox="0 0 1000 1000"
+            viewBox="0 0 100 100"
+            className="w-64 h-64 text-dash-text-muted stroke-current opacity-40 animate-[pulse-slow_8s_infinite_ease-in-out]"
+            strokeWidth="0.75"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="absolute inset-0"
-            preserveAspectRatio="xMidYMid slice"
+            strokeLinecap="round"
           >
-            {/* Extremely thin curved line from bottom-left to upper-right */}
-            <path
-              d="M-50 900 C 300 800, 400 300, 1100 100"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              className="text-dash-text-muted opacity-30"
-            />
-            {/* Single small circular dot positioned along the curve */}
-            <circle
-              cx="550"
-              cy="348"
-              r="3"
-              fill="currentColor"
-              className="text-dash-text opacity-50"
-            />
+            {/* Main Cross */}
+            <line x1="50" y1="15" x2="50" y2="85" />
+            <line x1="15" y1="50" x2="85" y2="50" />
+            {/* Diagonal Cross */}
+            <line x1="25" y1="25" x2="75" y2="75" />
+            <line x1="25" y1="75" x2="75" y2="25" />
+            {/* Outer connecting lines for structural look */}
+            <line x1="50" y1="15" x2="75" y2="25" strokeWidth="0.25" strokeOpacity="0.3" />
+            <line x1="75" y1="25" x2="85" y2="50" strokeWidth="0.25" strokeOpacity="0.3" />
+            <line x1="85" y1="50" x2="75" y2="75" strokeWidth="0.25" strokeOpacity="0.3" />
+            <line x1="75" y1="75" x2="50" y2="85" strokeWidth="0.25" strokeOpacity="0.3" />
+            <line x1="50" y1="85" x2="25" y2="75" strokeWidth="0.25" strokeOpacity="0.3" />
+            <line x1="25" y1="75" x2="15" y2="50" strokeWidth="0.25" strokeOpacity="0.3" />
+            <line x1="15" y1="50" x2="25" y2="25" strokeWidth="0.25" strokeOpacity="0.3" />
+            <line x1="25" y1="25" x2="50" y2="15" strokeWidth="0.25" strokeOpacity="0.3" />
           </svg>
         </div>
 
