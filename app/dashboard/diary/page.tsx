@@ -5,7 +5,7 @@ import { Trash2, Plus, Calendar, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
 import { DiaryEntry } from "@/types";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { cn, formatDate } from "@/lib/utils";

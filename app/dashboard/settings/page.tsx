@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { userService } from "@/services/userService";
 import { authService } from "@/services/authService";
 import { supabase } from "@/supabase/client";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import { User, Sun, Moon, Check, Droplets, Heart, TreePine, Leaf } from "lucide-react";

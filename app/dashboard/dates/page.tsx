@@ -5,7 +5,7 @@ import { Trash2, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } fro
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
 import { ImportantDate } from "@/types";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
 

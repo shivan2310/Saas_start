@@ -8,7 +8,7 @@ import { personalService } from "@/services/personalService";
 import { todoService } from "@/services/todoService";
 import { getAuthErrorMessage } from "@/lib/authErrors";
 import { Expense, ImportantDate, TodoItem, DiaryEntry } from "@/types";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { cn, formatDate } from "@/lib/utils";

@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { todoService } from "@/services/todoService";
 import { TodoItem, Priority } from "@/types";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { Input } from "@/components/ui/Input";

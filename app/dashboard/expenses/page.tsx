@@ -5,7 +5,7 @@ import { Trash2, Plus, ChevronDown, Search, Calendar, Filter, X } from "lucide-r
 import { useAuth } from "@/hooks/useAuth";
 import { personalService } from "@/services/personalService";
 import { Expense } from "@/types";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";

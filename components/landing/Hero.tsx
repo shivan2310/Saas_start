@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 
 export const Hero: React.FC = () => {

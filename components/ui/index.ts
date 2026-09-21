@@ -1,4 +1,4 @@
-export * from "./Button";
+export * from "./button";
 export * from "./Card";
 export * from "./Input";
 export * from "./LoadingSpinner";
