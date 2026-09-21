@@ -97,5 +97,15 @@ export const authService = {
     if (error) throw error;
   },
 
+  async loginWithProvider(provider: "google" | "apple"): Promise<void> {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${appUrl()}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+  },
+
   mapUser,
 };
