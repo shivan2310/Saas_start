@@ -1,4 +1,5 @@
 import React from "react";
+import { GatewayFlow } from "@/components/ui/gateway-flow";
 
 export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -6,6 +7,9 @@ export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
       {/* LEFT PANEL */}
       <div className="relative hidden md:flex w-1/2 flex-col justify-between border-r border-dash-border/30 overflow-hidden">
         
+        {/* Gateway Flow background */}
+        <GatewayFlow />
+
         {/* Subtle internal structural vertical line */}
         <div className="absolute top-0 bottom-0 left-1/3 border-r border-dash-border/10 pointer-events-none" />
 
