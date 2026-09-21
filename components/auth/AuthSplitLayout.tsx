@@ -1,73 +1,52 @@
+"use client";
+
 import React from "react";
-import { GatewayFlow } from "@/components/ui/gateway-flow";
+import { FlowingRibbons } from "@/components/auth/FlowingRibbons";
 
 export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-[100dvh] w-full flex flex-col md:flex-row bg-[#090D0B] text-dash-text overflow-hidden">
-      {/* LEFT PANEL */}
-      <div className="relative hidden md:flex w-1/2 flex-col justify-between border-r border-dash-border/30 overflow-hidden">
-        
-        {/* Gateway Flow background */}
-        <GatewayFlow />
+    <main className="h-[100dvh] w-full flex flex-col md:flex-row bg-[#080A09] text-white overflow-hidden">
+      {/* LEFT PANEL — Branding */}
+      <div className="relative hidden md:flex w-1/2 flex-col justify-between overflow-hidden">
+        {/* Flowing ribbon artwork (behind all text) */}
+        <FlowingRibbons />
 
-        {/* Subtle internal structural vertical line */}
-        <div className="absolute top-0 bottom-0 left-1/3 border-r border-dash-border/10 pointer-events-none" />
+        {/* Subtle vertical divider on the right edge of left panel */}
+        <div className="absolute top-0 bottom-0 right-0 w-px bg-white/[0.06]" />
 
-        {/* Brand (Absolute positioned at top-left) */}
-        <div className="absolute z-10" style={{ left: "72px", top: "78px" }}>
-          <div className="text-xl font-medium tracking-widest text-dash-text">NIVIO</div>
+        {/* Brand — top-left with generous space */}
+        <div className="relative z-10 pt-16 pl-16">
+          <div className="text-[15px] font-medium tracking-[0.3em] text-white/90">
+            NIVIO
+          </div>
         </div>
 
-        {/* Abstract Minimal Artwork (Geometric Star) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg
-            viewBox="0 0 100 100"
-            className="w-64 h-64 text-dash-text-muted stroke-current opacity-40 animate-[pulse-slow_8s_infinite_ease-in-out]"
-            strokeWidth="0.75"
-            fill="none"
-            strokeLinecap="round"
-          >
-            {/* Main Cross */}
-            <line x1="50" y1="15" x2="50" y2="85" />
-            <line x1="15" y1="50" x2="85" y2="50" />
-            {/* Diagonal Cross */}
-            <line x1="25" y1="25" x2="75" y2="75" />
-            <line x1="25" y1="75" x2="75" y2="25" />
-            {/* Outer connecting lines for structural look */}
-            <line x1="50" y1="15" x2="75" y2="25" strokeWidth="0.25" strokeOpacity="0.3" />
-            <line x1="75" y1="25" x2="85" y2="50" strokeWidth="0.25" strokeOpacity="0.3" />
-            <line x1="85" y1="50" x2="75" y2="75" strokeWidth="0.25" strokeOpacity="0.3" />
-            <line x1="75" y1="75" x2="50" y2="85" strokeWidth="0.25" strokeOpacity="0.3" />
-            <line x1="50" y1="85" x2="25" y2="75" strokeWidth="0.25" strokeOpacity="0.3" />
-            <line x1="25" y1="75" x2="15" y2="50" strokeWidth="0.25" strokeOpacity="0.3" />
-            <line x1="15" y1="50" x2="25" y2="25" strokeWidth="0.25" strokeOpacity="0.3" />
-            <line x1="25" y1="25" x2="50" y2="15" strokeWidth="0.25" strokeOpacity="0.3" />
-          </svg>
-        </div>
+        {/* Spacer */}
+        <div className="flex-1" />
 
-        {/* Copy (Absolute positioned at bottom-left) */}
-        <div className="absolute z-10" style={{ left: "72px", bottom: "150px" }}>
-          <h1 className="text-5xl font-light tracking-tight mb-4 text-dash-text leading-tight">
+        {/* Editorial copy — lower-left */}
+        <div className="relative z-10 pl-16 pb-20 pr-16 max-w-[480px]">
+          <h1 className="text-[clamp(2.4rem,4vw,3.2rem)] font-light tracking-tight mb-5 text-white leading-[1.15]">
             A more intentional<br />you.
           </h1>
-          <p className="text-lg text-dash-text-secondary font-light mb-8">
+          <p className="text-[17px] text-white/50 font-light mb-8 leading-relaxed">
             One place for your day.
           </p>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-dash-text-muted font-medium">
-            ORGANIZE · REFLECT · GROW
+          <div className="text-[10px] uppercase tracking-[0.25em] text-white/30 font-medium">
+            Organize · Reflect · Grow
           </div>
         </div>
       </div>
 
-      {/* RIGHT PANEL */}
-      <div className="flex-1 flex flex-col justify-center relative bg-transparent">
+      {/* RIGHT PANEL — Form */}
+      <div className="flex-1 md:w-1/2 flex flex-col justify-center relative min-h-[100dvh] md:min-h-0 overflow-y-auto md:overflow-hidden py-12 md:py-0">
         {/* Mobile brand (hidden on desktop) */}
-        <div className="md:hidden absolute top-8 left-8">
-          <div className="text-xl font-medium tracking-widest text-dash-text">NIVIO</div>
+        <div className="md:hidden absolute top-8 left-6">
+          <div className="text-[13px] font-medium tracking-[0.3em] text-white/90">NIVIO</div>
         </div>
-        
-        {/* The form area */}
-        <div className="w-full max-w-[400px] mx-auto px-6 sm:px-0">
+
+        {/* Form area — centered vertically, constrained width */}
+        <div className="w-full max-w-[380px] mx-auto px-6 sm:px-0">
           {children}
         </div>
       </div>
