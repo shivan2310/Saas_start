@@ -92,7 +92,7 @@ export default function SignupPage() {
 
   const isDisabled = isSubmitting || oauthLoading !== null;
 
-  if (authLoading || isAuthenticated) {
+  if (isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#080A09]">
         <div className="w-6 h-6 border-2 border-white/10 border-t-white/70 rounded-full animate-spin" />

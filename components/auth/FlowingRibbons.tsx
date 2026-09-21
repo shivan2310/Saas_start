@@ -1,135 +1,170 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 
 /**
  * FlowingRibbons — Abstract, flowing line-art animation for the auth branding panel.
  *
- * Renders multiple thin, elegant cubic-bezier curves that enter from the upper-left
- * and sweep diagonally down toward the lower-right, creating a graceful ribbon-like
- * composition. Uses requestAnimationFrame for seamless, smooth, periodic motion.
+ * Renders multiple thin, elegant cubic-bezier curves that enter from the left edge
+ * and sweep diagonally down toward the lower-right area. Uses pure SVG and GPU-accelerated
+ * CSS animations (combining `stroke-dashoffset` for longitudinal flow along the curves
+ * and subtle transverse wave transformations).
  *
- * Respects `prefers-reduced-motion` by rendering a static snapshot.
+ * - Zero external animation libraries
+ * - Mathematically seamless, periodic looping with zero jumps or resets
+ * - Staggered durations, delays, and phases for a coordinated organic ribbon feel
+ * - Strictly respects `prefers-reduced-motion`
  */
+
+interface RibbonConfig {
+  d: string;
+  opacity: number;
+  strokeWidth: number;
+  dashArray: string;
+  flowDuration: number;
+  flowDelay: number;
+  swayDuration: number;
+  swayDelay: number;
+  swayX: number;
+  swayY: number;
+}
 
 const LINE_COUNT = 11;
 
-interface RibbonLine {
-  baseD: string;
-  opacity: number;
-  strokeWidth: number;
-  phaseOffset: number;
+function generateRibbonLines(): RibbonConfig[] {
+  const lines: RibbonConfig[] = [];
+
+  // Pre-configured dash patterns (each sum is exactly 1000 to match pathLength=1000)
+  const dashPatterns = [
+    "460 90 360 90",
+    "520 70 340 70",
+    "420 110 360 110",
+    "540 60 340 60",
+    "480 80 360 80",
+    "560 60 320 60",
+    "440 90 380 90",
+    "510 80 330 80",
+    "470 90 350 90",
+    "530 70 330 70",
+    "450 100 350 100",
+  ];
+
+  // Staggered timing configurations
+  const timings = [
+    { flowDuration: 14.0, flowDelay: 0.0, swayDuration: 9.0, swayDelay: 0.0, swayX: 14, swayY: -12 },
+    { flowDuration: 17.0, flowDelay: -3.5, swayDuration: 11.0, swayDelay: -2.0, swayX: -10, swayY: 16 },
+    { flowDuration: 13.0, flowDelay: -7.0, swayDuration: 8.5, swayDelay: -4.0, swayX: 16, swayY: 10 },
+    { flowDuration: 19.0, flowDelay: -2.0, swayDuration: 12.0, swayDelay: -1.0, swayX: -12, swayY: -10 },
+    { flowDuration: 15.0, flowDelay: -8.5, swayDuration: 10.0, swayDelay: -5.0, swayX: 12, swayY: 18 },
+    { flowDuration: 13.5, flowDelay: -4.0, swayDuration: 9.5, swayDelay: -3.0, swayX: -15, swayY: 12 },
+    { flowDuration: 18.0, flowDelay: -10.0, swayDuration: 11.5, swayDelay: -6.0, swayX: 18, swayY: -14 },
+    { flowDuration: 16.0, flowDelay: -1.5, swayDuration: 8.0, swayDelay: -2.5, swayX: -12, swayY: -16 },
+    { flowDuration: 14.5, flowDelay: -7.5, swayDuration: 10.5, swayDelay: -4.5, swayX: 15, swayY: 14 },
+    { flowDuration: 20.0, flowDelay: -5.0, swayDuration: 12.5, swayDelay: -1.5, swayX: -14, swayY: 16 },
+    { flowDuration: 15.5, flowDelay: -3.0, swayDuration: 9.0, swayDelay: -3.5, swayX: 12, swayY: -12 },
+  ];
+
+  for (let i = 0; i < LINE_COUNT; i++) {
+    const t = i / (LINE_COUNT - 1); // 0 -> 1
+    const distFromCenter = Math.abs(t - 0.5) * 2; // 0 at center, 1 at edges
+
+    // Path geometry across 1200 x 1000 coordinate space
+    const startY = 80 + t * 340;
+    const cp1x = 260 + t * 70;
+    const cp1y = 150 + t * 300;
+    const cp2x = 680 + t * 90;
+    const cp2y = 460 + t * 320;
+    const endY = 620 + t * 340;
+
+    const d = `M -50 ${startY.toFixed(1)} C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, 1250 ${endY.toFixed(1)}`;
+
+    lines.push({
+      d,
+      opacity: Number((0.22 - distFromCenter * 0.12).toFixed(3)),
+      strokeWidth: Number((1.6 - distFromCenter * 0.6).toFixed(2)),
+      dashArray: dashPatterns[i],
+      ...timings[i],
+    });
+  }
+
+  return lines;
 }
 
-/** Generate SVG path data for a single ribbon line at a given animation time. */
-function buildRibbonPath(index: number, total: number, time: number): string {
-  const t = index / (total - 1); // 0 → 1
-  const spread = 32;
-
-  // Phase offset per line for organic staggering
-  const phase = index * 0.7 + time;
-
-  // Start point: left edge, upper-to-mid portion
-  const startY = 10 + t * spread + Math.sin(phase * 0.4) * 3;
-
-  // First control point
-  const cp1x = 20 + t * 5 + Math.sin(phase * 0.3 + 1) * 2;
-  const cp1y = 18 + t * spread * 0.65 + Math.sin(phase * 0.5 + 2) * 4;
-
-  // Second control point
-  const cp2x = 52 + t * 8 + Math.sin(phase * 0.35 + 3) * 3;
-  const cp2y = 42 + t * spread * 0.85 + Math.sin(phase * 0.45 + 1.5) * 5;
-
-  // End point: right edge, lower area
-  const endX = 108;
-  const endY = 58 + t * spread * 1.05 + Math.sin(phase * 0.3 + 4) * 3;
-
-  return `M -5 ${startY.toFixed(2)} C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${endX} ${endY.toFixed(2)}`;
-}
-
-function buildStaticRibbonPath(index: number, total: number): string {
-  return buildRibbonPath(index, total, 0);
-}
-
-function getLineProps(index: number, total: number): Omit<RibbonLine, "baseD"> {
-  const t = index / (total - 1);
-  const distFromCenter = Math.abs(t - 0.5) * 2;
-  return {
-    opacity: 0.14 - distFromCenter * 0.08,
-    strokeWidth: 0.3 + (1 - distFromCenter) * 0.2,
-    phaseOffset: index * 0.7,
-  };
-}
+const RIBBON_LINES = generateRibbonLines();
 
 export function FlowingRibbons() {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const pathRefs = useRef<(SVGPathElement | null)[]>([]);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  // Generate CSS keyframes for flow and sway
+  const keyframesCss = `
+    @keyframes ribbon-flow {
+      0% {
+        stroke-dashoffset: 0;
+      }
+      100% {
+        stroke-dashoffset: -1000;
+      }
+    }
 
-  // Check reduced motion preference
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  // Animation loop
-  useEffect(() => {
-    if (reducedMotion) return;
-
-    let frameId: number;
-    let startTime: number | null = null;
-
-    const animate = (timestamp: number) => {
-      if (startTime === null) startTime = timestamp;
-      // Slow time progression for gentle, periodic motion
-      const elapsed = (timestamp - startTime) / 1000;
-      const time = elapsed * 0.15; // Very slow evolution
-
-      pathRefs.current.forEach((path, i) => {
-        if (path) {
-          path.setAttribute("d", buildRibbonPath(i, LINE_COUNT, time));
+    ${RIBBON_LINES.map(
+      (line, i) => `
+      @keyframes ribbon-sway-${i} {
+        0%, 100% {
+          transform: translate(0px, 0px);
         }
-      });
+        50% {
+          transform: translate(${line.swayX}px, ${line.swayY}px);
+        }
+      }
+    `
+    ).join("\n")}
 
-      frameId = requestAnimationFrame(animate);
-    };
-
-    frameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameId);
-  }, [reducedMotion]);
-
-  const lineProps = Array.from({ length: LINE_COUNT }, (_, i) => ({
-    ...getLineProps(i, LINE_COUNT),
-    staticPath: buildStaticRibbonPath(i, LINE_COUNT),
-  }));
+    @media (prefers-reduced-motion: reduce) {
+      .flowing-ribbon-group,
+      .flowing-ribbon-path {
+        animation: none !important;
+        stroke-dashoffset: 0 !important;
+        transform: none !important;
+      }
+    }
+  `;
 
   return (
     <div
       className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
       aria-hidden="true"
     >
+      <style dangerouslySetInnerHTML={{ __html: keyframesCss }} />
       <svg
-        ref={svgRef}
-        viewBox="0 0 100 100"
+        viewBox="0 0 1200 1000"
         preserveAspectRatio="none"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ width: "100%", height: "100%" }}
+        className="w-full h-full"
       >
-        {lineProps.map((line, i) => (
-          <path
+        {RIBBON_LINES.map((line, i) => (
+          <g
             key={i}
-            ref={(el) => { pathRefs.current[i] = el; }}
-            d={line.staticPath}
-            stroke="rgba(255, 255, 255, 1)"
-            strokeOpacity={line.opacity}
-            strokeWidth={line.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
+            className="flowing-ribbon-group"
+            style={{
+              animation: `ribbon-sway-${i} ${line.swayDuration}s ease-in-out infinite ${line.swayDelay}s`,
+              willChange: "transform",
+            }}
+          >
+            <path
+              className="flowing-ribbon-path"
+              d={line.d}
+              pathLength={1000}
+              stroke="rgba(255, 255, 255, 1)"
+              strokeOpacity={line.opacity}
+              strokeWidth={line.strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={line.dashArray}
+              fill="none"
+              style={{
+                animation: `ribbon-flow ${line.flowDuration}s linear infinite ${line.flowDelay}s`,
+                willChange: "stroke-dashoffset",
+              }}
+            />
+          </g>
         ))}
       </svg>
     </div>
