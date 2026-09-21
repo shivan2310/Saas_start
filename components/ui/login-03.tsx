@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "motion/react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { GatewayFlow } from "@/components/ui/gateway-flow";
 
 const ENTER =
   "animate-in fade-in slide-in-from-bottom-4 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] fill-mode-both motion-reduce:animate-none";
@@ -133,6 +134,7 @@ const Login03 = () => {
         data-slot="login-main"
         className="relative flex min-h-svh flex-col justify-center px-8 lg:min-h-0"
       >
+        <GatewayFlow />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0 opacity-60"
