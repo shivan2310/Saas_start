@@ -4,7 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { DASHBOARD_NAV_ITEMS } from "./navItems";
 import { authService } from "@/services/authService";
 
 export const Sidebar: React.FC = () => {
@@ -18,14 +19,6 @@ export const Sidebar: React.FC = () => {
     }
   };
 
-  const navItems = [
-    { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { label: "To-dos", href: "/dashboard/tasks", icon: CheckSquare },
-    { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
-    { label: "Important Dates", href: "/dashboard/dates", icon: CalendarDays },
-    { label: "Journal", href: "/dashboard/diary", icon: BookOpen },
-    { label: "Settings & Profile", href: "/dashboard/settings", icon: Settings },
-  ];
 
   return (
     <>
@@ -39,7 +32,7 @@ export const Sidebar: React.FC = () => {
           </div>
 
           <nav className="p-4 space-y-1">
-            {navItems.map((item) => {
+            {DASHBOARD_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (

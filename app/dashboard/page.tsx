@@ -4,14 +4,16 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
-import { personalService } from "@/services/personalService";
+import { expenseService } from "@/services/expenseService";
+import { dateService } from "@/services/dateService";
+import { diaryService } from "@/services/diaryService";
 import { todoService } from "@/services/todoService";
 import { getAuthErrorMessage } from "@/lib/authErrors";
 import { Expense, ImportantDate, TodoItem, DiaryEntry } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, toLocalDateKey } from "@/lib/utils";
 import {
   AlertCircle,
   ArrowRight,
@@ -44,10 +46,10 @@ export default function DashboardPage() {
 
     setLoadingOverview(true);
     Promise.allSettled([
-      personalService.getExpenses(user.uid),
+      expenseService.getExpenses(user.uid),
       todoService.getUserTodos(user.uid),
-      personalService.getDates(user.uid),
-      personalService.getDiary(user.uid)
+      dateService.getDates(user.uid),
+      diaryService.getDiary(user.uid)
     ])
       .then(([expensesRes, todosRes, datesRes, diaryRes]) => {
         if (expensesRes.status === 'fulfilled') {
@@ -374,16 +376,6 @@ export default function DashboardPage() {
         <div className="lg:col-span-4 space-y-6">
           {/* Expense Trend Mini Chart */}
           {expenses.length > 0 && (() => {
-            function toLocalDateKey(date: Date | string | undefined | null): string {
-              if (!date) return "";
-              const d = typeof date === "string" ? new Date(date) : date;
-              if (isNaN(d.getTime())) return "";
-              const year = d.getFullYear();
-              const month = String(d.getMonth() + 1).padStart(2, "0");
-              const day = String(d.getDate()).padStart(2, "0");
-              return `${year}-${month}-${day}`;
-            }
-
             const today = new Date();
             const last7Days = Array.from({ length: 7 }, (_, i) => {
               const d = new Date();
@@ -575,35 +567,38 @@ export default function DashboardPage() {
             <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
               {(() => {
                 const activities: Array<{ date: string; items: string[] }> = [];
-                const todayStr = new Date().toISOString().split('T')[0];
-                const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                const today = new Date();
+                const todayKey = toLocalDateKey(today);
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                const yesterdayKey = toLocalDateKey(yesterday);
 
                 const todayItems: string[] = [];
                 const yesterdayItems: string[] = [];
 
-                todos.filter(t => t.done && t.createdAt.startsWith(todayStr)).forEach(t => {
+                todos.filter(t => t.done && toLocalDateKey(t.createdAt) === todayKey).forEach(t => {
                   todayItems.push(`Completed "${t.text}"`);
                 });
-                expenses.filter(e => e.createdAt.startsWith(todayStr)).forEach(e => {
+                expenses.filter(e => toLocalDateKey(e.createdAt) === todayKey).forEach(e => {
                   todayItems.push(`Added expense ₹${e.amount}`);
                 });
-                diaryEntries.filter(d => d.createdAt.startsWith(todayStr)).forEach(d => {
+                diaryEntries.filter(d => toLocalDateKey(d.createdAt) === todayKey).forEach(d => {
                   todayItems.push(`Created journal entry`);
                 });
-                importantDates.filter(d => d.createdAt.startsWith(todayStr)).forEach(d => {
+                importantDates.filter(d => toLocalDateKey(d.createdAt) === todayKey).forEach(d => {
                   todayItems.push(`Added important date`);
                 });
 
-                todos.filter(t => t.done && t.createdAt.startsWith(yesterdayStr)).forEach(t => {
+                todos.filter(t => t.done && toLocalDateKey(t.createdAt) === yesterdayKey).forEach(t => {
                   yesterdayItems.push(`Completed "${t.text}"`);
                 });
-                expenses.filter(e => e.createdAt.startsWith(yesterdayStr)).forEach(e => {
+                expenses.filter(e => toLocalDateKey(e.createdAt) === yesterdayKey).forEach(e => {
                   yesterdayItems.push(`Added expense ₹${e.amount}`);
                 });
-                diaryEntries.filter(d => d.createdAt.startsWith(yesterdayStr)).forEach(d => {
+                diaryEntries.filter(d => toLocalDateKey(d.createdAt) === yesterdayKey).forEach(d => {
                   yesterdayItems.push(`Created journal entry`);
                 });
-                importantDates.filter(d => d.createdAt.startsWith(yesterdayStr)).forEach(d => {
+                importantDates.filter(d => toLocalDateKey(d.createdAt) === yesterdayKey).forEach(d => {
                   yesterdayItems.push(`Added important date`);
                 });
 

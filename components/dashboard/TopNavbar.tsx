@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
-import { User, CheckCircle2, AlertTriangle, LogOut, Menu, X, LayoutDashboard, CheckSquare, Wallet, CalendarDays, BookOpen, Settings } from "lucide-react";
+import { User, CheckCircle2, AlertTriangle, LogOut, Menu, X } from "lucide-react";
+import { DASHBOARD_NAV_ITEMS } from "./navItems";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
@@ -103,14 +104,7 @@ export const TopNavbar: React.FC = () => {
           aria-label="Mobile dashboard navigation"
           className="xl:hidden flex w-full flex-col gap-1 border-t border-dash-border-secondary bg-dash-header px-3 py-3"
         >
-          {[
-            { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-            { label: "To-dos", href: "/dashboard/tasks", icon: CheckSquare },
-            { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
-            { label: "Important Dates", href: "/dashboard/dates", icon: CalendarDays },
-            { label: "Journal", href: "/dashboard/diary", icon: BookOpen },
-            { label: "Settings & Profile", href: "/dashboard/settings", icon: Settings },
-          ].map((item) => {
+          {DASHBOARD_NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (

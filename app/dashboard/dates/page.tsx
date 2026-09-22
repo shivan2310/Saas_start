@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Trash2, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { personalService } from "@/services/personalService";
+import { dateService } from "@/services/dateService";
 import { ImportantDate } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -24,7 +24,7 @@ export default function DatesPage() {
 
   useEffect(() => { 
     if (user) {
-      personalService.getDates(user.uid).then(data => {
+      dateService.getDates(user.uid).then(data => {
         setItems(data.sort((a, b) => a.date.localeCompare(b.date)));
         setLoading(false);
       });
@@ -37,7 +37,7 @@ export default function DatesPage() {
     
     setIsSubmitting(true);
     try {
-      const item = await personalService.addDate(user.uid, title.trim(), date, notes.trim()); 
+      const item = await dateService.addDate(user.uid, title.trim(), date, notes.trim()); 
       setItems((v) => [...v, item].sort((a, b) => a.date.localeCompare(b.date))); 
       setTitle(""); 
       setDate(""); 
@@ -51,7 +51,7 @@ export default function DatesPage() {
   };
 
   const remove = async (id: string) => { 
-    await personalService.remove("importantDates", id); 
+    await dateService.deleteDate(id); 
     setItems((v) => v.filter((item) => item.id !== id)); 
   };
 

@@ -3,12 +3,12 @@
 import { FormEvent, useEffect, useMemo, useState, useRef, useCallback, memo } from "react";
 import { Trash2, Plus, ChevronDown, Search, Calendar, Filter, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { personalService } from "@/services/personalService";
+import { expenseService } from "@/services/expenseService";
 import { Expense } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { cn } from "@/lib/utils";
+import { cn, toLocalDateKey } from "@/lib/utils";
 import { DonutChart } from "@/components/dashboard/DonutChart";
 
 const DEFAULT_CATEGORIES = [
@@ -62,18 +62,6 @@ function formatDateShort(date: string | Date): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-/**
- * Local-timezone YYYY-MM-DD key. Never bucket dates via toISOString(): it
- * converts to UTC, which shifts expenses created between midnight and the
- * UTC offset onto the wrong calendar day for non-UTC timezones.
- */
-function toLocalDateKey(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 /**
  * Inclusive window of exactly `days` local calendar days ending today.
@@ -589,7 +577,7 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     if (user) {
-      personalService.getExpenses(user.uid).then((data) => {
+      expenseService.getExpenses(user.uid).then((data) => {
         setItems(data);
         setLoading(false);
       });
@@ -606,7 +594,7 @@ export default function ExpensesPage() {
 
     setIsSubmitting(true);
     try {
-      const item = await personalService.addExpense(user.uid, description.trim(), numericAmount, finalCategory, paymentType);
+      const item = await expenseService.addExpense(user.uid, description.trim(), numericAmount, finalCategory, paymentType);
       setItems((v) => [item, ...v]);
       setDescription("");
       setAmount("");
@@ -621,7 +609,7 @@ export default function ExpensesPage() {
   };
 
   const remove = async (id: string) => {
-    await personalService.remove("expenses", id);
+    await expenseService.deleteExpense(id);
     setItems((v) => v.filter((item) => item.id !== id));
   };
 

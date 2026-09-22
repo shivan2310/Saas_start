@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Trash2, Plus, Calendar, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { personalService } from "@/services/personalService";
+import { diaryService } from "@/services/diaryService";
 import { DiaryEntry } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -28,9 +28,9 @@ export default function DiaryPage() {
     const loadJournal = async () => {
       setIsLoadingJournal(true);
       try {
-        const entries = await personalService.getDiary(user.uid);
+        const entries = await diaryService.getDiary(user.uid);
         setItems(entries);
-        await personalService.encryptPlainDiaryEntries(user.uid);
+        await diaryService.encryptPlainDiaryEntries(user.uid);
       } catch (error) {
         console.error("Failed to load encrypted journal:", error);
       } finally {
@@ -76,7 +76,7 @@ export default function DiaryPage() {
 
     try {
       if (selectedEntry) {
-        const updated = await personalService.updateDiaryEntry(
+        const updated = await diaryService.updateDiaryEntry(
           selectedEntry.id,
           user.uid,
           title.trim() || "Untitled entry",
@@ -90,7 +90,7 @@ export default function DiaryPage() {
           description: "Your journal entry was updated successfully.",
         });
       } else {
-        const item = await personalService.addDiaryEntry(
+        const item = await diaryService.addDiaryEntry(
           user.uid,
           title.trim() || "Untitled entry",
           content.trim()
@@ -118,7 +118,7 @@ export default function DiaryPage() {
   const removeEntry = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     try {
-      await personalService.remove("diary", id);
+      await diaryService.deleteDiaryEntry(id);
       setItems((v) => v.filter((item) => item.id !== id));
       if (selectedEntry?.id === id) {
         handleNewEntry();
