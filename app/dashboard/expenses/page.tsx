@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState, useRef, useCallback, memo } from "react";
-import { Trash2, Plus, ChevronDown, Search, Calendar, Filter, X } from "lucide-react";
+import { Trash2, Plus, ChevronDown, ChevronLeft, ChevronRight, Search, Calendar, CalendarDays, Filter, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { expenseService } from "@/services/expenseService";
 import { Expense } from "@/types";
@@ -10,6 +10,43 @@ import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn, toLocalDateKey } from "@/lib/utils";
 import { DonutChart } from "@/components/dashboard/DonutChart";
+
+type TxnDateMode = "all" | "month" | "range";
+
+function getCurrentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function formatMonthLabel(monthKey: string): string {
+  if (!monthKey) return "";
+  const parts = monthKey.split("-");
+  if (parts.length < 2) return monthKey;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const d = new Date(year, month, 1);
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function formatDateKey(dateKey: string): string {
+  if (!dateKey) return "";
+  const parts = dateKey.split("-");
+  if (parts.length !== 3) return dateKey;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const d = new Date(year, month, day);
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function formatTransactionDate(date: string | Date): string {
+  const d = new Date(date);
+  const now = new Date();
+  if (d.getFullYear() === now.getFullYear()) {
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  }
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
 
 const DEFAULT_CATEGORIES = [
   "Food",
@@ -519,7 +556,7 @@ function TransactionRow({
 }) {
   return (
     <tr className="border-b border-dash-border-secondary last:border-0 hover:bg-dash-hover/60 transition-colors">
-      <td className="py-3 px-4 text-[12px] text-dash-text-muted whitespace-nowrap">{formatDateShort(item.createdAt)}</td>
+      <td className="py-3 px-4 text-[12px] text-dash-text-muted whitespace-nowrap">{formatTransactionDate(item.createdAt)}</td>
       <td className="py-3 px-4 text-[13px] font-medium text-dash-text">{item.description}</td>
       <td className="py-3 px-4 text-[12px] text-dash-text-secondary">{item.category}</td>
       <td className="py-3 px-4 text-[12px] text-dash-text-muted capitalize">{item.paymentType || "—"}</td>
@@ -562,9 +599,19 @@ export default function ExpensesPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [period, setPeriod] = useState<Period>("30d");
+
+  // Transactions Filter States
+  const [txnDateMode, setTxnDateMode] = useState<TxnDateMode>("all");
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => getCurrentMonthKey());
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortDesc, setSortDesc] = useState(true);
+
+  // Pagination for transactions
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const categories = useMemo(() => {
     const uniqueCategories = new Map<string, string>();
@@ -617,17 +664,181 @@ export default function ExpensesPage() {
   // Stable per-period window: exactly `periodDays` local calendar days ending today.
   const periodStart = useMemo(() => getPeriodWindow(periodDays).start, [periodDays]);
 
+  // Available months that have transactions + current month
+  const availableMonths = useMemo(() => {
+    const monthSet = new Set<string>();
+    const currentKey = getCurrentMonthKey();
+    monthSet.add(currentKey);
+    if (selectedMonth) monthSet.add(selectedMonth);
+    items.forEach((item) => {
+      const key = toLocalDateKey(item.createdAt);
+      if (key && key.length >= 7) {
+        monthSet.add(key.slice(0, 7));
+      }
+    });
+    return Array.from(monthSet).sort().reverse();
+  }, [items, selectedMonth]);
+
+  const goToPrevMonth = () => {
+    const [y, m] = (selectedMonth || getCurrentMonthKey()).split("-").map(Number);
+    const d = new Date(y, m - 1 - 1, 1);
+    const prevKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    setSelectedMonth(prevKey);
+  };
+
+  const goToNextMonth = () => {
+    const [y, m] = (selectedMonth || getCurrentMonthKey()).split("-").map(Number);
+    const d = new Date(y, m - 1 + 1, 1);
+    const nextKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    setSelectedMonth(nextKey);
+  };
+
+  const goToCurrentMonth = () => {
+    setSelectedMonth(getCurrentMonthKey());
+  };
+
+  const applyRangePreset = (preset: "7d" | "30d" | "thisMonth" | "lastMonth" | "thisYear" | "clear") => {
+    const now = new Date();
+    const todayKey = toLocalDateKey(now);
+    if (preset === "clear") {
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+    if (preset === "7d") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 6);
+      setStartDate(toLocalDateKey(d));
+      setEndDate(todayKey);
+      return;
+    }
+    if (preset === "30d") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 29);
+      setStartDate(toLocalDateKey(d));
+      setEndDate(todayKey);
+      return;
+    }
+    if (preset === "thisMonth") {
+      const d = new Date(now.getFullYear(), now.getMonth(), 1);
+      setStartDate(toLocalDateKey(d));
+      setEndDate(todayKey);
+      return;
+    }
+    if (preset === "lastMonth") {
+      const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+      setStartDate(toLocalDateKey(firstDay));
+      setEndDate(toLocalDateKey(lastDay));
+      return;
+    }
+    if (preset === "thisYear") {
+      const firstDay = new Date(now.getFullYear(), 0, 1);
+      setStartDate(toLocalDateKey(firstDay));
+      setEndDate(todayKey);
+      return;
+    }
+  };
+
+  const activePreset = useMemo(() => {
+    if (txnDateMode !== "range" || !startDate || !endDate) return null;
+    const now = new Date();
+    const todayKey = toLocalDateKey(now);
+    if (endDate !== todayKey) {
+      const firstDayLM = toLocalDateKey(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      const lastDayLM = toLocalDateKey(new Date(now.getFullYear(), now.getMonth(), 0));
+      if (startDate === firstDayLM && endDate === lastDayLM) return "lastMonth";
+      return null;
+    }
+    const d7 = new Date(now);
+    d7.setDate(d7.getDate() - 6);
+    if (startDate === toLocalDateKey(d7)) return "7d";
+
+    const d30 = new Date(now);
+    d30.setDate(d30.getDate() - 29);
+    if (startDate === toLocalDateKey(d30)) return "30d";
+
+    const thisMonthStart = toLocalDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+    if (startDate === thisMonthStart) return "thisMonth";
+
+    const thisYearStart = toLocalDateKey(new Date(now.getFullYear(), 0, 1));
+    if (startDate === thisYearStart) return "thisYear";
+
+    return null;
+  }, [txnDateMode, startDate, endDate]);
+
+  // Filtered transactions based on All / Month / Date Range
   const filteredItems = useMemo(() => {
+    const effectiveStart = startDate && endDate && startDate > endDate ? endDate : startDate;
+    const effectiveEnd = startDate && endDate && startDate > endDate ? startDate : endDate;
+
     return items
-      .filter((item) => new Date(item.createdAt).getTime() >= periodStart.getTime())
+      .filter((item) => {
+        const itemDateKey = toLocalDateKey(item.createdAt);
+        if (txnDateMode === "month") {
+          if (selectedMonth && !itemDateKey.startsWith(selectedMonth)) {
+            return false;
+          }
+        } else if (txnDateMode === "range") {
+          if (effectiveStart && itemDateKey < effectiveStart) return false;
+          if (effectiveEnd && itemDateKey > effectiveEnd) return false;
+        }
+        return true;
+      })
       .filter((item) => categoryFilter === "all" || item.category === categoryFilter)
       .filter((item) =>
         searchQuery === "" ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase())
+        item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.paymentType && item.paymentType.toLowerCase().includes(searchQuery.toLowerCase()))
       )
-      .sort((a, b) => (sortDesc ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-  }, [items, periodStart, categoryFilter, searchQuery, sortDesc]);
+      .sort((a, b) =>
+        sortDesc
+          ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+  }, [items, txnDateMode, selectedMonth, startDate, endDate, categoryFilter, searchQuery, sortDesc]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [txnDateMode, selectedMonth, startDate, endDate, categoryFilter, searchQuery]);
+
+  const filteredTotal = useMemo(() => {
+    return filteredItems.reduce((sum, item) => sum + item.amount, 0);
+  }, [filteredItems]);
+
+  const totalPages = Math.ceil(filteredItems.length / pageSize) || 1;
+
+  const paginatedItems = useMemo(() => {
+    if (pageSize === -1) return filteredItems;
+    const start = (currentPage - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, currentPage, pageSize]);
+
+  const itemsInSelectedMonthCount = useMemo(() => {
+    if (!selectedMonth) return 0;
+    return items.filter((it) => toLocalDateKey(it.createdAt).startsWith(selectedMonth)).length;
+  }, [items, selectedMonth]);
+
+  const filterSummaryText = useMemo(() => {
+    if (txnDateMode === "all") {
+      return "All Time";
+    }
+    if (txnDateMode === "month") {
+      return formatMonthLabel(selectedMonth);
+    }
+    if (txnDateMode === "range") {
+      if (startDate && endDate) {
+        if (startDate === endDate) return formatDateKey(startDate);
+        return `${formatDateKey(startDate)} – ${formatDateKey(endDate)}`;
+      }
+      if (startDate) return `From ${formatDateKey(startDate)}`;
+      if (endDate) return `Up to ${formatDateKey(endDate)}`;
+      return "Custom Range (All)";
+    }
+    return "All Time";
+  }, [txnDateMode, selectedMonth, startDate, endDate]);
 
   const periodItems = useMemo(() => {
     return items.filter((item) => new Date(item.createdAt).getTime() >= periodStart.getTime());
@@ -893,45 +1104,254 @@ export default function ExpensesPage() {
       </div>
 
       {/* Transactions Section */}
-      <div className="bg-dash-card border border-dash-border rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-dash-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h2 className="text-[15px] font-semibold text-dash-text">Recent transactions</h2>
-            <p className="text-[12px] text-dash-text-muted mt-0.5">{filteredItems.length} transaction{filteredItems.length !== 1 ? "s" : ""}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dash-text-muted" />
-              <input
-                type="text"
-                placeholder="Search expenses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-dash-surface border border-dash-border rounded-md pl-9 pr-3 py-2 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-accent focus:outline-none w-[200px] sm:w-[280px]"
-              />
+      <div className="bg-dash-card border border-dash-border rounded-xl overflow-hidden shadow-xs">
+        {/* Main Header */}
+        <div className="p-5 border-b border-dash-border space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-[17px] font-semibold text-dash-text tracking-tight">Recent transactions</h2>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-dash-surface border border-dash-border text-dash-text-secondary">
+                  {filteredItems.length}
+                </span>
+              </div>
+              <p className="text-[12px] text-dash-text-muted mt-1 flex flex-wrap items-center gap-1.5">
+                <span>Total: <strong className="text-dash-text font-semibold">{formatCurrencyPrecise(filteredTotal)}</strong></span>
+                <span>•</span>
+                <span className="text-dash-accent font-medium">{filterSummaryText}</span>
+              </p>
             </div>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="bg-dash-surface border border-dash-border rounded-md px-3 py-2 text-[13px] text-dash-text-secondary focus:border-dash-accent focus:outline-none cursor-pointer"
-              aria-label="Filter by category"
-            >
-              <option value="all">All categories</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            <button
-              onClick={() => setSortDesc(!sortDesc)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-dash-surface border border-dash-border rounded-md text-[12px] text-dash-text-secondary hover:text-dash-text transition-dash"
-              aria-label={sortDesc ? "Sort ascending" : "Sort descending"}
-            >
-              <ChevronDown className={cn("h-4 w-4 transition-transform", sortDesc && "rotate-180")} />
-              <span className="hidden sm:inline">Date</span>
-            </button>
+
+            {/* Time Filter Mode Tabs: All, By Month, Date Range */}
+            <div className="flex items-center p-1 bg-dash-surface border border-dash-border rounded-lg self-start md:self-auto" role="group" aria-label="Transaction date filter mode">
+              <button
+                type="button"
+                onClick={() => setTxnDateMode("all")}
+                className={cn(
+                  "px-3 py-1.5 text-[12px] font-medium rounded-md transition-dash flex items-center gap-1.5",
+                  txnDateMode === "all"
+                    ? "bg-dash-card text-dash-text shadow-sm border border-dash-border/60"
+                    : "text-dash-text-secondary hover:text-dash-text"
+                )}
+                aria-pressed={txnDateMode === "all"}
+              >
+                All Transactions
+              </button>
+              <button
+                type="button"
+                onClick={() => setTxnDateMode("month")}
+                className={cn(
+                  "px-3 py-1.5 text-[12px] font-medium rounded-md transition-dash flex items-center gap-1.5",
+                  txnDateMode === "month"
+                    ? "bg-dash-card text-dash-text shadow-sm border border-dash-border/60"
+                    : "text-dash-text-secondary hover:text-dash-text"
+                )}
+                aria-pressed={txnDateMode === "month"}
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                By Month
+              </button>
+              <button
+                type="button"
+                onClick={() => setTxnDateMode("range")}
+                className={cn(
+                  "px-3 py-1.5 text-[12px] font-medium rounded-md transition-dash flex items-center gap-1.5",
+                  txnDateMode === "range"
+                    ? "bg-dash-card text-dash-text shadow-sm border border-dash-border/60"
+                    : "text-dash-text-secondary hover:text-dash-text"
+                )}
+                aria-pressed={txnDateMode === "range"}
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+                Date Range
+              </button>
+            </div>
+          </div>
+
+          {/* Conditional Sub-Bar: By Month mode */}
+          {txnDateMode === "month" && (
+            <div className="pt-3 border-t border-dash-border-secondary flex flex-wrap items-center justify-between gap-3 animate-in fade-in duration-200">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[12px] font-medium text-dash-text-secondary">Select Month:</span>
+                
+                {/* Previous Month */}
+                <button
+                  type="button"
+                  onClick={goToPrevMonth}
+                  className="p-1.5 rounded-md bg-dash-surface border border-dash-border text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover transition-dash"
+                  title="Previous month"
+                  aria-label="Previous month"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                {/* Dropdown of available months */}
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="bg-dash-surface border border-dash-border rounded-md px-3 py-1.5 text-[13px] font-medium text-dash-text focus:border-dash-accent focus:outline-none cursor-pointer"
+                  aria-label="Select month"
+                >
+                  {availableMonths.map((m) => {
+                    const count = items.filter((it) => toLocalDateKey(it.createdAt).startsWith(m)).length;
+                    return (
+                      <option key={m} value={m} className="bg-dash-card text-dash-text">
+                        {formatMonthLabel(m)} ({count})
+                      </option>
+                    );
+                  })}
+                </select>
+
+                {/* Next Month */}
+                <button
+                  type="button"
+                  onClick={goToNextMonth}
+                  className="p-1.5 rounded-md bg-dash-surface border border-dash-border text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover transition-dash"
+                  title="Next month"
+                  aria-label="Next month"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+
+                {/* Direct Month Input (HTML5) */}
+                <input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => e.target.value && setSelectedMonth(e.target.value)}
+                  className="bg-dash-surface border border-dash-border rounded-md px-2.5 py-1.5 text-[12px] text-dash-text focus:border-dash-accent focus:outline-none [color-scheme:light] dark:[color-scheme:dark]"
+                  title="Choose specific month and year"
+                  aria-label="Month picker"
+                />
+
+                {/* Quick button to return to Current Month */}
+                {selectedMonth !== getCurrentMonthKey() && (
+                  <button
+                    type="button"
+                    onClick={goToCurrentMonth}
+                    className="text-[11px] font-medium px-2.5 py-1 rounded bg-dash-surface hover:bg-dash-hover text-dash-accent border border-dash-border transition-dash"
+                  >
+                    Current Month
+                  </button>
+                )}
+              </div>
+
+              <div className="text-[12px] text-dash-text-muted">
+                {itemsInSelectedMonthCount} expense{itemsInSelectedMonthCount !== 1 ? "s" : ""} in {formatMonthLabel(selectedMonth)}
+              </div>
+            </div>
+          )}
+
+          {/* Conditional Sub-Bar: Custom Date Range mode */}
+          {txnDateMode === "range" && (
+            <div className="pt-3 border-t border-dash-border-secondary space-y-2.5 animate-in fade-in duration-200">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-[12px] font-medium text-dash-text-secondary whitespace-nowrap">From:</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    max={endDate || undefined}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="bg-dash-surface border border-dash-border rounded-md px-2.5 py-1.5 text-[12px] text-dash-text focus:border-dash-accent focus:outline-none [color-scheme:light] dark:[color-scheme:dark]"
+                    aria-label="Start date"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-[12px] font-medium text-dash-text-secondary whitespace-nowrap">To:</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={startDate || undefined}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="bg-dash-surface border border-dash-border rounded-md px-2.5 py-1.5 text-[12px] text-dash-text focus:border-dash-accent focus:outline-none [color-scheme:light] dark:[color-scheme:dark]"
+                    aria-label="End date"
+                  />
+                </div>
+                {(startDate || endDate) && (
+                  <button
+                    type="button"
+                    onClick={() => { setStartDate(""); setEndDate(""); }}
+                    className="text-[11px] font-medium px-2 py-1 rounded text-dash-text-muted hover:text-dash-text hover:bg-dash-hover transition-dash flex items-center gap-1"
+                    title="Clear date range"
+                  >
+                    <X className="h-3.5 w-3.5" /> Clear range
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Presets for Date Range */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-medium text-dash-text-muted mr-1">Presets:</span>
+                {[
+                  { id: "7d", label: "Last 7 Days" },
+                  { id: "30d", label: "Last 30 Days" },
+                  { id: "thisMonth", label: "This Month" },
+                  { id: "lastMonth", label: "Last Month" },
+                  { id: "thisYear", label: "This Year" },
+                ].map((p) => {
+                  const isPresetActive = activePreset === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => applyRangePreset(p.id as any)}
+                      className={cn(
+                        "px-2.5 py-1 text-[11px] font-medium rounded-md border transition-dash",
+                        isPresetActive
+                          ? "bg-dash-accent/15 text-dash-accent border-dash-accent/40 font-semibold"
+                          : "bg-dash-surface border-dash-border text-dash-text-secondary hover:text-dash-text hover:bg-dash-hover"
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Search, Category Filter, and Sorting Controls */}
+          <div className="pt-3 border-t border-dash-border-secondary flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+              <div className="relative flex-1 sm:max-w-xs min-w-[180px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dash-text-muted" />
+                <input
+                  type="text"
+                  placeholder="Search description, category, payment..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-dash-surface border border-dash-border rounded-md pl-9 pr-3 py-1.5 text-[13px] text-dash-text placeholder:text-dash-text-muted focus:border-dash-accent focus:outline-none"
+                />
+              </div>
+
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="bg-dash-surface border border-dash-border rounded-md px-3 py-1.5 text-[13px] text-dash-text-secondary focus:border-dash-accent focus:outline-none cursor-pointer"
+                aria-label="Filter by category"
+              >
+                <option value="all">All categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSortDesc(!sortDesc)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-dash-surface border border-dash-border rounded-md text-[12px] font-medium text-dash-text-secondary hover:text-dash-text transition-dash"
+                aria-label={sortDesc ? "Sort oldest first" : "Sort newest first"}
+              >
+                <ChevronDown className={cn("h-4 w-4 transition-transform", !sortDesc && "rotate-180")} />
+                <span>{sortDesc ? "Newest first" : "Oldest first"}</span>
+              </button>
+            </div>
           </div>
         </div>
 
+        {/* Transactions Table */}
         <div className="overflow-x-auto">
           <table className="w-full" role="table">
             <thead>
@@ -963,23 +1383,95 @@ export default function ExpensesPage() {
                         </Button>
                       </>
                     ) : (
-                      <>
-                        <p className="mb-2">No transactions match your filters.</p>
-                        <button onClick={() => { setSearchQuery(""); setCategoryFilter("all"); }} className="text-dash-accent hover:underline text-sm">
-                          Clear filters
-                        </button>
-                      </>
+                      <div className="space-y-3">
+                        <p className="text-[14px] text-dash-text-muted">
+                          {txnDateMode === "month"
+                            ? `No transactions recorded for ${formatMonthLabel(selectedMonth)}.`
+                            : txnDateMode === "range" && (startDate || endDate)
+                            ? `No transactions found between ${formatDateKey(startDate) || "beginning"} and ${formatDateKey(endDate) || "today"}.`
+                            : "No transactions match your search or filter."}
+                        </p>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTxnDateMode("all");
+                              setSearchQuery("");
+                              setCategoryFilter("all");
+                              setStartDate("");
+                              setEndDate("");
+                            }}
+                            className="text-xs font-medium px-3 py-1.5 rounded-md bg-dash-surface border border-dash-border text-dash-accent hover:bg-dash-hover transition-dash"
+                          >
+                            View all transactions
+                          </button>
+                          <Button variant="dash-secondary" size="dash-sm" onClick={() => setShowAdd(true)}>
+                            <Plus className="h-3.5 w-3.5 mr-1" />
+                            Add expense
+                          </Button>
+                        </div>
+                      </div>
                     )}
                   </td>
                 </tr>
               ) : (
-                filteredItems.map((item) => (
+                paginatedItems.map((item) => (
                   <TransactionRow key={item.id} item={item} onDelete={remove} />
                 ))
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {filteredItems.length > 0 && (
+          <div className="p-4 border-t border-dash-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[12px] text-dash-text-muted bg-dash-surface/30">
+            <div className="flex items-center gap-3">
+              <span>
+                Showing {filteredItems.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{" "}
+                {Math.min(currentPage * pageSize, filteredItems.length)} of {filteredItems.length} transactions
+              </span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="bg-dash-surface border border-dash-border rounded px-2 py-1 text-[11px] text-dash-text-secondary focus:outline-none cursor-pointer"
+                aria-label="Items per page"
+              >
+                <option value={15}>15 per page</option>
+                <option value={30}>30 per page</option>
+                <option value={50}>50 per page</option>
+                <option value={100}>100 per page</option>
+              </select>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-2.5 py-1 rounded bg-dash-surface border border-dash-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-dash-hover text-dash-text transition-dash font-medium"
+                >
+                  Previous
+                </button>
+                <span className="px-2 py-1 text-dash-text font-medium text-[11px]">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-2.5 py-1 rounded bg-dash-surface border border-dash-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-dash-hover text-dash-text transition-dash font-medium"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Mobile Transaction Cards */}
@@ -991,22 +1483,49 @@ export default function ExpensesPage() {
             <TransactionSkeleton />
           </>
         ) : filteredItems.length === 0 ? null : (
-          filteredItems.map((item) => (
-            <div key={item.id} className="bg-dash-card border border-dash-border rounded-xl p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-dash-text truncate">{item.description}</p>
-                  <p className="text-[11px] text-dash-text-muted mt-0.5">{item.category} · {formatDateShort(item.createdAt)}</p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[15px] font-semibold text-dash-text text-right whitespace-nowrap">{formatCurrencyPrecise(item.amount)}</span>
-                  <button onClick={() => remove(item.id)} className="text-dash-text-muted hover:text-dash-text p-1" aria-label="Delete">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+          <>
+            {paginatedItems.map((item) => (
+              <div key={item.id} className="bg-dash-card border border-dash-border rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium text-dash-text truncate">{item.description}</p>
+                    <p className="text-[11px] text-dash-text-muted mt-0.5">{item.category} · {formatTransactionDate(item.createdAt)}</p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[15px] font-semibold text-dash-text text-right whitespace-nowrap">{formatCurrencyPrecise(item.amount)}</span>
+                    <button onClick={() => remove(item.id)} className="text-dash-text-muted hover:text-dash-text p-1" aria-label="Delete">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+
+            {/* Mobile pagination if multiple pages */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between p-3 bg-dash-card border border-dash-border rounded-xl text-[12px]">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded bg-dash-surface border border-dash-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-dash-hover text-dash-text transition-dash font-medium"
+                >
+                  Previous
+                </button>
+                <span className="text-dash-text font-medium text-[12px]">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded bg-dash-surface border border-dash-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-dash-hover text-dash-text transition-dash font-medium"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
